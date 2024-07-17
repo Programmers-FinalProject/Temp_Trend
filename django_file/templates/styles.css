@@ -1,0 +1,61 @@
+body {
+    background-color: #f0f8ff;
+}
+.location-header {
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 20px 20px 0 0;
+}
+.main-content {
+    background-color: #87CEEB;
+    border-radius: 0 0 20px 20px;
+    padding: 20px;
+}
+.nav-pills .nav-link {
+    color: #000;
+    background-color: #f8f9fa;
+    margin-right: 5px;
+}
+.nav-pills .nav-link.active {
+    background-color: #87CEEB;
+    color: #fff;
+}
+.search-bar {
+    background-color: #6c757d;
+    border-radius: 20px;
+    padding: 10px;
+}
+.btn-light {
+    border-radius: 20px;
+}
+.map-container {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 10px;
+    height: 200px;
+}
+
+/* 기존 CSS 스타일은 그대로 유지 */
+
+.weather-map-container {
+    width: 30%;
+    max-width: 640px; /* 이미지의 원본 너비 */
+    margin: 0 auto;
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 10px;
+    overflow: hidden;
+}
+
+.weather-map {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* 미디어 쿼리를 사용하여 작은 화면에서의 스타일 조정 */
+@media (max-width: 768px) {
+    .weather-map-container {
+        padding: 5px;
+    }
+}
