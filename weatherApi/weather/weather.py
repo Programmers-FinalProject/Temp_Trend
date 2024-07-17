@@ -6,15 +6,17 @@ from datetime import datetime, timedelta
 # admin123!@#
 # 현재 시간 가져오기
 now = datetime.now()
-today = now.strftime('%Y%m%d%H')
-nextweek = (now + timedelta(days=7)).strftime('%Y%m%d%H')
+today = now.strftime('%Y%m%d')
+today = today+"0000"
+print(today)
 auth = "_T8QbW2dT_-_EG1tna__OQ"
 numOfRows = "10000"
 # 변수 선언 - Variables으로 처리할듯?
 # 기상청 지점 api col
+StnDomain = "https://apihub.kma.go.kr/api/typ01/url/stn_inf.php?"
+StnColumns = ["STN","LON","LAT","STN_SP","HT","HT_PA","HT_TA","HT_WD","HT_RN","STN","STN_KO","STN_EN","FCT_ID",
+            "LAW_ID","BASIN"]
 # /------------------ 현재 미사용 ----------------------------/
-# StnColumns = ["STN","LON","LAT","STN_SP","HT","HT_PA","HT_TA","HT_WD","HT_RN","STN","STN_KO","STN_EN","FCT_ID",
-#             "LAW_ID","BASIN"]
 # # 기상청 날씨정보 api col
 # DataColumns = ["TM", "STN", "WS_AVG", "WR_DAY", "WD_MAX", "WS_MAX", "WS_MAX_TM", "WD_INS", "WS_INS", "WS_INS_TM",
 #             "TA_AVG", "TA_MAX", "TA_MAX_TM", "TA_MIN", "TA_MIN_TM", "TD_AVG", "TS_AVG", "TG_MIN", "HM_AVG", "HM_MIN",
@@ -39,43 +41,43 @@ dataStnFileName = 'weather_stn.csv'
 #     "help" : '0',
 #     "authKey" : auth,
 # }
-apiOption = {
-    "tm" : "",
-    "stn" : "",
-    "disp" : '0',
-    "help" : '0',
-    "authKey" : auth,
-}
+# apiOption = {
+#     "tm" : "",
+#     "stn" : "",
+#     "disp" : '0',
+#     "help" : '0',
+#     "authKey" : auth,
+# }
 # reg 정보
-regdomain = "https://apihub.kma.go.kr/api/typ02/openApi/FcstZoneInfoService/getFcstZoneCd?"
-regOption = {
-    "pageNo": "1",
-    "numOfRows": numOfRows,
-    "regUp":"",
-    "dataType": "JSON",
-    "authKey": auth}
-# 중기 예보
-wmColumns = ["REG_ID", "TM_FC","TM_EF","MOD","STN","C","SKY","PRE","CONF","WF","RN_ST"]
-wmDomain = "https://apihub.kma.go.kr/api/typ01/url/fct_afs_wl.php?"
-wmTempDomain = "https://apihub.kma.go.kr/api/typ01/url/fct_afs_wc.php?"
-wmOption = {
-    "reg":"",
-    "tmef1": today,
-    "tmef2": nextweek,
-    "mode":"0",
-    "disp":"1",
-    "authKey":auth
-}
+# regdomain = "https://apihub.kma.go.kr/api/typ02/openApi/FcstZoneInfoService/getFcstZoneCd?"
+# regOption = {
+#     "pageNo": "1",
+#     "numOfRows": numOfRows,
+#     "regUp":"",
+#     "dataType": "JSON",
+#     "authKey": auth}
+# 중기 예보 미사용 처리
+# wmColumns = ["REG_ID", "TM_FC","TM_EF","MOD","STN","C","SKY","PRE","CONF","WF","RN_ST"]
+# wmDomain = "https://apihub.kma.go.kr/api/typ01/url/fct_afs_wl.php?"
+# wmTempDomain = "https://apihub.kma.go.kr/api/typ01/url/fct_afs_wc.php?"
+# wmOption = {
+#     "reg":"",
+#     "tmef1": today,
+#     "tmef2": nextweek,
+#     "mode":"0",
+#     "disp":"1",
+#     "authKey":auth
+# }
 # 단기 예보
-wsDomain = "https://apihub.kma.go.kr/api/typ01/url/fct_afs_dl.php?"
-wsColumns = ["REG_ID","TM_FC","TM_EF","MOD","NE","STN","C","MAN_ID","MAN_FC","W1","T","W2","TA","ST","SKY","PREP","WF"]
-wsOption = {
-    "reg":"",
-    "tmef1": today,
-    "tmef2": nextweek,
-    "disp":"1",
-    "authKey":auth
-}
+# wsDomain = "https://apihub.kma.go.kr/api/typ01/url/fct_afs_dl.php?"
+# wsColumns = ["REG_ID","TM_FC","TM_EF","MOD","NE","STN","C","MAN_ID","MAN_FC","W1","T","W2","TA","ST","SKY","PREP","WF"]
+# wsOption = {
+#     "reg":"",
+#     "tmef1": today,
+#     "tmef2": nextweek,
+#     "disp":"1",
+#     "authKey":auth
+# }
 
 
 

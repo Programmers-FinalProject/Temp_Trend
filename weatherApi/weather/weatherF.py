@@ -1,10 +1,10 @@
 import requests
 import csv
 import json
-from pyspark.sql import SparkSession
+# from pyspark.sql import SparkSession
 
 # path = 아마 s3 폴더위치로 사용할듯 싶음 or csv로 저장하지않고 바로 db에 넣거나
-path = "dataPipeline/data/"
+path = ""
 # 기상청 api 함수
 
 # url 생성기
@@ -42,6 +42,23 @@ def weatherApiParser(apidata, columns ,fileName) :
     #     csvwriter.writerows(parsed_data)
 
     # print("write ",path,fileName,sep="")
+
+
+# api 데이터 처리후 csv 저장
+def weatherApiParser2(apidata, columns ,fileName) :
+    # Split
+    lines = [line for line in apidata.strip().split("\n") if not line.startswith("#")]
+    parsed_data = []
+    for line in lines:
+        parsed_data.append(line.split())
+        
+    # CSV쓰기
+    with open(path + fileName, 'w', newline='',encoding='utf-8') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(columns)
+        csvwriter.writerows(parsed_data)
+
+    print("write ",path,fileName,sep="")
 
 # api 데이터 처리후 csv 저장
 def weatherApiJSONParser(apidata) :
