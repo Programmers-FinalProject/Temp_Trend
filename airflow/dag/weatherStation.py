@@ -2,7 +2,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.models import Variable
 from datetime import datetime, timedelta
-from dag.utils import weatherF
+from utils import weatherF
 
 # 기본 DAG 인자 설정
 default_args = {
