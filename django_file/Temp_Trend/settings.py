@@ -77,8 +77,12 @@ WSGI_APPLICATION = 'Temp_Trend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'final_project',
+        'USER': 'truly_flower',
+        'PASSWORD': '090406',  # PostgreSQL 사용자 실제 비밀번호
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
