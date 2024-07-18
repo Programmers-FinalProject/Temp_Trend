@@ -27,9 +27,3 @@ jobs:
     - name: Sync DAGs to EC2
       run: |
         rsync -avz --delete --exclude='.*' ./airflow/dag/ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/hori_project/Temp_Trend/airflow/dags/
-    - name: Restart Airflow (if needed)
-      run: |
-        ssh ubuntu@${{ secrets.EC2_HOST }} '
-          cd /home/ubuntu/hori_project/Temp_Trend/airflow &&
-          docker-compose restart airflow-webserver airflow-scheduler
-        '
