@@ -2,7 +2,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.models import Variable
 from datetime import datetime, timedelta
-from common import weatherF
+from dag.utils import weatherF
 # 오늘 날짜 
 now = datetime.now()
 today = now.strftime('%Y%m%d')
