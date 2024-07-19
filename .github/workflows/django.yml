@@ -90,6 +90,17 @@ jobs:
       uses: google-github-actions/setup-gcloud@v2
       with:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
+    - name: Verify Google Cloud authentication
+      run: |
+        gcloud auth list
+        gcloud config list project
+        gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+      shell: bash
+    
+    - name: Test GCP Access
+      run: |
+        gcloud compute instances list
+      shell: bash
     
     - name: Deploy to GCP
       env:
