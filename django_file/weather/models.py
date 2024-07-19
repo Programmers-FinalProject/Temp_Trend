@@ -13,4 +13,8 @@ class LocationRecord(models.Model):
 
     def __str__(self):
         return f"위치정보 : {self.location_type} | 위도 :({self.latitude}, 경도 :{self.longitude})"
+<<<<<<< HEAD
 >>>>>>> origin
+=======
+>>>>>>> 6c633ae2298c44abf0fa8b343f7118d5c1ff1e85
+>>>>>>> main
