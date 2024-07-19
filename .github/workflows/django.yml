@@ -33,8 +33,21 @@ jobs:
         chmod 644 ~/.ssh/google_compute_engine.pub
       shell: bash
     
+    - name: Test connection to compute.googleapis.com
+      run: ping -c 4 compute.googleapis.com
+      shell: bash
+    
     - name: Add compute.googleapis.com to known hosts
-      run: ssh-keyscan -H compute.googleapis.com >> ~/.ssh/known_hosts
+      run: |
+        ssh-keyscan -v -H compute.googleapis.com >> ~/.ssh/known_hosts
+        cat ~/.ssh/known_hosts
+      shell: bash
+    
+    - name: Test ssh-keyscan
+      run: |
+        ssh-keyscan -v -H github.com >> ~/.ssh/known_hosts
+        cat ~/.ssh/known_hosts
+      shell: bash  
 
     - name: Debug SSH setup
       run: |
