@@ -35,7 +35,7 @@ jobs:
     
     - name: Test GCP Access
       run: |
-        gcloud compute instances list --project ${{ secrets.GCP_PROJECT_ID }} --zone asia-northeast3-a
+        gcloud compute instances list --project ${{ secrets.GCP_PROJECT_ID }}
       shell: bash
     
     - name: Test SSH Connection
