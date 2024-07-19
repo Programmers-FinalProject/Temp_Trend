@@ -33,6 +33,32 @@ jobs:
         chmod 644 ~/.ssh/google_compute_engine.pub
       shell: bash
     
+    - name: Test GCP Access
+      run: |
+        gcloud compute instances list --project ${{ secrets.GCP_PROJECT_ID }} --zone asia-northeast3-a
+      shell: bash
+    
+    - name: Test SSH Connection
+      run: |
+        gcloud compute ssh instance-temp-trend --project ${{ secrets.GCP_PROJECT_ID }} --zone asia-northeast3-a --command "echo 'SSH connection successful'"
+      shell: bash
+
+    - name: Network Diagnostics
+      run: |
+        echo "Checking DNS..."
+        nslookup compute.googleapis.com
+        
+        echo "Tracing route..."
+        traceroute compute.googleapis.com
+        
+        echo "Checking HTTPS connection..."
+        curl -v https://compute.googleapis.com
+        
+        echo "Checking GCP authentication..."
+        gcloud auth list
+        gcloud config list project
+      shell: bash
+
     - name: Test connection to compute.googleapis.com
       run: ping -c 4 compute.googleapis.com
       shell: bash
