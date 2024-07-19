@@ -18,21 +18,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Create SSH directory
-      run: mkdir -p ~/.ssh
-    
-    - name: Set up SSH private key
+    - name: Set up SSH keys
       run: |
+        mkdir -p ~/.ssh
         echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/google_compute_engine
+        echo "${{ secrets.GCP_SSH_PUBLIC_KEY }}" > ~/.ssh/google_compute_engine.pub
         chmod 600 ~/.ssh/google_compute_engine
+        chmod 644 ~/.ssh/google_compute_engine.pub
+        ssh-keyscan -H compute.googleapis.com >> ~/.ssh/known_hosts
       shell: bash
     
-    - name: Set up SSH public key
-      run: |
-        echo "${{ secrets.GCP_SSH_PUBLIC_KEY }}" > ~/.ssh/google_compute_engine.pub
-        chmod 644 ~/.ssh/google_compute_engine.pub
-      shell: bash
-      
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
@@ -42,82 +37,22 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
     
-    - name: Use gcloud CLI
+    - name: Verify GCP setup
       run: |
         gcloud info
         gcloud auth list
         gcloud config list
         gcloud compute instances list
       shell: bash
-    - name: Test GCP Access
-      run: |
-        gcloud compute instances list --project ${{ secrets.GCP_PROJECT_ID }}
-      shell: bash
     
-    - name: Test SSH Connection
-      run: |
-        gcloud compute ssh instance-temp-trend --project ${{ secrets.GCP_PROJECT_ID }} --zone asia-northeast3-a --command "echo 'SSH connection successful'"
-      shell: bash
-
     - name: Network Diagnostics
       run: |
         echo "Checking DNS..."
         nslookup compute.googleapis.com
-        
-        echo "Tracing route..."
-        traceroute compute.googleapis.com
-        
-        echo "Checking HTTPS connection..."
-        curl -v https://compute.googleapis.com
-        
-        echo "Checking GCP authentication..."
-        gcloud auth list
-        gcloud config list project
+        echo "Checking connectivity..."
+        ping -c 4 compute.googleapis.com
       shell: bash
 
-    - name: Test connection to compute.googleapis.com
-      run: ping -c 4 compute.googleapis.com
-      shell: bash
-    
-    - name: Add compute.googleapis.com to known hosts
-      run: |
-        ssh-keyscan -v -H compute.googleapis.com >> ~/.ssh/known_hosts
-        cat ~/.ssh/known_hosts
-      shell: bash
-    
-    - name: Test ssh-keyscan
-      run: |
-        ssh-keyscan -v -H github.com >> ~/.ssh/known_hosts
-        cat ~/.ssh/known_hosts
-      shell: bash  
-
-    - name: Debug SSH setup
-      run: |
-        ls -la ~/.ssh
-        cat ~/.ssh/google_compute_engine.pub
-      shell: bash
-    
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-    
-    - name: Set up Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-    - name: Verify Google Cloud authentication
-      run: |
-        gcloud auth list
-        gcloud config list project
-        gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
-      shell: bash
-    
-    - name: Test GCP Access
-      run: |
-        gcloud compute instances list
-      shell: bash
-    
     - name: Deploy to GCP
       env:
         DJANGO_SETTINGS_MODULE: django_file.settings
