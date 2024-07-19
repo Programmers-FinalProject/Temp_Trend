@@ -9,16 +9,17 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import pandas as pd
 from airflow import DAG
-from airflow.operators import PythonOperator
+from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
+from airflow.models import Variable
 import pandas as pd
 import boto3
 import os
 
-S3_BUCKET_NAME = 'your-s3-bucket-name'
-S3_KEY = 'path/to/your/data.csv'
-AWS_ACCESS_KEY_ID = 'your-aws-access-key-id'
-AWS_SECRET_ACCESS_KEY = 'your-aws-secret-access-key'
+S3_BUCKET_NAME = 'team-hori-1-bucket'
+S3_KEY = 'musinsa.csv'
+AWS_ACCESS_KEY_ID = Variable.get('ACCESS_KEY')
+AWS_SECRET_ACCESS_KEY = Variable.get('SECRET_KEY')
 LOCAL_FILE_PATH = '/tmp/data.csv'
 
 def fetch_data():
@@ -64,7 +65,17 @@ def fetch_data():
                         print("카테고리 " + category)
                         print("가격 "+ price)
                         print("성별 " + gender)
-                        data.append({'제품이름': item, '상품링크': link, '이미지링크': img, '순위': rank, '날짜': now, '데이터생성일': now, '카테고리': category, '가격': price, '성별':gender})
+                        data.append({
+                            'PRODUCT_NAME': item,
+                            'PRODUCT_LINK': link, 
+                            'PRODUCT_IMG_LINK': img, 
+                            'RANK': rank, 
+                            'DATETIME': now, 
+                            'CREATE_TIME': now, 
+                            'CATEGORY': category, 
+                            'PRICE': price, 
+                            'GENDER':gender
+                            })
                         driver.implicitly_wait(5)
                         driver.back()
                         col.send_keys(Keys.ENTER)
