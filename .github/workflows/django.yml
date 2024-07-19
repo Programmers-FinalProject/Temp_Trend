@@ -18,14 +18,29 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Set up SSH
+    - name: Create SSH directory
+      run: mkdir -p ~/.ssh
+    
+    - name: Set up SSH private key
       run: |
-        mkdir -p ~/.ssh
         echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/google_compute_engine
-        echo "${{ secrets.GCP_SSH_PUBLIC_KEY }}" > ~/.ssh/google_compute_engine.pub
         chmod 600 ~/.ssh/google_compute_engine
+      shell: bash
+    
+    - name: Set up SSH public key
+      run: |
+        echo "${{ secrets.GCP_SSH_PUBLIC_KEY }}" > ~/.ssh/google_compute_engine.pub
         chmod 644 ~/.ssh/google_compute_engine.pub
-        ssh-keyscan -H compute.googleapis.com >> ~/.ssh/known_hosts
+      shell: bash
+    
+    - name: Add compute.googleapis.com to known hosts
+      run: ssh-keyscan -H compute.googleapis.com >> ~/.ssh/known_hosts
+
+    - name: Debug SSH setup
+      run: |
+        ls -la ~/.ssh
+        cat ~/.ssh/google_compute_engine.pub
+      shell: bash
     
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
@@ -58,3 +73,4 @@ jobs:
           sudo systemctl restart nginx
           echo "Deployment completed successfully"
         '
+      shell: bash
