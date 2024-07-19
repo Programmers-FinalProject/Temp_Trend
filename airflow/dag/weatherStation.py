@@ -3,6 +3,13 @@ from airflow.operators.python import PythonOperator
 from airflow.models import Variable
 from datetime import datetime, timedelta
 from utils import weatherF
+import boto3, json
+
+s3_client = boto3.client(
+    's3',
+    aws_access_key_id =  Variable.get("ACCESS_KEY"),
+    aws_secret_access_key = Variable.get("SECRET_KEY"),
+)
 
 # 기본 DAG 인자 설정
 default_args = {
@@ -30,8 +37,12 @@ dag = DAG(
 
 # 작업 함수 정의
 def stnApi():
-    stnData = weatherF.weatherApiParser2(weatherF.weatherApi(Variable.get("stnDomain"), stnOption), columns=Variable.get("stnColumns"))
-    weatherF.weatherCSVmaker("data/", f"stnDataCsv",stnData)
+    s3_bucket = Variable.get("s3_bucket")
+    s3_csv_path = Variable.get("we_s3_csv_path")
+    
+    stnData = weatherF.weatherApiParser2(weatherF.weatherApi(Variable.get("stnDomain"), stnOption), columns=json.loads(Variable.get("stnColumns")))
+    weatherF.weatherCSVmaker(s3_bucket, f"{s3_csv_path}stnDataCsv.csv",stnData,s3_client)
+    
     print("STNDATA :  " , stnData)
 
 # PythonOperator를 사용하여 작업 정의
