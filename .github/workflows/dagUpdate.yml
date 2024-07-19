@@ -1,0 +1,29 @@
+name: Sync DAGs to EC2
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'airflow/**'
+
+jobs:
+  sync-dags:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install SSH key
+      uses: webfactory/ssh-agent@v0.5.1
+      with:
+        ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+
+    - name: Add EC2 host key to known hosts
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Sync DAGs to EC2
+      run: |
+        rsync -avz --delete --exclude='.*' ./airflow/dag/ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/hori_project/Temp_Trend/airflow/dags/
