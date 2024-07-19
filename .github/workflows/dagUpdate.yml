@@ -23,7 +23,9 @@ jobs:
       run: |
         mkdir -p ~/.ssh
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+      shell: bash
 
     - name: Sync DAGs to EC2
       run: |
-        rsync -avz --delete --exclude='.*' ./airflow/dag/ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/hori_project/Temp_Trend/airflow/dags/
+        rsync -avz --progress --delete --exclude='.*' ./airflow/dag/ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/hori_project/Temp_Trend/airflow/dags/
+      shell: bash
