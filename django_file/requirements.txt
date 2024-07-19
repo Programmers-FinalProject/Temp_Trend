@@ -1,31 +1,15 @@
-# This file may be used to create an environment using:
-# $ conda create --name <env> --file <this file>
-# platform: osx-arm64
-asgiref=3.5.2=py311hca03da5_0
-brotli-python=1.0.9=py311h313beb8_8
-bzip2=1.0.8=h80987f9_6
-ca-certificates=2024.7.4=hf0a4a13_0
-certifi=2024.7.4=pyhd8ed1ab_0
-charset-normalizer=2.0.4=pyhd3eb1b0_0
-django=4.1=py311hca03da5_0
-idna=3.7=py311hca03da5_0
-libcxx=14.0.6=h848a8c0_0
-libffi=3.4.4=hca03da5_1
-ncurses=6.4=h313beb8_0
-openssl=3.3.1=hfb2fe0b_2
-pip=24.0=py311hca03da5_0
-pysocks=1.7.1=py311hca03da5_0
-python=3.11.9=hb885b13_0
-python-dotenv=1.0.1=pyhd8ed1ab_0
-readline=8.2=h1a28f6b_0
-redis=3.5.3=pyhd3eb1b0_0
-requests=2.32.2=py311hca03da5_0
-setuptools=69.5.1=py311hca03da5_0
-sqlite=3.45.3=h80987f9_0
-sqlparse=0.4.4=py311hca03da5_0
-tk=8.6.14=h6ba3021_0
-tzdata=2024a=h04d1e81_0
-urllib3=2.2.2=py311hca03da5_0
-wheel=0.43.0=py311hca03da5_0
-xz=5.4.6=h80987f9_1
-zlib=1.2.13=h18a0788_1
+asgiref==3.5.2
+brotli==1.0.9
+certifi==2024.7.4
+charset-normalizer==2.0.4
+Django==4.1
+idna==3.7
+pip==24.0
+pysocks==1.7.1
+python-dotenv==1.0.1
+redis==3.5.3
+requests==2.32.2
+setuptools==69.5.1
+sqlparse==0.4.4
+urllib3==2.2.2
+wheel==0.43.0
