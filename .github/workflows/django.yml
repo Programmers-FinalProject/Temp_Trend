@@ -10,118 +10,51 @@ on:
     paths:
       - 'django_file/**'
 
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCE_INSTANCE: instance-temp-trend
+  GCE_INSTANCE_ZONE: asia-northeast3-a
+
 jobs:
-  deploy:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Create SSH directory
-      run: mkdir -p ~/.ssh
-    
-    - name: Set up SSH private key
-      run: |
-        echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/google_compute_engine
-        chmod 600 ~/.ssh/google_compute_engine
-      shell: bash
-    
-    - name: Set up SSH public key
-      run: |
-        echo "${{ secrets.GCP_SSH_PUBLIC_KEY }}" > ~/.ssh/google_compute_engine.pub
-        chmod 644 ~/.ssh/google_compute_engine.pub
-      shell: bash
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-    
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
-    
-    - name: Use gcloud CLI
-      run: |
-        gcloud info
-        gcloud auth list
-        gcloud config list
-        gcloud compute instances list
-      shell: bash
-    - name: Test GCP Access
-      run: |
-        gcloud compute instances list --project ${{ secrets.GCP_PROJECT_ID }}
-      shell: bash
-    
-    - name: Test SSH Connection
-      run: |
-        gcloud compute ssh instance-temp-trend --project ${{ secrets.GCP_PROJECT_ID }} --zone asia-northeast3-a --command "echo 'SSH connection successful'"
-      shell: bash
+      # Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-    - name: Test connection to compute.googleapis.com
-      run: ping -c 4 compute.googleapis.com
-      shell: bash
-    
-    - name: Add compute.googleapis.com to known hosts
-      run: |
-        ssh-keyscan -v -H compute.googleapis.com >> ~/.ssh/known_hosts
-        cat ~/.ssh/known_hosts
-      shell: bash
-    
-    - name: Test ssh-keyscan
-      run: |
-        ssh-keyscan -v -H github.com >> ~/.ssh/known_hosts
-        cat ~/.ssh/known_hosts
-      shell: bash  
+      # Setup gcloud CLI
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
 
-    - name: Debug SSH setup
-      run: |
-        ls -la ~/.ssh
-        cat ~/.ssh/google_compute_engine.pub
-      shell: bash
-    
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-    
-    - name: Set up Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-    - name: Verify Google Cloud authentication
-      run: |
-        gcloud auth list
-        gcloud config list project
-        gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
-      shell: bash
-    
-    - name: Test GCP Access
-      run: |
-        gcloud compute instances list
-      shell: bash
-    
-    - name: Deploy to GCP
-      env:
-        DJANGO_SETTINGS_MODULE: django_file.settings
-      run: |
-        gcloud compute ssh junghwa010609@instance-temp-trend --project ${{ secrets.GCP_PROJECT_ID }} --zone asia-northeast3-a -- '
-          set -e
-          cd /home/junghwa010609/django
-          git fetch origin develop
-          git checkout develop || git checkout -b develop origin/develop
-          git pull origin develop
-          cd django_file
-          source venv/bin/activate
-          if git diff --name-only HEAD@{1} HEAD | grep -q "requirements.txt"; then
-            pip install -r requirements.txt
-          fi
-          python manage.py migrate
-          python manage.py collectstatic --noinput
-          sudo systemctl restart gunicorn
-          sudo systemctl restart nginx
-          echo "Deployment completed successfully"
-        '
-      shell: bash
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/temp_trend_key
+          chmod 600 ~/.ssh/temp_trend_key
+
+      - name: Deploy to GCE
+        run: |
+          gcloud compute ssh --zone ${{ env.GCE_INSTANCE_ZONE }} ${{ env.GCE_INSTANCE }} --ssh-key-file=~/.ssh/temp_trend_key --command '
+            cd /home/junghwa010609/django &&
+            git pull origin develop &&
+            cd django_file &&
+            source ../venv/bin/activate &&
+            if git diff --name-only HEAD@{1} HEAD | grep -q "requirements.txt"; then
+              pip install -r requirements.txt
+            fi &&
+            python manage.py migrate &&
+            python manage.py collectstatic --noinput &&
+            sudo systemctl restart gunicorn &&
+            sudo systemctl restart nginx &&
+            echo "Deployment completed successfully"
+          '

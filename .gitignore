@@ -3,3 +3,4 @@
 Temp_Trend.sock
 staticfiles/
 venv/
+Temp_Trend.wsgi
