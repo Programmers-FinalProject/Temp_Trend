@@ -24,4 +24,4 @@ jobs:
           aws-region: 'ap-northeast-2'
       # S3에 업로드
       - name: Sync to S3
-        run: aws s3 sync ./dags s3://${{ secrets.AWS_BUCKET }}/${{ secrets.AWS_DESTINATION_KEY }} --delete
+        run: aws s3 sync .airflow/dag s3://${{ secrets.AWS_BUCKET }}/${{ secrets.AWS_DESTINATION_KEY }} --delete
