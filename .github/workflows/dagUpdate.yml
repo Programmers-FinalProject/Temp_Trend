@@ -1,31 +1,29 @@
 name: Sync DAGs to EC2
-
 on:
   push:
-    branches:
-      - main
+    branches: [ "main", "develop" ]
     paths:
       - 'airflow/**'
-
 jobs:
   sync-dags:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
-
+      uses: actions/checkout@v4.1.1
     - name: Install SSH key
-      uses: webfactory/ssh-agent@v0.5.1
+      uses: webfactory/ssh-agent@v0.9.0
       with:
         ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-
     - name: Add EC2 host key to known hosts
       run: |
         mkdir -p ~/.ssh
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
       shell: bash
-
+    - name: Create backup directory on EC2
+      run: |
+        ssh ubuntu@${{ secrets.EC2_HOST }} 'mkdir -p /home/ubuntu/hori_project/Temp_Trend/airflow/dag_backups'
+      shell: bash
     - name: Sync DAGs to EC2
       run: |
-        rsync -avz --progress --delete --exclude='.*' ./airflow/dag/ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/hori_project/Temp_Trend/airflow/dags/
+        rsync -avz --progress --update --backup --backup-dir=/home/ubuntu/hori_project/Temp_Trend/airflow/dag_backups ./airflow/dag/ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/hori_project/Temp_Trend/airflow/dags/
       shell: bash
