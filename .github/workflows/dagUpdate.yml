@@ -1,41 +1,28 @@
-name: Sync DAGs to EC2
+name: Sync DAGs to S3
 on:
   push:
     branches: [ "main", "develop" ]
     paths:
       - 'airflow/**'
+  
+  # Workflow를 매뉴얼하게 트리거할 수 있음
+  workflow_dispatch:
+
 jobs:
-  sync-dags:
+  upload:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    - name: Install SSH key
-      uses: webfactory/ssh-agent@v0.9.0
-      with:
-        ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-    - name: Debug EC2 host
-      run: |
-        echo "EC2 Host value: ${{ secrets.EC2_HOST }}"
-        nslookup ${{ secrets.EC2_HOST }} || echo "nslookup failed"
-        ping -c 4 ${{ secrets.EC2_HOST }} || echo "ping failed"
-      shell: bash
-    - name: Add EC2 host key to known hosts
-      run: |
-        mkdir -p ~/.ssh
-        ssh-keyscan -v -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts || echo "ssh-keyscan failed, but continuing..."
-        echo "Contents of ~/.ssh/known_hosts:"
-        cat ~/.ssh/known_hosts
-      shell: bash
-    - name: Test SSH connection
-      run: |
-        ssh -v -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'echo SSH connection successful' || echo "SSH connection failed"
-      shell: bash
-    - name: Create backup directory on EC2
-      run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'mkdir -p /home/ubuntu/hori_project/Temp_Trend/airflow/dag_backups'
-      shell: bash
-    - name: Sync DAGs to EC2
-      run: |
-        rsync -avz --progress --update --backup --backup-dir=/home/ubuntu/hori_project/Temp_Trend/airflow/dag_backups ./airflow/dag/ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/hori_project/Temp_Trend/airflow/dags/
-      shell: bash
+      # checkout을 이용해 코드에 접근
+      - name: Checkout files
+        uses: actions/checkout@v3
+      # aws-actions을 이용해 aws credentials 획득
+      - name: AWS Configuration
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: 'us-east-1'
+      # S3에 업로드
+      - name: Sync to S3
+        run: aws s3 sync ./dags s3://${{ secrets.AWS_BUCKET }}/${{ secrets.AWS_DESTINATION_KEY }} --update
+          
