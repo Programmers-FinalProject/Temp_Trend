@@ -1,11 +1,11 @@
 name: Sync DAGs to S3
+
 on:
   push:
     branches: [ "main", "develop" ]
     paths:
       - 'airflow/**'
   
-  # Workflow를 매뉴얼하게 트리거할 수 있음
   workflow_dispatch:
 
 jobs:
@@ -15,6 +15,7 @@ jobs:
       # checkout을 이용해 코드에 접근
       - name: Checkout files
         uses: actions/checkout@v3
+
       # aws-actions을 이용해 aws credentials 획득
       - name: AWS Configuration
         uses: aws-actions/configure-aws-credentials@v4.0.2
@@ -22,6 +23,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: 'ap-northeast-2'
+
       # S3에 업로드
       - name: Sync to S3
-        run: aws s3 sync .airflow/dag s3://${{ secrets.AWS_BUCKET }}/${{ secrets.AWS_DESTINATION_KEY }} --delete
+        run: aws s3 sync ./airflow/dag s3://${{ secrets.AWS_BUCKET }}/${{ secrets.AWS_DESTINATION_KEY }} --delete
