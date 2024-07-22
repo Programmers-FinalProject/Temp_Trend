@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4.1.1
+      uses: actions/checkout@v4
     - name: Install SSH key
       uses: webfactory/ssh-agent@v0.9.0
       with:
@@ -17,11 +17,13 @@ jobs:
     - name: Add EC2 host key to known hosts
       run: |
         mkdir -p ~/.ssh
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+        ssh-keyscan -v -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts || echo "ssh-keyscan failed, but continuing..."
+        echo "Contents of ~/.ssh/known_hosts:"
+        cat ~/.ssh/known_hosts
       shell: bash
     - name: Create backup directory on EC2
       run: |
-        ssh ubuntu@${{ secrets.EC2_HOST }} 'mkdir -p /home/ubuntu/hori_project/Temp_Trend/airflow/dag_backups'
+        ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'mkdir -p /home/ubuntu/hori_project/Temp_Trend/airflow/dag_backups'
       shell: bash
     - name: Sync DAGs to EC2
       run: |
