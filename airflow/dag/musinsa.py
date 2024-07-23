@@ -10,18 +10,27 @@ import time
 import pandas as pd
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.utils.dates import days_ago
 from airflow.models import Variable
 import pandas as pd
 import boto3
-import os
+import datetime
+import io
 
+# S3 버킷 및 파일 설정
+FILE_KEY = 'musinsa.csv'
 S3_BUCKET_NAME = 'team-hori-1-bucket'
-S3_KEY = 'musinsa.csv'
 AWS_ACCESS_KEY_ID = Variable.get('ACCESS_KEY')
 AWS_SECRET_ACCESS_KEY = Variable.get('SECRET_KEY')
-LOCAL_FILE_PATH = '/tmp/data.csv'
 
+try:
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+except Exception as e:
+    print(e)
+    raise
+        
 def fetch_data():
     data = []
     driver = wd.Chrome(service=Service(ChromeDriverManager().install()), options=wd.ChromeOptions())
@@ -56,15 +65,6 @@ def fetch_data():
                             elif g.text == '여성':
                                 gender = 'w'
                         driver.back()
-                        print("제품이름 " + item)
-                        print("상품링크 " + link)
-                        print("이미지링크 " + img)
-                        print("순위 " + str(rank))
-                        print("날짜 " + now)
-                        print("데이터생성일 " + now)
-                        print("카테고리 " + category)
-                        print("가격 "+ price)
-                        print("성별 " + gender)
                         data.append({
                             'PRODUCT_NAME': item,
                             'PRODUCT_LINK': link, 
@@ -85,37 +85,38 @@ def fetch_data():
             driver.implicitly_wait(5)
     driver.close()
     df = pd.DataFrame(data)
-    df.to_csv(LOCAL_FILE_PATH, index=False)
+    csv_buffer = io.StringIO()
+    df.to_csv(csv_buffer, index=False)
+    return csv_buffer.getvalue()
 
-def upload_to_s3():
-    s3_client = boto3.client(
-        's3',
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY
-    )
-    s3_client.upload_file(LOCAL_FILE_PATH, S3_BUCKET_NAME, S3_KEY)
-    os.remove(LOCAL_FILE_PATH)
+def upload_to_s3(**kwargs):
+    csv_data = kwargs['ti'].xcom_pull(task_ids='create_new_csv')
+    s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=FILE_KEY, Body=csv_data)
 
 default_args = {
-    'start_date': days_ago(1),
+    'owner': 'airflow',
+    'start_date': datetime(2023, 1, 1),
     'retries': 1,
 }
 
 dag = DAG(
     dag_id ='musinsa_crawl_and_upload_to_s3',
     default_args=default_args,
-    description='Crawl data and upload to S3',
+    description='DAG to create and upload a CSV file to S3',
     schedule_interval='@daily',
 )
+
 fetch_data_task = PythonOperator(
     task_id='fetch_data',
     python_callable=fetch_data,
+    provide_context=True,
     dag=dag,
 )
 
 upload_to_s3_task = PythonOperator(
     task_id='upload_to_s3',
     python_callable=upload_to_s3,
+    provide_context=True,
     dag=dag,
 )
 
