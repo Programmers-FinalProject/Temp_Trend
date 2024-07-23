@@ -2,6 +2,7 @@ import requests
 import csv
 import pandas as pd
 import json
+from io import StringIO
 # 기상청 api 함수
 
 # url 생성기
@@ -57,9 +58,20 @@ def weatherApiJSONParser(apidata) :
 
     return itemData
 
-def weatherCSVmaker(path, fileName, data):
+
+def weatherCSVmaker(bucket_name, s3_file_path, data, s3_client):
+    # 데이터프레임 생성
     df = pd.DataFrame(data)
-    csv_file_path = path + fileName
-    df.to_csv(csv_file_path, index=False)
     
-    print("write CSV on ",path,fileName,sep="")
+    # CSV 데이터를 메모리 버퍼에 작성
+    csv_buffer = StringIO()
+    df.to_csv(csv_buffer, index=False)
+    
+    # S3에 CSV 파일 업로드
+    s3_client.put_object(
+        Bucket=bucket_name,
+        Key=s3_file_path,
+        Body=csv_buffer.getvalue(),
+        ContentType='text/csv'
+    )
+    print("Successfully uploaded CSV to S3:", s3_file_path)

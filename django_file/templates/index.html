@@ -21,7 +21,7 @@
                     <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="true">예보</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="pills-news-tab" type="button" onclick="location.href='{% url 'news' %}'" >날씨뉴스</button>
+                    <button class="nav-link" id="pills-news-tab" type="button" onclick="location.href='{% url 'news' %}'">날씨뉴스</button>
                 </li>
             </ul>
             <div class="search-bar mb-3">
@@ -34,18 +34,53 @@
             </div>
             <div class="row mb-3">
                 <div class="col">
-                    <button class="btn btn-light w-100">온도</button>
+                    <button class="btn btn-light w-100" onclick="showImage('temperature'); change_btn(event)">온도</button>
                 </div>
                 <div class="col">
-                    <button class="btn btn-light w-100">강수량</button>
+                    <button class="btn btn-light w-100" onclick="showImage('precipitation'); change_btn(event)">강수량</button>
                 </div>
                 <div class="col">
-                    <button class="btn btn-light w-100">바람</button>
+                    <button class="btn btn-light w-100" onclick="showImage('wind'); change_btn(event)">바람</button>
                 </div>
             </div>
             <div class="weather-map-container mb-3">
-                <img src="https://www.weatheri.co.kr/images/super/precip202407151800.jpg" alt="Weather Map" class="weather-map">
+                <a id="imageLink" href="">
+                    <img id="weatherImage" src="" alt="Weather Map" class="weather-map">
+                </a>
             </div>
+
+            <script type="text/javascript">
+                const images = {
+                    precipitation: { src: "{{ im }}", href: "{{ im2 }}" },
+                    temperature: { src: "{{ im3 }}", href: "{{ im4 }}" },
+                    wind: { src: "{{ im5 }}", href: "{{ im6 }}" }
+                };
+            
+                function showImage(weatherType) {
+                    const image = document.getElementById('weatherImage');
+                    const link = document.getElementById('imageLink');
+            
+                    image.src = images[weatherType].src;
+                    image.alt = weatherType + " Image";
+                    link.href = images[weatherType].href;
+                }
+                
+                window.onload = function() {
+                    showImage('temperature');
+                    document.getElementById('b1').classList.add("active");
+                }
+                
+                function change_btn(e) {
+                    var btns = document.querySelectorAll(".button");
+                    btns.forEach(function (btn, i) {
+                        if (e.currentTarget == btn) {
+                            btn.classList.add("active");
+                        } else {
+                            btn.classList.remove("active");
+                        }
+                    });
+                }
+            </script>
             
             <div class="row">
                 <div class="col">

@@ -3,53 +3,58 @@ name: Django CI
 on:
   push:
     branches: [ "develop", "main" ]
-    paths: 
+    paths:
       - 'django_file/**'
-    
   pull_request:
     branches: [ "main" ]
-    paths: 
+    paths:
       - 'django_file/**'
 
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCE_INSTANCE: instance-temp-trend
+  GCE_INSTANCE_ZONE: asia-northeast3-a
+
 jobs:
-  build-and-deploy:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4   
-        
-    - name: Set up gcloud CLI
-      uses: google-github-actions/setup-gcloud@master
-      with:
-        version: 'latest'
-        service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-        
-    - name: Deploy to GCP
-      env:
-        DJANGO_SETTINGS_MODULE: django_file.settings
-      run: |
-        gcloud compute ssh --project ${{ secrets.GCP_PROJECT_ID }} --zone asia-northeast3-a instance-temp-trend -- 'bash -s' << 'EOF'
-          cd /home/junghwa010609/django
-          if [ ! -d .git ]; then
-            git init
-            git remote add origin https://github.com/Programmers-FinalProject/Temp_Trend.git
-            git config core.sparseCheckout true
-            echo 'django_file/*' >> .git/info/sparse-checkout
-          fi
-          git sparse-checkout init --cone
-          git sparse-checkout set django_file
-          git pull origin develop
-          cd django_file
-          source venv/bin/activate
-          if git diff --name-only HEAD~1 | grep -q 'requirements.txt'; then
-            pip install -r requirements.txt
-          else
-            echo "requirements.txt did not change, skipping install."
-          fi
-          python manage.py migrate
-          python manage.py collectstatic --noinput
-          sudo systemctl restart gunicorn
-          sudo systemctl restart nginx
-        EOF
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      # Setup gcloud CLI
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/temp_trend_key
+          chmod 600 ~/.ssh/temp_trend_key
+
+      - name: Deploy to GCE
+        run: |
+          gcloud compute ssh --zone ${{ env.GCE_INSTANCE_ZONE }} ${{ env.GCE_INSTANCE }} --ssh-key-file=~/.ssh/temp_trend_key --command '
+            cd /home/junghwa010609/django &&
+            git pull origin develop &&
+            cd django_file &&
+            source ../venv/bin/activate &&
+            if git diff --name-only HEAD@{1} HEAD | grep -q "requirements.txt"; then
+              pip install -r requirements.txt
+            fi &&
+            python manage.py migrate &&
+            python manage.py collectstatic --noinput &&
+            sudo systemctl restart gunicorn &&
+            sudo systemctl restart nginx &&
+            echo "Deployment completed successfully"
+          '
