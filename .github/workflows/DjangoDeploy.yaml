@@ -44,7 +44,8 @@ jobs:
       
       - name: Deploy to GCE
         run: |
-          gcloud compute ssh --quiet --zone asia-northeast3-a instance-temp-trend --command "
+          gcloud compute ssh --quiet --zone asia-northeast3-a junghwa010609@instance-temp-trend --command "
+            sudo -u junghwa010609 bash -c '
               cd /home/junghwa010609/django &&
               git checkout develop &&
               git pull origin develop &&
