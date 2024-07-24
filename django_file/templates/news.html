@@ -11,13 +11,18 @@
 <body>
     <div class="container mt-4">
         <h1 class="text-center">News Articles</h1>
-        <ul>
+        <ul class="list-unstyled">
             {% for item in news_items %}
-                <li>
-                    <h2>{{ item.title }}</h2>
-                    <p>{{ item.description }}</p>
-                    <a href="{{ item.link }}">Read more</a>
-                    <p>Published on: {{ item.pubDate }}</p>
+                <li class="media mb-4">
+                    {% if item.image_url %}
+                        <img src="{{ item.image_url }}" class="mr-3" alt="News Image" style="max-width: 150px;">
+                    {% endif %}
+                    <div class="media-body">
+                        <h2 class="mt-0 mb-1">{{ item.title }}</h2>
+                        <p>{{ item.description }}</p>
+                        <a href="{{ item.link }}" target="_blank">Read more</a>
+                        <p>Published on: {{ item.pubDate }}</p>
+                    </div>
                 </li>
             {% endfor %}
         </ul>
