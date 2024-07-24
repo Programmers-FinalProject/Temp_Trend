@@ -1,4 +1,4 @@
-class MultiDBRouter(object):
+class DBRouter(object):
     def __init__(self):
         self.model_list = ['default', 'redshift']
 
