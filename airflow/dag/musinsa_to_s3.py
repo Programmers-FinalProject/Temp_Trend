@@ -102,7 +102,6 @@ default_args = {
 dag = DAG(
     dag_id ='musinsa_crawl_and_upload_to_s3',
     default_args=default_args,
-    description='DAG to create and upload a CSV file to S3',
     schedule_interval='@daily',
 )
 
