@@ -19,5 +19,9 @@ class WeatherData(models.Model):
     nx = models.CharField(max_length=3, help_text="nx")
     ny = models.CharField(max_length=3, help_text="ny")
     
+    class Meta:
+        db_table = 'raw_data.weather_data'
+        managed = False  # Django가 이 테이블을 관리하지 않도록 설정
+        
     def __str__(self):
         return f"예보 일 : {self.basedate} | 예보 시 :{self.basetime} | 코드 : {self.weather_code} | 예보 일 : {self.fcstdate} | 예보 시 : {self.fcsttime} | 예보 값 {self.fcstvalue} | 예보 지역{self.nx},{self.ny}"
