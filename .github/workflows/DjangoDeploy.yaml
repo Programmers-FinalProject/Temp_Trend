@@ -44,17 +44,18 @@ jobs:
       
       - name: Deploy to GCE
         run: |
-          gcloud compute ssh --zone ${{ env.GCE_INSTANCE_ZONE }} ${{ env.GCE_INSTANCE }} --command "
-            cd /home/junghwa010609/django &&
-            git checkout develop &&
-            git pull origin develop &&
-            cd django_file &&
-            source venv/bin/activate &&
-            if git diff --name-only HEAD@{1} HEAD | grep -q 'requirements.txt'; then
-              pip install -r requirements.txt
-            fi &&
-            python manage.py migrate &&
-            python manage.py collectstatic --noinput &&
-            sudo systemctl restart gunicorn &&
-            sudo systemctl restart nginx
-          "
+          gcloud compute ssh --quiet --zone asia-northeast3-a junghwa010609@instance-temp-trend --command "
+            sudo -u junghwa010609 bash -c '
+              cd /home/junghwa010609/django &&
+              git checkout develop &&
+              git pull origin develop &&
+              cd django_file &&
+              source venv/bin/activate &&
+              if git diff --name-only HEAD@{1} HEAD | grep -q "requirements.txt"; then
+                pip install -r requirements.txt
+              fi &&
+              python manage.py migrate &&
+              python manage.py collectstatic --noinput ' && 
+              sudo systemctl restart gunicorn &&
+              sudo systemctl restart nginx
+              "
