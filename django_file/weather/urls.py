@@ -2,7 +2,7 @@
 from django.urls import path
 from weather.view.redis import fetch_and_store_news, display_news, news_view
 from weather.view.index import weather_view  # 새로 추가된 index view
-from weather.view import weatherCommon
+from weather.view import weather_views
 from weather.tests import test
 
 urlpatterns = [
@@ -11,5 +11,5 @@ urlpatterns = [
     path('', weather_view, name='index'),  # 기본 경로 설정
     path('news/', news_view, name='news'),
     path('test/',test,name='test'),
-    path('we-data-test/', weatherCommon.we_data_test, name='wedatatest')
+    path('we-data-test/', weather_views.we_data_test, name='wedatatest')
 ]
