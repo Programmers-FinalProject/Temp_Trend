@@ -44,7 +44,7 @@ dag = DAG(
     default_args=default_args,
     description='전국 기상 데이터 API호출',
     schedule_interval=timedelta(days=1),
-    start_date=datetime(2023, 7, 19),
+    start_date=datetime.now() - timedelta(days=1),
     catchup=False,
 )
 
