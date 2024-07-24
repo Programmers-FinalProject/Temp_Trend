@@ -100,5 +100,5 @@ def display_news(request):
     return render(request, 'news.html', context)
 
 def news_view(request):
-    fetch_and_store_news(request)
+    #fetch_and_store_news(request)
     return display_news(request)
