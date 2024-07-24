@@ -98,7 +98,7 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '5432',
     },
-    'default': {
+    'redshift': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'dev',
         'USER': 'admin',
