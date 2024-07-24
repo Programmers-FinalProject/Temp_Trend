@@ -51,11 +51,11 @@ jobs:
               git pull origin develop &&
               cd django_file &&
               source venv/bin/activate &&
-              if git diff --name-only HEAD@{1} HEAD | grep -q 'requirements.txt'; then
+              if git diff --name-only HEAD@{1} HEAD | grep -q "requirements.txt"; then
                 pip install -r requirements.txt
               fi &&
               python manage.py migrate &&
-              python manage.py collectstatic --noinput &&
+              python manage.py collectstatic --noinput ' && 
               sudo systemctl restart gunicorn &&
               sudo systemctl restart nginx
               "
