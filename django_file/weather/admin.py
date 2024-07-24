@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import LocationRecord
 
-# Register your models here.
+class LocationRecordAdmin(admin.ModelAdmin):
+    pass
+
+admin.site.register(LocationRecord,LocationRecordAdmin)

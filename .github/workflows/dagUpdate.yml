@@ -1,0 +1,26 @@
+name: Sync DAGs to S3
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+    paths:
+      - 'airflow/**'
+  
+  workflow_dispatch:
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout files
+        uses: actions/checkout@v3
+
+      - name: AWS Configuration
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: 'ap-northeast-2'
+
+      - name: Sync to S3
+        run: aws s3 sync ./airflow/dag s3://team-hori-dags --delete

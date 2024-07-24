@@ -1,0 +1,6 @@
+**/.DS_Store
+.DS_Store
+Temp_Trend.sock
+staticfiles/
+venv/
+Temp_Trend.wsgi
