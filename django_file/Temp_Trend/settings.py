@@ -94,19 +94,32 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'final_project',
         'USER': 'truly_flower',
-        'PASSWORD': '090406',  # PostgreSQL 사용자 실제 비밀번호
+        'PASSWORD': '090406',
         'HOST': 'localhost',
         'PORT': '5432',
     },
     'redshift': {
+        'ENGINE': 'django_redshift_backend',
+        'NAME': 'dev',
+        'USER': 'admin',
+        'PASSWORD': 'Qwer1234',
+        'HOST': 'default-workgroup.590183894915.ap-northeast-2.redshift-serverless.amazonaws.com',
+        'PORT': '5439',
+    }
+}
+
+REDSHIFT_VARCHAR_LENGTH_MULTIPLIER = 1
+
+'''    'redshift': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'dev',
         'USER': 'admin',
         'PASSWORD': 'Qwer1234',
         'HOST': 'default-workgroup.590183894915.ap-northeast-2.redshift-serverless.amazonaws.com',
-        'PORT': '5439',  # Redshift의 기본 포트
-    }
-}
+        'PORT': '5439',
+        'OPTIONS': {
+            'sslmode': 'require',
+        },'''
 
 # 'redshift': {
 #         'ENGINE': 'django.db.backends.postgresql',

@@ -5,6 +5,9 @@ class LocationRecord(models.Model):
     longitude = models.DecimalField(max_digits=15, decimal_places=8)
     location_type = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        app_label = 'weather'
 
     def __str__(self):
         return f"위치정보 : {self.location_type} | 위도 :({self.latitude}, 경도 :{self.longitude})"
@@ -20,8 +23,7 @@ class WeatherData(models.Model):
     ny = models.CharField(max_length=3, help_text="ny")
     
     class Meta:
-        db_table = 'raw_data.weather_data'
-        managed = False  # Django가 이 테이블을 관리하지 않도록 설정
+        app_label = 'weather'
         
     def __str__(self):
         return f"예보 일 : {self.basedate} | 예보 시 :{self.basetime} | 코드 : {self.weather_code} | 예보 일 : {self.fcstdate} | 예보 시 : {self.fcsttime} | 예보 값 {self.fcstvalue} | 예보 지역{self.nx},{self.ny}"
