@@ -105,6 +105,9 @@ DATABASES = {
         'PASSWORD': 'Qwer1234',
         'HOST': 'default-workgroup.590183894915.ap-northeast-2.redshift-serverless.amazonaws.com',
         'PORT': '5439',
+        'OPTIONS': {
+            'options': '-c search_path=raw_data'
+        }
     }
 }
 

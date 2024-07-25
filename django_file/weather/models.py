@@ -19,54 +19,14 @@ class WeatherData(models.Model):
     fcstdate = models.CharField(max_length=10, help_text="예보 날짜")
     fcsttime = models.CharField(max_length=10, help_text="예보 시간")
     fcstvalue = models.CharField(max_length=10, help_text="예보 값")
-    nx = models.CharField(max_length=3, help_text="nx")
+    nx = models.CharField(max_length=3, help_text="nx", primary_key=True)
     ny = models.CharField(max_length=3, help_text="ny")
     
     class Meta:
         app_label = 'weather'
         managed = False
+        db_table = 'weather_data'
         
     def __str__(self):
         return f"예보 일 : {self.basedate} | 예보 시 :{self.basetime} | 코드 : {self.weather_code} | 예보 일 : {self.fcstdate} | 예보 시 : {self.fcsttime} | 예보 값 {self.fcstvalue} | 예보 지역{self.nx},{self.ny}"
 
-from django.db import models
-
-class raw_data_WeatherStn(models.Model):
-    stn = models.CharField(max_length=100, primary_key=True)
-    lon = models.DecimalField(max_digits=9, decimal_places=6)
-    lat = models.DecimalField(max_digits=9, decimal_places=6)
-    stn_sp = models.CharField(max_length=100)
-    ht = models.DecimalField(max_digits=6, decimal_places=2)
-    ht_pa = models.DecimalField(max_digits=6, decimal_places=2)
-    ht_ta = models.DecimalField(max_digits=6, decimal_places=2)
-    ht_wd = models.DecimalField(max_digits=6, decimal_places=2)
-    ht_rn = models.DecimalField(max_digits=6, decimal_places=2)
-    stn_ko = models.CharField(max_length=100)
-    stn_en = models.CharField(max_length=100)
-    fct_id = models.CharField(max_length=100)
-    law_id = models.CharField(max_length=100)
-    basin = models.CharField(max_length=100)
-
-    class Meta:
-        managed = False
-        db_table = 'raw_data.weather_stn'
-        app_label = 'weather'
-
-    def __str__(self):
-        return self.stn
-
-
-class WeatherStation(models.Model):
-    basin = models.CharField(max_length=50)
-    law_id = models.CharField(max_length=50)
-    fct_id = models.CharField(max_length=50, primary_key=True)  # 기본 키로 지정
-    stn_en = models.CharField(max_length=100)
-    stn_ko = models.CharField(max_length=100)
-
-    class Meta:
-        app_label = 'weather'
-        managed = False  # Django가 이 테이블을 관리하지 않음
-        db_table = 'weather_stn'  # Redshift의 실제 테이블 이름
-
-    def __str__(self):
-        return f"Station: {self.stn_ko} ({self.stn_en})"
