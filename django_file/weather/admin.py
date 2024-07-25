@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import LocationRecord,WeatherData,WeatherStation
+from .models import LocationRecord,WeatherData,WeatherStation,raw_data_WeatherStn
 
 class LocationRecordAdmin(admin.ModelAdmin):
     list_display = ('latitude', 'longitude', 'location_type', 'created_at')
@@ -28,5 +28,13 @@ class WeatherStationAdmin(admin.ModelAdmin):
         """
         Redshift 데이터베이스에서 WeatherStation 쿼리셋을 가져옴
         """
+        qs = super().get_queryset(request)
+        return qs.using('redshift')
+
+@admin.register(raw_data_WeatherStn)
+class WeatherStationAdmin(admin.ModelAdmin):
+    list_display = ('stn', 'lon', 'lat', 'stn_sp', 'ht', 'ht_pa', 'ht_ta', 'ht_wd', 'ht_rn', 'stn_ko', 'stn_en', 'fct_id', 'law_id', 'basin')
+
+    def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.using('redshift')
