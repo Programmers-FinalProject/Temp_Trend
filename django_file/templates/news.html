@@ -4,25 +4,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>News</title>
+    <title>Temp_Trend - 날씨 뉴스</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <style>
+        .home-button {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 5px 10px;
+            background-color: white;
+            color: #87CEEB;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .news-item {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+        }
+        .news-item img {
+            width: 400px;
+            height: 200px;
+            object-fit: cover;
+            margin-right: 20px;
+        }
+        .news-content {
+            flex: 1;
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-4">
-        <h1 class="text-center">News Articles</h1>
-        <ul>
-            {% for item in news_items %}
-                <li>
-                    <h2>{{ item.title }}</h2>
-                    <p>{{ item.description }}</p>
-                    <a href="{{ item.link }}">Read more</a>
-                    <p>Published on: {{ item.pubDate }}</p>
+        <div class="location-header">
+            <i class="fas fa-map-marker-alt text-danger"></i> 현위치 : 
+            {% if latest_location %}
+                위도: {{ latest_location.latitude|floatformat:4 }}, 경도: {{ latest_location.longitude|floatformat:4 }}
+            {% else %}
+                <span id="current-location">현위치로 찾기를 눌러주세요</span>
+            {% endif %}
+        </div>
+        <div class="main-content">
+            <div class="position-relative">
+                <a href="{% url 'index' %}" class="home-button">홈</a>
+                <h1 class="text-center text-white mb-4">Temp_Trend</h1>
+            </div>
+            <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" href="{% url 'index' %}">예보</a>
                 </li>
-            {% endfor %}
-        </ul>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link active" href="{% url 'news' %}">날씨뉴스</a>
+                </li>
+            </ul>
+            <div class="news-list">
+                {% for item in news_items %}
+                    <div class="news-item bg-white p-3 mb-3 rounded">
+                        {% if item.image_url %}
+                            <a href="{{ item.link }}" target="_blank">
+                                <img src="{{ item.image_url }}" alt="News Image" class="rounded">
+                            </a>
+                        {% endif %}
+                        <div class="news-content">
+                            <h2><a href="{{ item.link }}" target="_blank" class="text-decoration-none">{{ item.title }}</a></h2>
+                            <p>{{ item.description }}</p>
+                            <p class="text-muted">발행일: <span class="pubDate" data-date="{{ item.pubDate }}">{{ item.pubDate }}</span></p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'script.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const weekdays = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+            
+            document.querySelectorAll('.pubDate').forEach(function(el) {
+                let dateStr = el.dataset.date;
+                if (!dateStr) return;
+                
+                let date = new Date(dateStr);
+                if (isNaN(date.getTime())) {
+                    el.textContent = dateStr;
+                } else {
+                    let formattedDate = `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 ${weekdays[date.getDay()]} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+                    el.textContent = formattedDate;
+                }
+            });
+        });
+    </script>
 </body>
 </html>

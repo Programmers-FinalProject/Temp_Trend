@@ -85,17 +85,33 @@ WSGI_APPLICATION = 'Temp_Trend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+DATABASE_ROUTERS = [
+    'Temp_Trend.dbrouter.DBRouter',
+]
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'final_project',
         'USER': 'truly_flower',
-        'PASSWORD': '090406',  # PostgreSQL 사용자 실제 비밀번호
+        'PASSWORD': '090406',
         'HOST': 'localhost',
         'PORT': '5432',
+    },
+    'redshift': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'dev',
+        'USER': 'awsuser',
+        'PASSWORD': 'Hori1proj!',
+        'HOST': 'team-hori-1-redshift-cluster.cvkht4jvd430.ap-northeast-2.redshift.amazonaws.com',
+        'PORT': '5439',  # Redshift의 기본 포트
+        'OPTIONS': {
+            'options': '-c search_path=raw_data'
+        }
     }
 }
 
+REDSHIFT_VARCHAR_LENGTH_MULTIPLIER = 1
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
