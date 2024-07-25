@@ -24,6 +24,23 @@ class WeatherData(models.Model):
     
     class Meta:
         app_label = 'weather'
+        managed = False
         
     def __str__(self):
         return f"예보 일 : {self.basedate} | 예보 시 :{self.basetime} | 코드 : {self.weather_code} | 예보 일 : {self.fcstdate} | 예보 시 : {self.fcsttime} | 예보 값 {self.fcstvalue} | 예보 지역{self.nx},{self.ny}"
+
+
+class WeatherStation(models.Model):
+    basin = models.CharField(max_length=50)
+    law_id = models.CharField(max_length=50)
+    fct_id = models.CharField(max_length=50, primary_key=True)  # 기본 키로 지정
+    stn_en = models.CharField(max_length=100)
+    stn_ko = models.CharField(max_length=100)
+
+    class Meta:
+        app_label = 'weather'
+        managed = False  # Django가 이 테이블을 관리하지 않음
+        db_table = 'weather_stn'  # Redshift의 실제 테이블 이름
+
+    def __str__(self):
+        return f"Station: {self.stn_ko} ({self.stn_en})"
