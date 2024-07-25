@@ -29,8 +29,8 @@ load_data_task = S3ToRedshiftOperator(
     s3_bucket=Variable.get("S3_BUCKET_NAME"),  # S3 버킷 이름
     s3_key='crawling/29cm_{{ ds_nodash }}_best_items.csv',  # S3 파일 경로
     copy_options=['CSV', 'IGNOREHEADER 1'],  # COPY 옵션
-    aws_conn_id='hori_aws_conn',  # Airflow에 설정된 AWS 연결 ID
-    redshift_conn_id='hori_redshift_conn',  # Airflow에 설정된 Redshift 연결 ID
+    aws_conn_id='MyS3Conn',  # Airflow에 설정된 AWS 연결 ID
+    redshift_conn_id='redshift_default',  # Airflow에 설정된 Redshift 연결 ID
     dag=dag,
 )
 
