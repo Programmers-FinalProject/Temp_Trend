@@ -56,7 +56,9 @@ def fetch_data():
 
     # DataFrame 생성 후 CSV로 저장
     df = pd.DataFrame(items_list)
-    df.to_csv(f'/opt/airflow/data/29cm_{category_name}_{crawling_time}.csv', mode='a', index=False, header=True)
+    df['date'] = pd.to_datetime(df['date'], errors='coerce').dt.strftime('%Y-%m-%d')
+    df['data_creation_time'] = pd.to_datetime(df['data_creation_time'], errors='coerce').dt.strftime('%Y-%m-%d')
+    df.to_csv(f'/opt/airflow/data/29cm_{category_name}_{crawling_time}.csv', mode='w', index=False, header=True)
 
 default_args = {
     'owner': 'airflow',
