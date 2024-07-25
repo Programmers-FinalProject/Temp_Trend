@@ -99,12 +99,12 @@ DATABASES = {
         'PORT': '5432',
     },
     'redshift': {
-        'ENGINE': 'django_redshift_backend',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'dev',
-        'USER': 'admin',
-        'PASSWORD': 'Qwer1234',
-        'HOST': 'default-workgroup.590183894915.ap-northeast-2.redshift-serverless.amazonaws.com',
-        'PORT': '5439',
+        'USER': 'awsuser',
+        'PASSWORD': 'Hori1proj!',
+        'HOST': 'team-hori-1-redshift-cluster.cvkht4jvd430.ap-northeast-2.redshift.amazonaws.com',
+        'PORT': '5439',  # Redshift의 기본 포트
         'OPTIONS': {
             'options': '-c search_path=raw_data'
         }
@@ -112,26 +112,6 @@ DATABASES = {
 }
 
 REDSHIFT_VARCHAR_LENGTH_MULTIPLIER = 1
-
-'''    'redshift': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dev',
-        'USER': 'admin',
-        'PASSWORD': 'Qwer1234',
-        'HOST': 'default-workgroup.590183894915.ap-northeast-2.redshift-serverless.amazonaws.com',
-        'PORT': '5439',
-        'OPTIONS': {
-            'sslmode': 'require',
-        },'''
-
-# 'redshift': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'dev',
-#         'USER': 'awsuser',
-#         'PASSWORD': 'Hori1proj!',
-#         'HOST': 'team-hori-1-redshift-cluster.cvkht4jvd430.ap-northeast-2.redshift.amazonaws.com',
-#         'PORT': '5439',  # Redshift의 기본 포트
-#     }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
