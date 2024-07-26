@@ -5,7 +5,14 @@ from dotenv import load_dotenv
 import redis
 import re
 from django.shortcuts import render
-import urllib.parse  # urllib3 대신 urllib 사용
+import urllib.parse
+import html
+from bs4 import BeautifulSoup
+from weather.models import LocationRecord
+
+
+def decode_html_entities(text):
+    return html.unescape(text)
 
 load_dotenv()
 
@@ -18,6 +25,19 @@ r = redis.Redis(host='localhost', port=6379, db=0)
 def remove_html_tags(text):
     clean = re.compile('<.*?>')
     return re.sub(clean, '', text)
+
+def get_image_from_url(news_url):
+    try:
+        html_content = requests.get(news_url).text
+        soup = BeautifulSoup(html_content, "html.parser")
+        meta_og_image = soup.find("meta", property="og:image")
+        if meta_og_image:
+            return meta_og_image["content"]
+        else:
+            return "not found -> meta tag og:image"
+    except Exception as e:
+        print(f"get_meta_og_image | error: {e}")
+        return None
 
 def fetch_and_store_news(request):
     if not client_id or not client_secret:
@@ -40,13 +60,15 @@ def fetch_and_store_news(request):
         
         for idx, item in enumerate(items):
             item_id = f"news:{idx+1}"
-            clean_title = remove_html_tags(item['title'])
-            clean_description = remove_html_tags(item['description'])
+            clean_title = decode_html_entities(remove_html_tags(item['title']))
+            clean_description = decode_html_entities(remove_html_tags(item['description']))
+            image_url = get_image_from_url(item['link'])  # 이미지 URL 크롤링
             r.hset(item_id, mapping={
                 "title": clean_title,
                 "description": clean_description,
                 "link": item['link'],
-                "pubDate": item['pubDate']
+                "pubDate": item['pubDate'],
+                "image_url": image_url if image_url else ""
             })
         
         return JsonResponse({"message": "Data successfully stored in Redis"}, status=200)
@@ -54,6 +76,8 @@ def fetch_and_store_news(request):
         return JsonResponse({"error": "Failed to fetch data from Naver API"}, status=response.status_code)
 
 def display_news(request):
+    latest_location = LocationRecord.objects.order_by('-created_at').first()
+    
     keys = r.keys("news:*")
     news_items = []
     
@@ -63,12 +87,18 @@ def display_news(request):
             "title": news_item[b'title'].decode('utf-8'),
             "description": news_item[b'description'].decode('utf-8'),
             "link": news_item[b'link'].decode('utf-8'),
-            "pubDate": news_item[b'pubDate'].decode('utf-8')
+            "pubDate": news_item[b'pubDate'].decode('utf-8'),
+            "image_url": news_item[b'image_url'].decode('utf-8') if b'image_url' in news_item else None
         })
     
-    return render(request, 'news.html', {"news_items": news_items})
+    context = {
+        'latest_location': latest_location,
+        'news_items': news_items,
 
+    }
+    
+    return render(request, 'news.html', context)
 
 def news_view(request):
-    fetch_and_store_news(request)
+    #fetch_and_store_news(request)
     return display_news(request)

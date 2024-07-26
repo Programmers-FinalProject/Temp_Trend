@@ -3,6 +3,7 @@ import csv
 import pandas as pd
 import json
 from io import StringIO
+from utils import redShiftUtils
 # 기상청 api 함수
 
 # url 생성기
@@ -75,3 +76,89 @@ def weatherCSVmaker(bucket_name, s3_file_path, data, s3_client):
         ContentType='text/csv'
     )
     print("Successfully uploaded CSV to S3:", s3_file_path)
+
+def CSVdownloader(bucket_name, s3_file_path, s3_client, file_name):
+
+    # S3에 CSV 파일 다운로드
+    obj = s3_client.get_object(
+        Bucket=bucket_name, 
+        Key=s3_file_path + file_name
+    )
+
+    # 데이터프레임 생성
+    csv_string = obj['Body'].read().decode('utf-8')
+    df = pd.read_csv(StringIO(csv_string))
+
+    print("Successfully download CSV to S3:", s3_file_path+file_name)
+    print(df)
+    return df
+
+def CSVdownloaderToSpark(bucket_name, s3_file_path, s3_client, file_name, spark):
+
+    # S3에 CSV 파일 다운로드
+    obj = s3_client.get_object(
+        Bucket=bucket_name, 
+        Key=s3_file_path + file_name
+    )
+
+    # 데이터프레임 생성
+    csv_string = obj['Body'].read().decode('utf-8')
+    df = spark.read.csv(StringIO(csv_string), header=True, inferSchema=True)
+    
+    print("Successfully download CSV to S3:", s3_file_path+file_name)
+    print(df)
+    return df
+
+def weather_data_create():
+    print("run dataTable maker")
+    schema = "raw_data"
+    drop_sql = f"""DROP TABLE IF EXISTS {schema}.weather_data;"""
+    recreate_sql = f"""
+CREATE TABLE IF NOT EXISTS {schema}.weather_data (
+    baseDate TEXT,
+    baseTime TEXT,
+    weather_code TEXT,
+    fcstDate TEXT,
+    fcstTime TEXT,
+    fcstValue TEXT,
+    nx TEXT,
+    ny TEXT
+);"""
+    sql =[drop_sql,recreate_sql]
+    redShiftUtils.sql_execute_to_redshift(sql)
+
+def weather_code_create():
+    print("run codeTable maker")
+    schema = "raw_data"
+    drop_sql = f"""DROP TABLE IF EXISTS {schema}.weather_code;"""
+    recreate_sql = f"""
+CREATE TABLE IF NOT EXISTS {schema}.weather_code (
+    weather_code TEXT PRIMARY KEY,
+    weather_code_desc TEXT
+);
+    """
+    sql =[drop_sql,recreate_sql]
+    redShiftUtils.sql_execute_to_redshift(sql)
+
+def weather_stn_create():
+    print("run stnTable maker")
+    schema = "raw_data"
+    drop_sql = f"""DROP TABLE IF EXISTS {schema}.weather_stn;"""
+    recreate_sql = f"""
+CREATE TABLE IF NOT EXISTS {schema}.weather_stn (
+    stn TEXT PRIMARY KEY,
+    lon TEXT, -- ny
+    lat TEXT, -- nx
+    stn_ko TEXT,
+    stn_en TEXT
+);
+    """
+    sql =[drop_sql,recreate_sql]
+    redShiftUtils.sql_execute_to_redshift(sql)
+
+def weather_merged_df(dfList):
+    merged_df = dfList[0]
+    for df in dfList[1:]:
+        merged_df = merged_df.union(df)
+
+    return merged_df

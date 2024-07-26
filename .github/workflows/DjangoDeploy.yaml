@@ -1,0 +1,72 @@
+name: Build and Deploy to Google Compute Engine
+
+on:
+  push:
+    branches: [ "develop", "main" ]
+    paths:
+      - 'django_file/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'django_file/**'
+
+env:
+  GCE_INSTANCE: instance-temp-trend # TODO: update to instance name
+  GCE_INSTANCE_ZONE: asia-northeast3-a # TODO: update to instance zone
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}'
+
+      # Setup gcloud CLI
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          version: '>= 363.0.0'
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+      
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
+
+      - name: Start GCE instance
+        run: |
+          gcloud compute instances start ${{ env.GCE_INSTANCE }} --zone ${{ env.GCE_INSTANCE_ZONE }}
+      
+      - name: Configure Git
+        run: |
+          git config --global user.email "hayan094666@gmail.com"
+          git config --global user.name "junghwa0609"
+        
+      - name: Deploy to GCE
+        run: |
+          gcloud compute ssh --quiet --zone asia-northeast3-a junghwa010609@instance-temp-trend --command "
+            sudo -u junghwa010609 bash -c '
+              cd /home/junghwa010609/django &&
+              git config --global user.email \"hayan094666@gmail.com\" &&
+              git config --global user.name \"junghwa0609\" &&
+              git config --global credential.helper store &&
+              echo https://junghwa0609:${GH_TOKEN}@github.com >> ~/.git-credentials &&
+              git fetch origin &&
+              git reset --hard origin/develop &&
+              git clean -fd &&
+              cd django_file &&
+              source venv/bin/activate &&
+              pip install -r requirements.txt &&
+              python manage.py migrate &&
+              python manage.py collectstatic --noinput
+            ' &&
+            sudo systemctl restart gunicorn &&
+            sudo systemctl restart nginx
+          "
