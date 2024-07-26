@@ -74,7 +74,7 @@ dag = DAG(
     'combine_and_upload_to_s3',
     default_args=default_args,
     description='Combine daily CSV files and upload to S3',
-    schedule_interval='20 23 * * *',  # 매일 23시에 실행
+    schedule_interval='20 10 * * *', # 매일 저녁 19시 20분 ( utc 기준 실행 )
 )
 
 

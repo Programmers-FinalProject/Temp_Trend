@@ -73,7 +73,7 @@ dag = DAG(
     '29cm_male_shoes_dag',
     default_args=default_args,
     description='Collect male shoes data of 29cm',
-    schedule_interval='15 23 * * *', # 매일 저녁 11시
+    schedule_interval='15 10 * * *', # 매일 저녁 19시 15분 ( utc 기준 실행 )
     catchup = False
 )
 

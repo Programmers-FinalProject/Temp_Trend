@@ -72,7 +72,7 @@ dag = DAG(
     '29cm_male_bags_dag',
     default_args=default_args,
     description='Collect male bags data of 29cm',
-    schedule_interval='10 23 * * *', # 매일 저녁 11시 10분
+    schedule_interval='10 10 * * *', # 매일 저녁 19시 10분 ( utc 기준 실행 )
     catchup = False
 )
 
