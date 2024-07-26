@@ -73,7 +73,7 @@ dag = DAG(
     '29cm_female_acc_dag',
     default_args=default_args,
     description='Collect female accessories data of 29cm',
-    schedule_interval='0 23 * * *', # 매일 저녁 11시
+    schedule_interval='0 10 * * *', # 매일 저녁 19시 ( utc 기준 실행 )
     catchup = False
 )
 
