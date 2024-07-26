@@ -48,8 +48,8 @@ dag = DAG(
     'weatherSetting',
     default_args=default_args,
     description='예보 지역 데이터 API호출',
-    schedule_interval=timedelta(days=1),
-    start_date=datetime.now() - timedelta(days=1),
+    schedule_interval='30 5 * * *',
+    start_date=datetime(2024, 7, 26),
     catchup=False,
 )
 
