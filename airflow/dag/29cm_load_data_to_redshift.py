@@ -15,10 +15,10 @@ default_args = {
 
 # DAG 정의
 dag = DAG(
-    's3_to_redshift_dag',
+    '29cm_s3_to_redshift_dag',
     default_args=default_args,
     description='Load data from S3 to Redshift',
-    schedule_interval='30 23 * * *',  # 매일 23시 30분에 실행
+    schedule_interval='25 10 * * *', # 매일 저녁 19시 25분 ( utc 기준 실행 )
 )
 
 # S3에서 Redshift로 데이터 로드 작업
