@@ -6,7 +6,7 @@ import psycopg2
 # variable로 수정
 dbid = Variable.get("conn_id")
 def get_Redshift_connection(autocommit=True):
-    hook = PostgresHook(postgres_conn_id="redshift_dev_db")
+    hook = PostgresHook(postgres_conn_id=dbid)
     conn = hook.get_conn()
     conn.autocommit = autocommit
     return conn
@@ -40,7 +40,7 @@ def sql_selecter(sql):
     return df
 
 def redshift_engine():
-    hook = PostgresHook(postgres_conn_id='redshift_dev_db')
+    hook = PostgresHook(postgres_conn_id=dbid)
     
     # SQLAlchemy 엔진 생성
     conn_str = hook.get_uri()
