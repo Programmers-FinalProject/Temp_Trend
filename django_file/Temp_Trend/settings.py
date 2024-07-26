@@ -99,7 +99,7 @@ DATABASES = {
         'PORT': '5432',
     },
     'redshift': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django_redshift_backend',
         'NAME': 'dev',
         'USER': 'awsuser',
         'PASSWORD': 'Hori1proj!',
