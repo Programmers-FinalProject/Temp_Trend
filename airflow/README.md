@@ -23,17 +23,21 @@ $ sudo docker compose up --build --force-recreate -d flower
 [Dockerfile](./Dockerfile)에서 Worker를 구성할 dockerfile을 만들어 실행
 ## build
 ```angular2html
+$ VERSION=0.0.2
 $ cd /home/ubuntu/apps/airflow
-$ docker build . -t airflow_docker
+$ docker build . -t airflow_docker:${VERSION}
 ```
 
 ## deploy
+host는 worker node에 따라 달리 설정 (ex. worker1, worker2...)
 ```angular2html
+$ VERSION=0.0.2
+$ host=worker1
 $ docker run -d -it --restart=always --name worker1 -p 8080:8080 \
 -v /home/ubuntu/apps/airflow/dags:/root/airflow/dags \
 -v /home/ubuntu/apps/airflow/plugins:/root/airflow/plugins \
 -v /home/ubuntu/apps/airflow/log:/root/airflow/log \
 -v /etc/localtime:/etc/localtime:ro -e TZ=Asia/Seoul \
-airflow_docker \
-airflow celery worker -H worker1 -q queue1
+airflow_docker:${VERSION} \
+airflow celery worker -H ${host} -q queue1
 ```

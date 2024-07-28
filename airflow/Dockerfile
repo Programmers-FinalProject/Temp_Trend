@@ -34,11 +34,17 @@ RUN python3.9 -m pip install --upgrade pip
 RUN python3.9 -m pip install cffi wheel
 
 # install airflow
-RUN python3.9 -m pip install importlib-metadata
+# https://raw.githubusercontent.com/apache/airflow/constraints-2.7.3/constraints-3.9.txt
+RUN python3.9 -m pip install importlib-metadata==6.8.0
 RUN python3.9 -m pip install apache-airflow[celery]==2.7.3
-RUN python3.9 -m pip install psycopg2-binary
-RUN python3.9 -m pip install Redis
+RUN python3.9 -m pip install psycopg2-binary==2.9.9
+RUN python3.9 -m pip install Redis==4.6.0
 RUN python3.9 -m pip install Flask-Session==0.5.0
+RUN python3.9 -m pip install pandas==2.1.2
+RUN python3.9 -m pip install requests==2.31.0
+RUN python3.9 -m pip install s3fs
+RUN python3.9 -m pip install boto3==1.28.64
+RUN python3.9 -m pip install selenium
 RUN airflow db init
 RUN mkdir ${AIRFLOW_HOME}/dags
 RUN mkdir ${AIRFLOW_HOME}/plugins
