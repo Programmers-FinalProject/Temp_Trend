@@ -1,10 +1,10 @@
 FROM ubuntu:22.04
 
 # env
-ENV AIRFLOW_HOME="/root/airflow"
+ENV AIRFLOW_HOME="/opt/airflow"
 ENV AIRFLOW__WORKER__NAME="worker_node"
 
-ENV AIRFLOW__MASTER__IP="ec2-3-35-173-46.ap-northeast-2.compute.amazonaws.com"
+ENV AIRFLOW__MASTER__IP="ec2-15-165-132-35.ap-northeast-2.compute.amazonaws.com"
 ENV AIRFLOW__REDIS__HOST=${AIRFLOW__MASTER__IP}:6379
 ENV AIRFLOW__CORE__EXECUTOR="CeleryExecutor"
 
@@ -21,7 +21,7 @@ ENV AIRFLOW__WEBSERVER__SECRET_KEY="b'\xbe\xd5\x96\xac\xc9\x91\xb9gd\xac\x91\xe5
 ENV AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION="true"
 ENV AIRFLOW__CORE__LOAD_EXAMPLES="false"
 ENV AIRFLOW__API__AUTH_BACKENDS="airflow.api.auth.backend.basic_auth"
-ENV _PIP_ADDITIONAL_REQUIREMENTS="pandas requests s3fs boto3"
+ENV _PIP_ADDITIONAL_REQUIREMENTS="pandas requests s3fs boto3 webdriver_manager"
 ENV AIRFLOW__CORE__LOAD_EXAMPLES="false"
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -32,6 +32,10 @@ RUN add-apt-repository ppa:deadsnakes/ppa -y
 RUN apt-get install python3.9 python3.9-distutils python3-pip -y
 RUN python3.9 -m pip install --upgrade pip
 RUN python3.9 -m pip install cffi wheel
+# wget & gnupg2 설치.
+RUN apt-get install -y wget
+RUN apt-get install -y gnupg2
+
 
 # install airflow
 # https://raw.githubusercontent.com/apache/airflow/constraints-2.7.3/constraints-3.9.txt
@@ -45,12 +49,23 @@ RUN python3.9 -m pip install requests==2.31.0
 RUN python3.9 -m pip install s3fs
 RUN python3.9 -m pip install boto3==1.28.64
 RUN python3.9 -m pip install selenium
+RUN python3.9 -m pip install webdriver_manager
 RUN airflow db init
 RUN mkdir ${AIRFLOW_HOME}/dags
 RUN mkdir ${AIRFLOW_HOME}/plugins
 
 # install vim
 RUN apt-get install -y vim
+
+# Google Chrome 설치
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' && \
+    apt-get update && \
+    apt-get install -y google-chrome-stable
+
+# Chrome 설치 확인
+RUN ls -l /usr/bin/google-chrome && \
+    /usr/bin/google-chrome --version
 
 # healthcheck
 HEALTHCHECK --interval=10s --timeout=10s --retries=5 CMD airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"
