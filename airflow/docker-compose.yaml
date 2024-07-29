@@ -59,13 +59,13 @@ x-airflow-common:
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgreshori!@hori-1-airflow-metadb.ch4xfyi6stod.ap-northeast-2.rds.amazonaws.com:5432/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://postgres:postgreshori!@hori-1-airflow-metadb.ch4xfyi6stod.ap-northeast-2.rds.amazonaws.com:5432/airflow
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
-    AIRFLOW__CORE__FERNET_KEY: 'RWiSSET31T8RqUil30Vppw0yPeS4u8D-JYn45I3yDfc='
-    AIRFLOW__WEBSERVER__SECRET_KEY: b'\xbe\xd5\x96\xac\xc9\x91\xb9gd\xac\x91\xe5\x84\x0f\x80\xff'
+    AIRFLOW__CORE__FERNET_KEY: 'yCd2SFMy6F0YHrF62N3XhA0gYe0cOTRqUXssh6FjyCk='
+    AIRFLOW__WEBSERVER__SECRET_KEY: b'M\x9e\xe3\x9d\xf4\x1c:B\x82\xbb\xea\x0fl\x86\xfe|'
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
-    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- pandas requests s3fs boto3 selenium}
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- pandas requests s3fs boto3 selenium webdriver_manager}
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
