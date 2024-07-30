@@ -4,8 +4,8 @@ from weather.models import WeatherData
 
 def we_data_test(request):
     # test = WeatherData.objects.using('redshift').all()
-    test = [{'baseDate': '20240729', 'baseTime': '0500', 'category': 'TMP', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '26', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'UUU', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '5.5', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'VVV', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '6.6', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'VEC', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '220', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'WSD', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '8.6', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'SKY', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '3', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'PTY', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '0', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'POP', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '20', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'WAV', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '2', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'PCP', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '강수없음', 'nx': '34', 'ny': '126'}]
-    context = {'we-dataList' : we_data_setting(test)}
+    test = testdataset() # [{'baseDate': '20240729', 'baseTime': '0500', 'category': 'TMP', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '26', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'UUU', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '5.5', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'VVV', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '6.6', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'VEC', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '220', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'WSD', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '8.6', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'SKY', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '3', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'PTY', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '0', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'POP', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '20', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'WAV', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '2', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'PCP', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '강수없음', 'nx': '34', 'ny': '126'}]
+    context = {'we_dataList' : we_data_setting(test)}
     return render(request, 'wedatatest.html', context)
 
 # 예보날짜 세팅
@@ -60,6 +60,8 @@ def we_data_setting(dataList):
                 newdata[data['category']] = data['fcstValue']
             else :
                 new_dataList.append(newdata)
+                print(new_dataList)
+                newdata = {}
                 checkerDict['fcstDate'] = data['fcstDate']
                 checkerDict['fcstTime'] = data['fcstTime']
                 checkerDict['nx'] = data['nx']
@@ -77,6 +79,8 @@ def we_data_setting(dataList):
             newdata['fcstTime'] = data['fcstTime']
             newdata['nx'] = data['nx']
             newdata['ny'] = data['ny']
+    new_dataList.append(newdata)
+    print(new_dataList)
     return new_dataList
 
 def we_validation(data, sample):
@@ -85,7 +89,33 @@ def we_validation(data, sample):
         return True
     return False
     
-    
+
+def testdataset():
+    json_output = [
+    {"baseDate": "20240724", "baseTime": "500", "category": "TMP", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "25", "nx": "33", "ny": "126"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "UUU", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "0.8", "nx": "33", "ny": "126"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "VVV", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "4.6", "nx": "33", "ny": "126"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "VEC", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "190", "nx": "33", "ny": "126"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "WSD", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "4.7", "nx": "33", "ny": "126"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "SKY", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "1", "nx": "33", "ny": "126"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "PTY", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "0", "nx": "33", "ny": "126"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "POP", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "0", "nx": "33", "ny": "126"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "WAV", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "1", "nx": "33", "ny": "126"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "PCP", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "강수없음", "nx": "33", "ny": "126"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "TMP", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "25", "nx": "34", "ny": "125"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "UUU", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "1", "nx": "34", "ny": "125"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "VVV", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "4.8", "nx": "34", "ny": "125"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "VEC", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "192", "nx": "34", "ny": "125"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "WSD", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "4.9", "nx": "34", "ny": "125"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "SKY", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "1", "nx": "34", "ny": "125"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "PTY", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "0", "nx": "34", "ny": "125"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "POP", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "0", "nx": "34", "ny": "125"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "WAV", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "1", "nx": "34", "ny": "125"},
+    {"baseDate": "20240724", "baseTime": "500", "category": "PCP", "fcstDate": "20240724", "fcstTime": "600", "fcstValue": "강수없음", "nx": "34", "ny": "125"}]
+
+    # 출력 결과 확인
+    print(json_output)
+    return json_output
 
 # { 
 #     "date" : "",

@@ -7,18 +7,24 @@
     <title>Temp_Trend - 날씨 정보</title>        
     <style>
         *{padding: 0; margin: 0;}
+        .clear::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
         ul {list-style-type: none;}
         li {list-style-type: none;}
-        .we-data-box{padding: 20px;}
+        .we-data-box{padding: 20px; margin: 0 auto;}
         .we-data-list{float: left; padding: 0px; margin: 0;}
         .we-list {margin: 0 auto; text-align: center; border-left: 1px dotted; border-right: 1px dotted;}
-        .we-temp, .we-ras, .we-wind{border-bottom: 1px #cccccc dotted;}
+        .we-atp, .we-tmp, .we-ras, .we-wind{border-bottom: 1px #cccccc dotted;}
+        
         
     </style>
 </head>
 <body>
-    <div class="we-data-box">
-        <ul>
+    <div class="we-data-box ">
+        <ul class="clear">
             <li class="we-data-list">
                 <ul >
                     <li class="we-time">시각</li>
@@ -63,20 +69,21 @@
                     <li class="we-list we-atp">80%</li>
                 </ul>
             </li>
-            {% for we-data in we-data-list %}
+            {% for we_data in we_dataList %}
             <li class="we-data-list">
                 <ul>
-                    <li class="we-list we-time">{{we-data.fcstTime}}</li>
-                    <li class="we-list we-pty">{{we-data.category.PTY}}</li>
-                    <li class="we-list we-tmp">{{we-data.category.TMP}}</li>
-                    <li class="we-list we-pop">{{we-data.category.POP}}</li>
-                    <li class="we-list we-ras">{{we-data.category.SNO or PCP}}</li>
-                    <li class="we-list we-wind">{{we-data.category.WSD}}</li>
-                    <li class="we-list we-atp">{{we-data.category.REH}}</li>
+                    <li class="we-list we-time">{{ we_data.fcstTime|default:"-" }}</li>
+                    <li class="we-list we-pty">{{ we_data.PTY|default:"-" }}</li>
+                    <li class="we-list we-tmp">{{ we_data.TMP}}°C</li>
+                    <li class="we-list we-pop">{{ we_data.POP|default:"-" }}%</li>
+                    <li class="we-list we-ras">{{ we_data.PCP|default:"-" }}</li>
+                    <li class="we-list we-wind">{{ we_data.WSD|default:"-" }}</li>
+                    <li class="we-list we-atp">{{ we_data.REH|default:"-" }}</li>
                 </ul>
             </li>
             {% endfor %}
         </ul>
+        {{we_dataList}}
     </div>
 </body>
 </html>
