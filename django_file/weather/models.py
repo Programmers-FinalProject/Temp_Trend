@@ -30,3 +30,22 @@ class WeatherData(models.Model):
     def __str__(self):
         return f"예보 일 : {self.basedate} | 예보 시 :{self.basetime} | 코드 : {self.weather_code} | 예보 일 : {self.fcstdate} | 예보 시 : {self.fcsttime} | 예보 값 {self.fcstvalue} | 예보 지역{self.nx},{self.ny}"
 
+class musinsaData(models.Model):
+    product_name = models.TextField(primary_key=True)
+    product_link = models.TextField()
+    image_link = models.TextField()
+    rank = models.IntegerField()
+    date = models.DateTimeField()
+    data_creation_time = models.DateTimeField()
+    category = models.TextField()
+    price = models.IntegerField()
+    gender = models.TextField()
+
+    class Meta:
+        app_label = 'weather'
+        db_table = 'musinsa'
+        managed = False
+
+    def __str__(self):
+        return f"상품명 : {self.product_name} | 상품링크 : {self.product_link} | 이미지링크 : {self.image_link} | 순위 : {self.rank} | 카테고리 : {self.category} | 가격 : {self.price} | 성별 : {self.gender}"
+ 

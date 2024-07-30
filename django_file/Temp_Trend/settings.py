@@ -106,7 +106,7 @@ DATABASES = {
         'HOST': 'team-hori-1-redshift-cluster.cvkht4jvd430.ap-northeast-2.redshift.amazonaws.com',
         'PORT': '5439',  # Redshift의 기본 포트
         'OPTIONS': {
-            'options': '-c search_path=raw_data'
+            'options': '-c search_path=raw_data,musinsa'
         }
     }
 }
