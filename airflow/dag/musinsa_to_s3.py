@@ -14,23 +14,14 @@ from airflow.models import Variable
 import pandas as pd
 import boto3
 from datetime import datetime
-import io
+from io import StringIO
 
 # S3 버킷 및 파일 설정
 FILE_KEY = 'musinsa.csv'
 S3_BUCKET_NAME = 'team-hori-1-bucket'
 AWS_ACCESS_KEY_ID = Variable.get('ACCESS_KEY')
 AWS_SECRET_ACCESS_KEY = Variable.get('SECRET_KEY')
-
-try:
-    s3_client = boto3.client(
-        's3',
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
-except Exception as e:
-    print(e)
-    raise
-        
+   
 def fetch_data():
     data = []
     chrome_options=wd.ChromeOptions()
@@ -85,18 +76,30 @@ def fetch_data():
                 })
     driver.implicitly_wait(10)
     driver.close()
+    return data
+
+def data_to_csv(**kwargs):
+    ti = kwargs['ti']
+    data = ti.xcom_pull(task_ids='fetch_data')
     df = pd.DataFrame(data)
-    csv_buffer = io.StringIO()
+    csv_buffer = StringIO()
     df.to_csv(csv_buffer, index=False)
-    return csv_buffer.getvalue()
+    ti.xcom_push(key='csv_buffer', value=csv_buffer.getvalue())
 
 def upload_to_s3(**kwargs):
-    csv_data = kwargs['ti'].xcom_pull(task_ids='create_new_csv')
+    ti = kwargs['ti']
+    csv_data = ti.xcom_pull(task_ids='data_to_csv', key='csv_buffer')
+
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY
+        )
     s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=FILE_KEY, Body=csv_data)
 
 default_args = {
     'owner': 'airflow',
-    'start_date': datetime(2023, 1, 1),
+    'start_date': datetime(2024, 1, 1),
     'catchup' : False,
 }
 
@@ -114,6 +117,13 @@ fetch_data_task = PythonOperator(
     dag=dag,
 )
 
+data_to_csv_task = PythonOperator(
+    task_id='data_to_csv',
+    python_callable=data_to_csv,
+    provide_context=True,
+    dag=dag,
+)
+
 upload_to_s3_task = PythonOperator(
     task_id='upload_to_s3',
     python_callable=upload_to_s3,
@@ -121,4 +131,4 @@ upload_to_s3_task = PythonOperator(
     dag=dag,
 )
 
-fetch_data_task >> upload_to_s3_task
+fetch_data_task >> data_to_csv_task >> upload_to_s3_task
