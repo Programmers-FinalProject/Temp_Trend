@@ -243,8 +243,8 @@ with TaskGroup(group_id='weatherTableSetting', dag=dag) as CSVSetting:
         dag=dag,
         queue='queue1'
     )
-    weatherX78Y115Task = PythonOperator(
-        task_id='weatherX78Y115Task',
+    errorTask = PythonOperator(
+        task_id='errorTask',
         python_callable=weatherX78Y115,
         dag=dag,
         queue='queue1'
