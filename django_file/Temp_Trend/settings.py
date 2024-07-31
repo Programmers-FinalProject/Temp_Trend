@@ -157,3 +157,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# 세션 엔진 설정 (기본값: 데이터베이스 세션)
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+# 세션 쿠키의 만료 시간 설정 (예: 2주간 유지)
+SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
+
+# 세션 쿠키가 브라우저를 닫아도 유지되도록 설정
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# 보안 설정 (선택 사항)
+#SESSION_COOKIE_SECURE = True  # HTTPS를 사용할 때
+#SESSION_COOKIE_HTTPONLY = True  # JavaScript에서 접근 불가
