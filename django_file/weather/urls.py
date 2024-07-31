@@ -15,7 +15,7 @@ urlpatterns = [
     path('news/', news_view, name='news'), 
     path('fetch-news/', fetch_and_store_news, name='fetch_news'),
     path('display-news/', display_news, name='display_news'),
-    #위치 저장, 위치 정보 보여주기
+    #위치 저장, 위치 정보 보여주기 endpoint
     path('save_location/', save_location, name='save_location'),
     path('location_name/', location_name, name='location_name'),
     #테스트페이지
