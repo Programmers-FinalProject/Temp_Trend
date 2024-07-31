@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from datetime import datetime, timedelta
 from weather.models import WeatherData
+from  weather.view import nxny
 
 def we_data_test(request):
     # test = WeatherData.objects.using('redshift').all()
@@ -60,6 +61,7 @@ def we_data_setting(dataList):
                 newdata[data['category']] = data['fcstValue']
             else :
                 new_dataList.append(newdata)
+                nxnypos = nxnySetting(lon=int(data['ny']), lat=int(data['nx']))
                 print(new_dataList)
                 newdata = {}
                 checkerDict['fcstDate'] = data['fcstDate']
@@ -68,17 +70,18 @@ def we_data_setting(dataList):
                 checkerDict['ny'] = data['ny']
                 newdata['fcstDate'] = data['fcstDate']
                 newdata['fcstTime'] = data['fcstTime']
-                newdata['nx'] = data['nx']
-                newdata['ny'] = data['ny']
+                newdata['nx'] = nxnypos['nx']
+                newdata['ny'] = nxnypos['ny']
         else :
+            nxnypos = nxnySetting(lon=int(data['ny']), lat=int(data['nx']))
             checkerDict['fcstDate'] = data['fcstDate']
             checkerDict['fcstTime'] = data['fcstTime']
             checkerDict['nx'] = data['nx']
             checkerDict['ny'] = data['ny']
             newdata['fcstDate'] = data['fcstDate']
             newdata['fcstTime'] = data['fcstTime']
-            newdata['nx'] = data['nx']
-            newdata['ny'] = data['ny']
+            newdata['nx'] = nxnypos['nx']
+            newdata['ny'] = nxnypos['ny']
     new_dataList.append(newdata)
     print(new_dataList)
     return new_dataList
@@ -116,6 +119,15 @@ def testdataset():
     # 출력 결과 확인
     print(json_output)
     return json_output
+
+
+def nxnySetting(lon, lat):
+    print(lon, lat)
+    lon, lat, x, y = nxny.map_conv(lon, lat, 0.0, 0.0, 0)
+    result = {'lon':str(lon), 'lat':str(lat), 'nx':str(x),'ny':str(y)}
+    print(result)
+    
+    return result
 
 # { 
 #     "date" : "",
