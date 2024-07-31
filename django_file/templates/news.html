@@ -40,12 +40,8 @@
 <body>
     <div class="container mt-4">
         <div class="location-header">
-            <i class="fas fa-map-marker-alt text-danger"></i> 현위치 : 
-            {% if latest_location %}
-                위도: {{ latest_location.latitude|floatformat:4 }}, 경도: {{ latest_location.longitude|floatformat:4 }}
-            {% else %}
-                <span id="current-location">현위치로 찾기를 눌러주세요</span>
-            {% endif %}
+            <i class="fas fa-map-marker-alt text-danger"></i> 
+                <span id="current-location"> 현위치로 찾기를 눌러주세요</span>
         </div>
         <div class="main-content">
             <div class="position-relative">
