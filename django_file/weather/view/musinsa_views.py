@@ -1,15 +1,21 @@
 from django.shortcuts import render
 from weather.models import musinsaData
-from weather.musinsa_forms import ProductFilterForm
+from weather.musinsa_forms import genderFilterForm, CategoryForm
 
 def musinsa_list(request):
-    form = ProductFilterForm(request.GET or None)
-    products = []
+    genderForm = genderFilterForm(request.GET)
+    categoryForm = CategoryForm(request.GET)
+    products = musinsaData.objects.using('redshift').all()
 
-    if form.is_valid():
-        gender = form.cleaned_data.get('gender')
-        category = form.cleaned_data.get('category')
-        products = musinsaData.objects.using('redshift').filter(gender=gender, category=category).order_by('rank')
-
-    return render(request, 'musinsa_list.html', {'form': form, 'products': products})
-# 
+    if genderForm.is_valid() and categoryForm.is_valid():
+        gender = genderForm.cleaned_data.get('gender')
+        selected_category = categoryForm.cleaned_data.get('category')
+        
+        if gender:
+            products = products.filter(gender=gender)
+        if selected_category:
+            products = products.filter(category=selected_category)
+            
+    products = products.order_by('rank')
+    
+    return render(request, 'musinsa_list.html', {'g_form': genderForm, 'c_form': categoryForm, 'products': products})
