@@ -9,24 +9,35 @@ from geopy.geocoders import Nominatim
 @csrf_exempt
 @require_POST
 def save_location(request):
-    data = json.loads(request.body)
-    latitude = data.get('latitude')
-    longitude = data.get('longitude')
-    location_type = data.get('location_type')
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        latitude = data.get('latitude')
+        longitude = data.get('longitude')
+        location_type = data.get('location_type')
 
-    location = LocationRecord.objects.create(
-        latitude=latitude,
-        longitude=longitude,
-        location_type=location_type
-    )
+        # 세션 키 가져오기
+        session_key = request.session.session_key
+        if not session_key:
+            request.session.create()
+            session_key = request.session.session_key
 
-    return JsonResponse({
-        'status': 'success',
-        'latitude': location.latitude,
-        'longitude': location.longitude,
-        'location_type': location.location_type
-    })
-    
+        # 세션에 위치 정보 저장
+        request.session['latitude'] = latitude
+        request.session['longitude'] = longitude
+        request.session['location_type'] = location_type
+
+        # 데이터베이스에 위치 정보 저장 (옵션)
+        location_record = LocationRecord(
+            latitude=latitude,
+            longitude=longitude,
+            location_type=location_type,
+            session=session_key
+        )
+        location_record.save()
+
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=400)
+
 @csrf_exempt
 @require_POST
 def location_name(request):

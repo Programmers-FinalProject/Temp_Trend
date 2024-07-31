@@ -139,3 +139,32 @@ def nxnySetting(lon, lat):
 #     'nx' : '',
 #     'ny' : '',
 # }
+
+
+from django.shortcuts import render
+from django.http import JsonResponse
+
+def get_weather_data(request):
+    # 세션에서 위도와 경도 정보를 가져옴
+    latitude = request.session.get('latitude')
+    longitude = request.session.get('longitude')
+
+    if latitude is not None and longitude is not None:
+        # weather_data 테이블에서 nx와 ny가 세션의 위도와 경도와 일치하는 레코드 조회
+        weather_data_records = WeatherData.objects.filter(nx=latitude, ny=longitude)
+        data = [
+            {
+                'basedate': record.basedate,
+                'basetime': record.basetime,
+                'weather_code': record.weather_code,
+                'fcstdate': record.fcstdate,
+                'fcsttime': record.fcsttime,
+                'fcstvalue': record.fcstvalue,
+                'nx': record.nx,
+                'ny': record.ny
+            }
+            for record in weather_data_records
+        ]
+        return JsonResponse({'status': 'success', 'data': data})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'No location data in session'}, status=400)
