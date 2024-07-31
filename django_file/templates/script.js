@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRFToken': csrftoken
+                            'X-CSRFToken': csrftoken,
+                            'X-User-Agent': 'geocoderapp (junghwa0609@naver.com)'
                         },
                         body: JSON.stringify({
                             latitude: latitude,
@@ -41,7 +42,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRFToken': getCookie('csrftoken')
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'X-User-Agent': 'geocoderapp (junghwa0609@naver.com)'
                         },
                         body: JSON.stringify({
                             latitude: latitude.toFixed(4),
@@ -73,7 +75,7 @@ function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
+        for (let i = 0; cookies.length; i++) {
             const cookie = cookies[i].trim();
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
