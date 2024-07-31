@@ -102,10 +102,10 @@ def weatherX112Y116():
     weatherTask("112", "116")
 
 
-def weatherX60Y114():
-    weatherTask("60", "114")
-def weatherX78Y115():
-    weatherTask("78", "115")
+def weatherX60Y136():
+    weatherTask("60", "136")
+def weatherX77Y136():
+    weatherTask("77", "136")
 
 def weatherCsvToSql():
     sql = "SELECT left(lat,2) nx, left(lon,3) ny FROM raw_data.weather_stn GROUP BY left(lat,2), left(lon,3) ORDER BY left(lat,2), left(lon,3)"
@@ -262,15 +262,15 @@ with TaskGroup(group_id='weatherTableSetting', dag=dag) as CSVSetting:
         queue='queue1'
     )
 
-    weatherX60Y114Task = PythonOperator(
-        task_id='weatherX60Y114Task',
-        python_callable=weatherX60Y114,
+    weatherX60Y136Task = PythonOperator(
+        task_id='weatherX60Y136Task',
+        python_callable=weatherX60Y136,
         dag=dag,
         queue='queue1'
     )
-    weatherX78Y115Task = PythonOperator(
-        task_id='weatherX78Y115Task',
-        python_callable=weatherX78Y115,
+    weatherX77Y136Task = PythonOperator(
+        task_id='weatherX77Y136Task',
+        python_callable=weatherX77Y136,
         dag=dag,
         queue='queue1'
     )
