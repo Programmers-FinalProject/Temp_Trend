@@ -14,7 +14,7 @@ default_args = {
 
 # DAG 정의
 dag = DAG(
-    'test_dag',
+    'test_dag_이름바꾼거_적용되는지_확인',
     default_args=default_args,
     description='A simple test DAG',
     schedule_interval=timedelta(days=1),
