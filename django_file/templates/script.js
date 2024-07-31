@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             'X-User-Agent': 'geocoderapp (junghwa0609@naver.com)'
                         },
                         body: JSON.stringify({
-                            latitude: latitude,
-                            longitude: longitude,
+                            latitude: latitude.toFixed(0),
+                            longitude: longitude.toFixed(0),
                             location_type: 'current'
                         })
                     })
