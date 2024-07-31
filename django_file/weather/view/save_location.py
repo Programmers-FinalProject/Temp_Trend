@@ -33,6 +33,7 @@ def save_location(request):
         request.session['location_type'] = location_type
 
         # 데이터베이스에 위치 정보 저장 (옵션)
+        '''
         location_record = LocationRecord(
             latitude=latitude,
             longitude=longitude,
@@ -40,6 +41,7 @@ def save_location(request):
             session=session_key
         )
         location_record.save()
+        '''
 
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error'}, status=400)
