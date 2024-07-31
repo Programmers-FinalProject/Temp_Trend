@@ -1,26 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM fully loaded and parsed");
-    
+
     const currentLocationBtn = document.getElementById('current-location-btn');
     if (currentLocationBtn) {
         console.log("Current location button found");
         currentLocationBtn.addEventListener('click', function() {
-            console.log("Current location button clicked");
             if ("geolocation" in navigator) {
-                console.log("Geolocation is available");
                 navigator.geolocation.getCurrentPosition(function(position) {
-                    console.log("Position acquired", position);
                     var latitude = position.coords.latitude;
                     var longitude = position.coords.longitude;
-                    
-                    // 위치 정보를 화면에 표시
-                    const currentLocationElement = document.getElementById('current-location');
-                    if (currentLocationElement) {
-                        currentLocationElement.textContent = `위도: ${latitude.toFixed(4)}, 경도: ${longitude.toFixed(4)}`;
-                        console.log("Location displayed on screen");
-                    } else {
-                        console.error("Element with id 'current-location' not found");
-                    }
                     
                     // 위치 정보를 서버로 전송
                     const csrftoken = getCookie('csrftoken');
@@ -48,6 +36,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     .catch((error) => {
                         console.error('Error:', error);
                     });
+
+                    fetch('/location_name/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({
+                            latitude: latitude.toFixed(4),
+                            longitude: longitude.toFixed(4)
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const currentLocationElement = document.getElementById('current-location');
+                        if (currentLocationElement) {
+                            currentLocationElement.textContent = `현위치: ${data.address}`;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
                 }, function(error) {
                     console.error("Error getting location:", error);
                 });
