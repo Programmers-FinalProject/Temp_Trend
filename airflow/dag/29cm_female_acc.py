@@ -109,9 +109,10 @@ def fetch_product_links(**kwargs):
     finally:
         driver.quit()
     
-    return product_data
+    return json.dumps(product_data)  # JSON 문자열로 반환
 
 def fetch_product_info(product_data):
+    product_data = json.loads(product_data)  # JSON 문자열을 파싱
     for product in product_data:
         product_link = product["product_link"]
         try:
@@ -159,9 +160,10 @@ def fetch_product_info(product_data):
         except Exception as e:
             print(f"상품 정보 수집 중 오류: {e}")
             return None
-    return product_data
+    return json.dumps(product_data)  # JSON 문자열로 반환
         
 def result_save_to_dir(product_data):
+    product_data = json.loads(product_data)  # JSON 문자열을 파싱
     df = pd.DataFrame(product_data)
     category_name = df['category1'].unique()[0]
     df.to_csv(f"/opt/airflow/data/29cm_{category_name}_{datetime.now().strftime('%Y%m%d')}.csv",index=False)
