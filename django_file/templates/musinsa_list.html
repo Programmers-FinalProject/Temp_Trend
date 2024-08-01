@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product List</title>
+</head>
+<body>
+    <h1>Product List</h1>
+    <form method="get">
+        {{ form.as_p }}
+        <button type="submit">Filter</button>
+    </form>
+    <hr>
+    {% if products %}
+    <table>
+        <tr>
+            <th>Product Name</th>
+            <th>Product Link</th>
+            <th>Image</th>
+            <th>Rank</th>
+            <th>Price</th>
+            <th>Category</th>
+        </tr>
+        {% for product in products %}
+        <tr>
+            <td>{{ product.product_name }}</td>
+            <td><a href="{{ product.product_link }}">Link</a></td>
+            <td><img src="{{ product.image_link }}" alt="Product Image" width="100"></td>
+            <td>{{ product.rank }}</td>
+            <td>{{ product.price }}</td>
+            <td>{{ product.category }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No products found for the selected criteria.</p>
+    {% endif %}
+</body>
+</html>
