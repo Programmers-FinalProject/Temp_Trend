@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from datetime import datetime, timedelta
 from weather.models import WeatherData
-from  weather.view import nxny
+from weather.view import nxny
+from django.http import JsonResponse
 
 def we_data_test(request):
     # test = WeatherData.objects.using('redshift').all()
@@ -141,8 +142,6 @@ def nxnySetting(lon, lat):
 # }
 
 
-from django.shortcuts import render
-from django.http import JsonResponse
 
 def get_weather_data(request):
     # 세션에서 위도와 경도 정보를 가져옴
