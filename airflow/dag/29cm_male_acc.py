@@ -42,7 +42,7 @@ def fetch_product_links(**kwargs):
         best_button.click()
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[1]/div/ul/ul/li[4]/a')))
         
-        category = {"name": "여성액세서리", "xpath": '//*[@id="__next"]/div[4]/div[1]/div/ul/ul/li[4]/a'}
+        category = {"name": "남성악세서리", "xpath": '//*[@id="__next"]/div[4]/div[1]/div/ul/ul/li[8]/a'}
         category_element = driver.find_element(By.XPATH, category["xpath"])
         category_element.click()
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[1]/ul/span[2]/label')))
@@ -176,10 +176,10 @@ default_args = {
 }
 
 dag = DAG(
-    '29cm_female_acc_data_extract',
+    '29cm_male_acc_data_extract',
     default_args=default_args,
-    description='29cm Website Data Extract - Female Accessories',
-    schedule_interval='0 14 * * *',  # 매일 UTC 14시에 실행 (한국시간 23시)
+    description='29cm Website Data Extract - Male Accessories',
+    schedule_interval='10 14 * * *',  # 매일 UTC 14시 10분에 실행 (한국시간 23시 10분)
 )
 
 with dag:
