@@ -55,7 +55,7 @@ def weatherTask(nx,ny):
     print(apidata)
     weatherF.weatherCSVmaker(s3_bucket, f"{s3_csv_path}weatherAPIData_{weApiOption['nx']}_{weApiOption['ny']}.csv",apidata, s3_client)
     print(f"weatherAPIData_{weApiOption['nx']}_{weApiOption['ny']} Save")
-    time.sleep(5)
+    time.sleep(10)
 
 # 작업 함수 정의
 def weatherX43Y27():
@@ -88,8 +88,8 @@ def weatherX78Y93():
 def weatherX96Y94():
     weatherTask("96", "94")
 
-def weatherX8Y114():
-    weatherTask("8", "114")
+def weatherX8Y115():
+    weatherTask("8", "115")
 def weatherX43Y114():
     weatherTask("43", "114")
 def weatherX60Y115():
@@ -115,6 +115,10 @@ def weatherCsvToSql():
     csvDf = pd.DataFrame()
     for xy in xyjson :
         nxnypos = nxny.nxnySetting(lon=int(xy['ny']), lat=int(xy['nx']))
+        print(nxnypos)
+    for xy in xyjson :
+        nxnypos = nxny.nxnySetting(lon=int(xy['ny']), lat=int(xy['nx']))
+        print(nxnypos)
         s3CsvData = weatherF.CSVdownloader(s3_bucket, s3_csv_path, s3_client=s3_client, file_name=f"weatherAPIData_{nxnypos['nx']}_{nxnypos['ny']}.csv")
         csvDf = pd.concat([csvDf, s3CsvData], ignore_index=True)
     csvDf = dataAsType(csvDf)
