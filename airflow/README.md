@@ -37,7 +37,6 @@ $ docker run -d -it --restart=always --name worker1 -p 8080:8080 \
 -v /home/ubuntu/apps/airflow/dags:/opt/airflow/dags \
 -v /home/ubuntu/apps/airflow/plugins:/opt/airflow/plugins \
 -v /home/ubuntu/apps/airflow/log:/opt/airflow/log \
--v /home/ubuntu/apps/airflow/data:/opt/airflow/data \
 -v /etc/localtime:/etc/localtime:ro -e TZ=Asia/Seoul \
 airflow_docker:${VERSION} \
 airflow celery worker -H ${host} -q queue1
