@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import LocationRecord,WeatherData
 
 class LocationRecordAdmin(admin.ModelAdmin):
-    list_display = ('latitude', 'longitude', 'location_type', 'created_at')
+    list_display = ('session','latitude', 'longitude', 'location_type', 'created_at')
 
 admin.site.register(LocationRecord,LocationRecordAdmin)
 

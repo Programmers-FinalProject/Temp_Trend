@@ -9,6 +9,7 @@ def musinsa_list(request):
     if form.is_valid():
         gender = form.cleaned_data.get('gender')
         category = form.cleaned_data.get('category')
-        products = musinsaData.objects.filter(gender=gender, category=category).order_by('rank')[:9]
+        products = musinsaData.objects.using('redshift').filter(gender=gender, category=category).order_by('rank')
 
     return render(request, 'musinsa_list.html', {'form': form, 'products': products})
+# 

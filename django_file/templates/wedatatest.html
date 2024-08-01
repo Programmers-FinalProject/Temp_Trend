@@ -1,2 +1,90 @@
-hello world?
-{{test}}
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temp_Trend - 날씨 정보</title>        
+    <style>
+        *{padding: 0; margin: 0;}
+        .clear::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        ul {list-style-type: none;}
+        li {list-style-type: none;}
+        .we-data-box{padding: 20px; margin: 0 auto;}
+        .we-data-list{float: left; padding: 0px; margin: 0;}
+        .we-list {margin: 0 auto; text-align: center; border-left: 1px dotted; border-right: 1px dotted;}
+        .we-atp, .we-tmp, .we-ras, .we-wind{border-bottom: 1px #cccccc dotted;}
+        
+        
+    </style>
+</head>
+<body>
+    <div class="we-data-box ">
+        <ul class="clear">
+            <li class="we-data-list">
+                <ul >
+                    <li class="we-time">시각</li>
+                    <li class="we-type">날씨</li>
+                    <li class="we-temp">기온</li>
+                    <li class="we-per">강수확률</li>
+                    <li class="we-ras">강수량</li>
+                    <li class="we-wind">풍속</li>
+                    <li class="we-atp">습도</li>
+                </ul>
+            </li>
+            <li class="we-data-list">
+                <ul>
+                    <li class="we-list we-time">06시</li>
+                    <li class="we-list we-type">img</li>
+                    <li class="we-list we-temp">26°C</li>
+                    <li class="we-list we-per">70%</li>
+                    <li class="we-list we-ras">3mm</li>
+                    <li class="we-list we-wind">3</li>
+                    <li class="we-list we-atp">80%</li>
+                </ul>
+            </li>
+            <li class="we-data-list">
+                <ul>
+                    <li class="we-list we-time">06시</li>
+                    <li class="we-list we-type">img</li>
+                    <li class="we-list we-temp">26°C</li>
+                    <li class="we-list we-per">70%</li>
+                    <li class="we-list we-ras">3mm</li>
+                    <li class="we-list we-wind">3</li>
+                    <li class="we-list we-atp">80%</li>
+                </ul>
+            </li>
+            <li class="we-data-list">
+                <ul>
+                    <li class="we-list we-time">06시</li>
+                    <li class="we-list we-type">img</li>
+                    <li class="we-list we-temp">26°C</li>
+                    <li class="we-list we-per">70%</li>
+                    <li class="we-list we-ras">3mm</li>
+                    <li class="we-list we-wind">3</li>
+                    <li class="we-list we-atp">80%</li>
+                </ul>
+            </li>
+            {% for we_data in we_dataList %}
+            <li class="we-data-list">
+                <ul>
+                    <li class="we-list we-time">{{ we_data.fcstTime|default:"-" }}</li>
+                    <li class="we-list we-pty">{{ we_data.PTY|default:"-" }}</li>
+                    <li class="we-list we-tmp">{{ we_data.TMP}}°C</li>
+                    <li class="we-list we-pop">{{ we_data.POP|default:"-" }}%</li>
+                    <li class="we-list we-ras">{{ we_data.PCP|default:"-" }}</li>
+                    <li class="we-list we-wind">{{ we_data.WSD|default:"-" }}</li>
+                    <li class="we-list we-atp">{{ we_data.REH|default:"-" }}</li>
+                </ul>
+            </li>
+            {% endfor %}
+        </ul>
+        {{we_dataList}}
+    </div>
+</body>
+</html>
+

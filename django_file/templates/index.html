@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temp_Trend</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="location-header">
+            <i class="fas fa-map-marker-alt text-danger"></i><span id="current-location"> 현위치로 찾기를 눌러주세요</span>
+        </div>
+        <div class="main-content">
+            <h1 class="text-center text-white mb-4">Temp_Trend</h1>
+            <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="true">예보</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pills-news-tab" type="button" onclick="location.href='{% url 'news' %}'">날씨뉴스</button>
+                </li>
+            </ul>
+            <div class="search-bar mb-3">
+                <input type="text" class="form-control" placeholder="원하는 지역을 선택해 주세요">
+                <div class="mt-2">
+                    <button class="btn btn-light btn-sm">저장</button>
+                    <button class="btn btn-light btn-sm">다시찾기</button>
+                    <button class="btn btn-light btn-sm" id="current-location-btn">현위치로 찾기</button>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <button class="btn btn-light w-100" onclick="showImage('temperature'); change_btn(event)">온도</button>
+                </div>
+                <div class="col">
+                    <button class="btn btn-light w-100" onclick="showImage('precipitation'); change_btn(event)">강수량</button>
+                </div>
+                <div class="col">
+                    <button class="btn btn-light w-100" onclick="showImage('wind'); change_btn(event)">바람</button>
+                </div>
+            </div>
+            <div class="weather-map-container mb-3">
+                <a id="imageLink" href="">
+                    <img id="weatherImage" src="" alt="Weather Map" class="weather-map">
+                </a>
+            </div>
+
+            <script type="text/javascript">
+                const images = {
+                    precipitation: { src: "{{ im }}", href: "{{ im2 }}" },
+                    temperature: { src: "{{ im3 }}", href: "{{ im4 }}" },
+                    wind: { src: "{{ im5 }}", href: "{{ im6 }}" }
+                };
+            
+                function showImage(weatherType) {
+                    const image = document.getElementById('weatherImage');
+                    const link = document.getElementById('imageLink');
+            
+                    image.src = images[weatherType].src;
+                    image.alt = weatherType + " Image";
+                    link.href = images[weatherType].href;
+                }
+                
+                window.onload = function() {
+                    showImage('temperature');
+                    document.getElementById('b1').classList.add("active");
+                }
+                
+                function change_btn(e) {
+                    var btns = document.querySelectorAll(".button");
+                    btns.forEach(function (btn, i) {
+                        if (e.currentTarget == btn) {
+                            btn.classList.add("active");
+                        } else {
+                            btn.classList.remove("active");
+                        }
+                    });
+                }
+            </script>
+            
+            <div id="initial-buttons" class="row">
+                <div class="col">
+                    <button class="btn btn-secondary w-100" onclick="selectGender('m')">남자</button>
+                </div>
+                <div class="col">
+                    <button class="btn btn-secondary w-100" onclick="selectGender('w')">여자</button>
+                </div>
+                <div class="col">
+                    <button class="btn btn-secondary w-100" onclick="selectGender('unisex')">unisex</button>
+                </div>
+            </div>
+
+            <div id="selected-gender" class="selected">
+                <span id="selected-text"></span>
+                <button class="btn btn-secondary" onclick="resetSelection()">다시 선택하기</button>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'gender.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'script.js' %}"></script>
+</body>
+</html>
