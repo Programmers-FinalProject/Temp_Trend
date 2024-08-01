@@ -46,7 +46,8 @@ def fetch_data():
                     'rank': rank, # 상품 순위
                     'date': crawling_time, # 해당 상품 수집 시 시간(년도월일)
                     'data_creation_time':crawling_time, # 해당 상품 수집 시 시간(년도월일)
-                    'category': f"{item['frontCategoryInfo'][0]['category1Name']}_{item['frontCategoryInfo'][0]['category2Name']}" if item['frontCategoryInfo'][0]['category2Name'] == "EXCLUSIVE" or item['frontCategoryInfo'][0]['category2Name'] == '해외브랜드' else item['frontCategoryInfo'][0]['category2Name'], # 상품 카테고리
+                    'major_category': f"{item['frontCategoryInfo'][0]['category1Name']}_{item['frontCategoryInfo'][0]['category2Name']}" if item['frontCategoryInfo'][0]['category2Name'] == "EXCLUSIVE" or item['frontCategoryInfo'][0]['category2Name'] == '해외브랜드' else item['frontCategoryInfo'][0]['category2Name'], # 상품 카테고리
+                    'minor_category': f"{item['frontCategoryInfo'][0]['category1Name']}_{item['frontCategoryInfo'][0]['category3Name']}" if item['frontCategoryInfo'][0]['category2Name'] == "EXCLUSIVE" or item['frontCategoryInfo'][0]['category2Name'] == '해외브랜드' else item['frontCategoryInfo'][0]['category3Name'], # 상품 카테고리
                     'price': item['lastSalePrice'],  # 마지막 판매 가격
                     # 'gender': item['frontCategoryInfo'][0]['category1Name'][:2], # 동일한 아이템의 성별이 남,녀 모두 있는 경우에 아이템의 랭킹이 다른문제가 있음.
                     'gender': 'men' if category_name[:2] == "남성" else 'women' # 성별 
@@ -73,7 +74,7 @@ dag = DAG(
     '29cm_female_acc_dag',
     default_args=default_args,
     description='Collect female accessories data of 29cm',
-    schedule_interval='0 10 * * *', # 매일 저녁 19시 ( utc 기준 실행 )
+    schedule_interval='0 14 * * *', # 매일 저녁 23시 ( utc 기준 실행 )
     catchup = False
 )
 

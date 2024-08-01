@@ -41,7 +41,7 @@ def combine_csv_files(**kwargs):
 def upload_to_s3():
     
     today_date = datetime.now().strftime("%Y%m%d")
-    S3_BUCKET_NAME = Variable.get("S3_BUCKET_NAME")  
+    S3_BUCKET_NAME = Variable.get("s3_bucket")  
     AWS_ACCESS_KEY_ID = Variable.get("ACCESS_KEY")  
     AWS_SECRET_ACCESS_KEY = Variable.get("SECRET_KEY")  
 
@@ -74,7 +74,7 @@ dag = DAG(
     'combine_and_upload_to_s3',
     default_args=default_args,
     description='Combine daily CSV files and upload to S3',
-    schedule_interval='20 23 * * *',  # 매일 23시에 실행
+    schedule_interval='20 14 * * *', # 매일 저녁 23시 20분 ( utc 기준 실행 )
 )
 
 
