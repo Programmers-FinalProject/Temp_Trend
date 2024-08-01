@@ -166,7 +166,7 @@ def result_save_to_dir(product_data):
     product_data = json.loads(product_data)  # JSON 문자열을 파싱
     df = pd.DataFrame(product_data)
     category_name = df['category1'].unique()[0]
-    df.to_csv(f"/opt/airflow/data/29cm_{category_name}_{datetime.now().strftime('%Y%m%d')}.csv",index=False)
+    df.to_csv(f"/opt/airflow/data/29cm_{category_name}_{datetime.now().strftime('%Y%m%d')}.csv",index=False,encoding='utf-8-sig')
     print("Done")
 
 # DAG 정의
