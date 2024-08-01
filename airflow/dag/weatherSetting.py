@@ -104,29 +104,29 @@ weatherStnDataToRedshiftTask = PythonOperator(
 )
 
 
-with TaskGroup(group_id='weatherTableSetting', dag=dag) as weatherTableSetting:
-    weatherCodeTableCreate = PythonOperator(
-        task_id='weatherCodeTableCreate',
-        python_callable=weatherCodeTable,
-        dag=dag,
-        queue='queue1'
-    )
+# with TaskGroup(group_id='weatherTableSetting', dag=dag) as weatherTableSetting:
+weatherCodeTableCreate = PythonOperator(
+    task_id='weatherCodeTableCreate',
+    python_callable=weatherCodeTable,
+    dag=dag,
+    queue='queue1'
+)
 
-    weatherDataTableCreate = PythonOperator(
-        task_id='weatherDataTableCreate',
-        python_callable=weatherDataTable,
-        dag=dag,
-        queue='queue1'
-    )
+weatherDataTableCreate = PythonOperator(
+    task_id='weatherDataTableCreate',
+    python_callable=weatherDataTable,
+    dag=dag,
+    queue='queue1'
+)
 
-    weatherStnTableCreate = PythonOperator(
-        task_id='weatherStnTableCreate',
-        python_callable=weatherStnTable,
-        dag=dag,
-        queue='queue1'
-    )
+weatherStnTableCreate = PythonOperator(
+    task_id='weatherStnTableCreate',
+    python_callable=weatherStnTable,
+    dag=dag,
+    queue='queue1'
+)
 
 # DAG 설정
-weatherTableSetting >> stnApiTask >> weatherStnDataToRedshiftTask
-
+# weatherTableSetting >> stnApiTask >> weatherStnDataToRedshiftTask
+weatherCodeTableCreate >> weatherDataTableCreate >> weatherStnTableCreate >> stnApiTask >> weatherStnDataToRedshiftTask
 
