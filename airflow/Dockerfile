@@ -51,6 +51,7 @@ RUN python3.9 -m pip install boto3==1.28.64
 RUN python3.9 -m pip install selenium
 RUN python3.9 -m pip install webdriver_manager
 RUN pip install apache-airflow-providers-amazon
+RUN pip install apache-airflow-providers-postgres
 RUN airflow db init
 RUN mkdir ${AIRFLOW_HOME}/dags
 RUN mkdir ${AIRFLOW_HOME}/plugins
