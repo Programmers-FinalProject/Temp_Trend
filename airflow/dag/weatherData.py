@@ -92,8 +92,8 @@ def weatherX8Y115():
     weatherTask("8", "115")
 def weatherX43Y114():
     weatherTask("43", "114")
-def weatherX60Y115():
-    weatherTask("60", "115")
+def weatherX60Y114():
+    weatherTask("60", "114")
 def weatherX78Y115():
     weatherTask("78", "115")
 def weatherX95Y115():
@@ -115,10 +115,6 @@ def weatherCsvToSql():
     csvDf = pd.DataFrame()
     for xy in xyjson :
         nxnypos = nxny.nxnySetting(lon=int(xy['ny']), lat=int(xy['nx']))
-        print(nxnypos)
-    for xy in xyjson :
-        nxnypos = nxny.nxnySetting(lon=int(xy['ny']), lat=int(xy['nx']))
-        print(nxnypos)
         s3CsvData = weatherF.CSVdownloader(s3_bucket, s3_csv_path, s3_client=s3_client, file_name=f"weatherAPIData_{nxnypos['nx']}_{nxnypos['ny']}.csv")
         csvDf = pd.concat([csvDf, s3CsvData], ignore_index=True)
     csvDf = dataAsType(csvDf)
@@ -241,9 +237,9 @@ with TaskGroup(group_id='weatherTableSetting', dag=dag) as CSVSetting:
         dag=dag,
         queue='queue1'
     )
-    weatherX60Y115Task = PythonOperator(
-        task_id='weatherX60Y115Task',
-        python_callable=weatherX60Y115,
+    weatherX60Y114Task = PythonOperator(
+        task_id='weatherX60Y114Task',
+        python_callable=weatherX60Y114,
         dag=dag,
         queue='queue1'
     )
