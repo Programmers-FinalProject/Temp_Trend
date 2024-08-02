@@ -56,6 +56,7 @@ RUN airflow db init
 RUN mkdir ${AIRFLOW_HOME}/dags
 RUN mkdir ${AIRFLOW_HOME}/plugins
 RUN mkdir ${AIRFLOW_HOME}/data
+
 # install vim
 RUN apt-get install -y vim
 
@@ -70,4 +71,4 @@ RUN ls -l /usr/bin/google-chrome && \
     /usr/bin/google-chrome --version
 
 # healthcheck
-# HEALTHCHECK --interval=10s --timeout=10s --retries=5 CMD airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"
+#HEALTHCHECK --interval=10s --timeout=10s --retries=5 CMD airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"
