@@ -49,6 +49,7 @@ def fetch_product_links(**kwargs):
         category_element.click()
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[1]/ul/span[2]/label')))
         
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[2]/span[2]/label')))
         daily_btn = driver.find_element(By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[2]/span[2]/label')
         daily_btn.click()
         
