@@ -24,8 +24,6 @@ urlpatterns = [
     path('test/',test,name='test'),
     path('musinsa-test/', musinsa_list, name='musinsa_list'), #무신사 테스트페이지
     path('we-data-test/', weather_views.we_data_test, name='wedatatest'),
-    path('save_location/', save_location, name='save_location'),
-    path('musinsa-test/', musinsa_list, name='musinsa_list'),
     path('categorize/', categorize, name='categorize'),
     path('show_cookie', show_cookies ,name='show_cookies'), #쿠키테스트   
 ]
