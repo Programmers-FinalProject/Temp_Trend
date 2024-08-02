@@ -67,6 +67,7 @@ upload_task = PythonOperator(
     task_id='merge_and_upload_to_redshift',
     python_callable=merge_and_upload_to_redshift,
     dag=dag,
+    queue='queue1'
 )
 
 upload_task
