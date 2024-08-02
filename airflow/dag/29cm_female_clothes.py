@@ -178,7 +178,7 @@ def result_save_to_dir(product_data):
     
     # S3에 업로드
     
-    BUCKET_NAME = Variable.get('s3')
+    BUCKET_NAME = Variable.get('s3_bucket')
     AWS_ACCESS_KEY_ID = Variable.get('ACCESS_KEY')
     AWS_SECRET_ACCESS_KEY = Variable.get('SECRET_KEY')
     s3_client = boto3.client('s3',
