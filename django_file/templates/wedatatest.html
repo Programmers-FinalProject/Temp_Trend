@@ -72,9 +72,9 @@
             {% for we_data in we_dataList %}
             <li class="we-data-list">
                 <ul>
-                    <li class="we-list we-time">{{ we_data.fcstTime|default:"-" }}</li>
+                    <li class="we-list we-time">{{ we_data.fcsttime|slice:":2"|default:"-" }}시</li>
                     <li class="we-list we-pty">{{ we_data.PTY|default:"-" }}</li>
-                    <li class="we-list we-tmp">{{ we_data.TMP}}°C</li>
+                    <li class="we-list we-tmp">{{ we_data.TMP|default:"-"}}°C</li>
                     <li class="we-list we-pop">{{ we_data.POP|default:"-" }}%</li>
                     <li class="we-list we-ras">{{ we_data.PCP|default:"-" }}</li>
                     <li class="we-list we-wind">{{ we_data.WSD|default:"-" }}</li>

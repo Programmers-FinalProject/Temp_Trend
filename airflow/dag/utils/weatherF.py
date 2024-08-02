@@ -20,6 +20,7 @@ def apiUrl(domain, options):
 # api 호출
 def weatherApi(domain, options) :
     apiurl = apiUrl(domain, options)
+    print(apiurl)
     response = requests.get(apiurl)
     response.encoding = response.apparent_encoding
     apidata = response.text
