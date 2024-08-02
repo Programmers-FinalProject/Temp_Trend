@@ -49,3 +49,15 @@ class musinsaData(models.Model):
     def __str__(self):
         return f"상품명 : {self.product_name} | 상품링크 : {self.product_link} | 이미지링크 : {self.image_link} | 순위 : {self.rank} | 카테고리 : {self.category} | 가격 : {self.price} | 성별 : {self.gender}"
  
+class weatherCategorizeData(models.Model):
+    id = models.AutoField(primary_key=True)
+    weather_info = models.TextField()
+    category = models.TextField()
+
+    class Meta:
+        app_label = 'weather'
+        db_table = 'weather_categorize'
+        managed = False
+
+    def __str__(self):
+        return f"id : {self.id} | 날씨정보 : {self.weather_info} | 카테고리 : {self.category}"
