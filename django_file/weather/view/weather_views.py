@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from datetime import datetime, timedelta
 from weather.models import WeatherData
+from weather.view import nxny
+from django.http import JsonResponse
 
 def we_data_test(request):
     # test = WeatherData.objects.using('redshift').all()
@@ -60,6 +62,7 @@ def we_data_setting(dataList):
                 newdata[data['category']] = data['fcstValue']
             else :
                 new_dataList.append(newdata)
+                nxnypos = nxnySetting(lon=int(data['ny']), lat=int(data['nx']))
                 print(new_dataList)
                 newdata = {}
                 checkerDict['fcstDate'] = data['fcstDate']
@@ -68,17 +71,18 @@ def we_data_setting(dataList):
                 checkerDict['ny'] = data['ny']
                 newdata['fcstDate'] = data['fcstDate']
                 newdata['fcstTime'] = data['fcstTime']
-                newdata['nx'] = data['nx']
-                newdata['ny'] = data['ny']
+                newdata['nx'] = nxnypos['nx']
+                newdata['ny'] = nxnypos['ny']
         else :
+            nxnypos = nxnySetting(lon=int(data['ny']), lat=int(data['nx']))
             checkerDict['fcstDate'] = data['fcstDate']
             checkerDict['fcstTime'] = data['fcstTime']
             checkerDict['nx'] = data['nx']
             checkerDict['ny'] = data['ny']
             newdata['fcstDate'] = data['fcstDate']
             newdata['fcstTime'] = data['fcstTime']
-            newdata['nx'] = data['nx']
-            newdata['ny'] = data['ny']
+            newdata['nx'] = nxnypos['nx']
+            newdata['ny'] = nxnypos['ny']
     new_dataList.append(newdata)
     print(new_dataList)
     return new_dataList
@@ -117,6 +121,15 @@ def testdataset():
     print(json_output)
     return json_output
 
+
+def nxnySetting(lon, lat):
+    print(lon, lat)
+    lon, lat, x, y = nxny.map_conv(lon, lat, 0.0, 0.0, 0)
+    result = {'lon':str(lon), 'lat':str(lat), 'nx':str(x),'ny':str(y)}
+    print(result)
+    
+    return result
+
 # { 
 #     "date" : "",
 #     "time" : "",
@@ -127,3 +140,30 @@ def testdataset():
 #     'nx' : '',
 #     'ny' : '',
 # }
+
+
+
+def get_weather_data(request):
+    # 세션에서 위도와 경도 정보를 가져옴
+    latitude = request.session.get('latitude')
+    longitude = request.session.get('longitude')
+
+    if latitude is not None and longitude is not None:
+        # weather_data 테이블에서 nx와 ny가 세션의 위도와 경도와 일치하는 레코드 조회
+        weather_data_records = WeatherData.objects.filter(nx=latitude, ny=longitude)
+        data = [
+            {
+                'basedate': record.basedate,
+                'basetime': record.basetime,
+                'weather_code': record.weather_code,
+                'fcstdate': record.fcstdate,
+                'fcsttime': record.fcsttime,
+                'fcstvalue': record.fcstvalue,
+                'nx': record.nx,
+                'ny': record.ny
+            }
+            for record in weather_data_records
+        ]
+        return JsonResponse({'status': 'success', 'data': data})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'No location data in session'}, status=400)

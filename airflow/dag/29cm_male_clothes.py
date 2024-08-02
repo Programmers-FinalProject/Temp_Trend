@@ -44,7 +44,7 @@ def fetch_product_links(**kwargs):
         best_button.click()
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[1]/div/ul/ul/li[4]/a')))
         
-        category = {"name": "여성가방", "xpath": '//*[@id="__next"]/div[4]/div[1]/div/ul/ul/li[2]/a'}
+        category = {"name": "남성의류", "xpath": '//*[@id="__next"]/div[4]/div[1]/div/ul/ul/li[5]/a'}
         category_element = driver.find_element(By.XPATH, category["xpath"])
         category_element.click()
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[1]/ul/span[2]/label')))
@@ -195,10 +195,10 @@ default_args = {
 }
 
 dag = DAG(
-    '29cm_female_bags_data_extract',
+    '29cm_male_clothes_data_extract',
     default_args=default_args,
-    description='29cm Website Data Extract - Female Bags',
-    schedule_interval='0 14 * * *',  # 매일 UTC 14시에 실행 (한국시간 23시)
+    description='29cm Website Data Extract - Male Clothes',
+    schedule_interval='15 14 * * *',  # 매일 UTC 14시 15분에 실행 (한국시간 23시 15분)
 )
 
 with dag:
@@ -207,21 +207,21 @@ with dag:
         task_id='fetch_product_links',
         python_callable=fetch_product_links,
         provide_context=True,
-        queue = 'queue2'
+        queue = 'queue1'
     )
 
     fetch_info_task = PythonOperator(
         task_id='fetch_product_info',
         python_callable=fetch_product_info,
         op_kwargs={'product_data': "{{ task_instance.xcom_pull(task_ids='fetch_product_links') }}"},
-        queue = 'queue2'
+        queue = 'queue1'
     )
 
     save_task = PythonOperator(
         task_id='result_save_to_dir',
         python_callable=result_save_to_dir,
         op_kwargs={'product_data': "{{ task_instance.xcom_pull(task_ids='fetch_product_info') }}"},
-        queue = 'queue2'
+        queue = 'queue1'
     )
 
     # 태스크 종속성 설정

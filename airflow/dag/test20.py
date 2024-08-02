@@ -14,7 +14,7 @@ default_args = {
 
 # DAG 정의
 dag = DAG(
-    'test_dag',
+    'test_dag_test20240801오후2시2분',
     default_args=default_args,
     description='A simple test DAG',
     schedule_interval=timedelta(days=1),
@@ -31,6 +31,7 @@ hello_task = PythonOperator(
     task_id='hello_task',
     python_callable=print_hello,
     dag=dag,
+    queue='queue1'
 )
 
 # DAG 설정

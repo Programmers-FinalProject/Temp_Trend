@@ -4,8 +4,7 @@ from airflow.operators.python import PythonOperator
 from airflow.models import Variable
 from airflow.utils.task_group import TaskGroup
 from datetime import datetime, timedelta
-from utils import weatherF
-from utils import redShiftUtils
+from utils import weatherF, redShiftUtils, nxny
 import boto3, json, psycopg2
 import pandas as pd
 
@@ -56,57 +55,57 @@ def weatherTask(nx,ny):
     print(apidata)
     weatherF.weatherCSVmaker(s3_bucket, f"{s3_csv_path}weatherAPIData_{weApiOption['nx']}_{weApiOption['ny']}.csv",apidata, s3_client)
     print(f"weatherAPIData_{weApiOption['nx']}_{weApiOption['ny']} Save")
-    time.sleep(5)
+    time.sleep(10)
 
 # 작업 함수 정의
-def weatherX33Y126():
-    weatherTask("33", "126")
+def weatherX43Y27():
+    weatherTask("43", "27")
 
-def weatherX34Y125():
-    weatherTask("34", "125")
-def weatherX34Y126():
-    weatherTask("34", "126")
-def weatherX34Y127():
-    weatherTask("34", "127")
-def weatherX34Y128():
-    weatherTask("34", "128")
+def weatherX25Y49():
+    weatherTask("25", "49")
+def weatherX43Y49():
+    weatherTask("43", "49")
+def weatherX61Y49():
+    weatherTask("61", "49")
+def weatherX79Y49():
+    weatherTask("79", "49")
 
-def weatherX35Y126():
-    weatherTask("35", "126")
-def weatherX35Y127():
-    weatherTask("35", "127")
-def weatherX35Y128():
-    weatherTask("35", "128")
-def weatherX35Y129():
-    weatherTask("35", "129")
+def weatherX43Y71():
+    weatherTask("43", "71")
+def weatherX61Y71():
+    weatherTask("61", "71")
+def weatherX79Y71():
+    weatherTask("79", "71")
+def weatherX97Y72():
+    weatherTask("97", "72")
 
-def weatherX36Y126():
-    weatherTask("36", "126")
-def weatherX36Y127():
-    weatherTask("36", "127")
-def weatherX36Y128():
-    weatherTask("36", "128")
-def weatherX36Y129():
-    weatherTask("36", "129")
+def weatherX43Y93():
+    weatherTask("43", "93")
+def weatherX61Y93():
+    weatherTask("61", "93")
+def weatherX78Y93():
+    weatherTask("78", "93")
+def weatherX96Y94():
+    weatherTask("96", "94")
 
-def weatherX37Y124():
-    weatherTask("37", "124")
-def weatherX37Y126():
-    weatherTask("37", "126")
-def weatherX37Y127():
-    weatherTask("37", "127")
-def weatherX37Y128():
-    weatherTask("37", "128")
-def weatherX37Y129():
-    weatherTask("37", "129")
-def weatherX37Y130():
-    weatherTask("37", "130")
+def weatherX8Y115():
+    weatherTask("8", "115")
+def weatherX43Y114():
+    weatherTask("43", "114")
+def weatherX60Y114():
+    weatherTask("60", "114")
+def weatherX78Y115():
+    weatherTask("78", "115")
+def weatherX95Y115():
+    weatherTask("95", "115")
+def weatherX112Y116():
+    weatherTask("112", "116")
 
 
-def weatherX38Y127():
-    weatherTask("38", "127")
-def weatherX38Y128():
-    weatherTask("38", "128")
+def weatherX60Y136():
+    weatherTask("60", "136")
+def weatherX77Y136():
+    weatherTask("77", "136")
 
 def weatherCsvToSql():
     sql = "SELECT left(lat,2) nx, left(lon,3) ny FROM raw_data.weather_stn GROUP BY left(lat,2), left(lon,3) ORDER BY left(lat,2), left(lon,3)"
@@ -115,7 +114,8 @@ def weatherCsvToSql():
     xyjson = json.loads(xyjson)
     csvDf = pd.DataFrame()
     for xy in xyjson :
-        s3CsvData = weatherF.CSVdownloader(s3_bucket, s3_csv_path, s3_client=s3_client, file_name=f"weatherAPIData_{xy['nx']}_{xy['ny']}.csv")
+        nxnypos = nxny.nxnySetting(lon=int(xy['ny']), lat=int(xy['nx']))
+        s3CsvData = weatherF.CSVdownloader(s3_bucket, s3_csv_path, s3_client=s3_client, file_name=f"weatherAPIData_{nxnypos['nx']}_{nxnypos['ny']}.csv")
         csvDf = pd.concat([csvDf, s3CsvData], ignore_index=True)
     csvDf = dataAsType(csvDf)
     print("csv",csvDf)
@@ -143,121 +143,143 @@ def dataAsType(df):
 
 with TaskGroup(group_id='weatherTableSetting', dag=dag) as CSVSetting:
     # PythonOperator를 사용하여 작업 정의
-    weatherX33Y126Task = PythonOperator(
-        task_id='weatherX33Y126Task',
-        python_callable=weatherX33Y126,
+    weatherX43Y27Task = PythonOperator(
+        task_id='weatherX43Y27Task',
+        python_callable=weatherX43Y27,
         dag=dag,
+        queue='queue1'
     )
 
-    weatherX34Y125Task = PythonOperator(
-        task_id='weatherX34Y125Task',
-        python_callable=weatherX34Y125,
+    weatherX25Y49Task = PythonOperator(
+        task_id='weatherX25Y49Task',
+        python_callable=weatherX25Y49,
         dag=dag,
+        queue='queue1'
     )
-    weatherX34Y126Task = PythonOperator(
-        task_id='weatherX34Y126Task',
-        python_callable=weatherX34Y126,
+    weatherX43Y49Task = PythonOperator(
+        task_id='weatherX43Y49Task',
+        python_callable=weatherX43Y49,
         dag=dag,
+        queue='queue1'
     )
-    weatherX34Y127Task = PythonOperator(
-        task_id='weatherX34Y127Task',
-        python_callable=weatherX34Y127,
+    weatherX61Y49Task = PythonOperator(
+        task_id='weatherX61Y49Task',
+        python_callable=weatherX61Y49,
         dag=dag,
+        queue='queue1'
     )
-    weatherX34Y128Task = PythonOperator(
-        task_id='weatherX34Y128Task',
-        python_callable=weatherX34Y128,
+    weatherX79Y49Task = PythonOperator(
+        task_id='weatherX79Y49Task',
+        python_callable=weatherX79Y49,
         dag=dag,
-    )
-
-    weatherX35Y126Task = PythonOperator(
-        task_id='weatherX35Y126Task',
-        python_callable=weatherX35Y126,
-        dag=dag,
-    )
-    weatherX35Y127Task = PythonOperator(
-        task_id='weatherX35Y127Task',
-        python_callable=weatherX35Y127,
-        dag=dag,
-    )
-    weatherX35Y128Task = PythonOperator(
-        task_id='weatherX35Y128Task',
-        python_callable=weatherX35Y128,
-        dag=dag,
-    )
-    weatherX35Y129Task = PythonOperator(
-        task_id='weatherX35Y129Task',
-        python_callable=weatherX35Y129,
-        dag=dag,
+        queue='queue1'
     )
 
-    weatherX36Y126Task = PythonOperator(
-        task_id='weatherX36Y126Task',
-        python_callable=weatherX36Y126,
+    weatherX43Y71Task = PythonOperator(
+        task_id='weatherX43Y71Task',
+        python_callable=weatherX43Y71,
         dag=dag,
+        queue='queue1'
     )
-    weatherX36Y127Task = PythonOperator(
-        task_id='weatherX36Y127Task',
-        python_callable=weatherX36Y127,
+    weatherX61Y71Task = PythonOperator(
+        task_id='weatherX61Y71Task',
+        python_callable=weatherX61Y71,
         dag=dag,
+        queue='queue1'
     )
-    weatherX36Y128Task = PythonOperator(
-        task_id='weatherX36Y128Task',
-        python_callable=weatherX36Y128,
+    weatherX79Y71Task = PythonOperator(
+        task_id='weatherX79Y71Task',
+        python_callable=weatherX79Y71,
         dag=dag,
+        queue='queue1'
     )
-    weatherX36Y129Task = PythonOperator(
-        task_id='weatherX36Y129Task',
-        python_callable=weatherX36Y129,
+    weatherX97Y72Task = PythonOperator(
+        task_id='weatherX97Y72Task',
+        python_callable=weatherX97Y72,
         dag=dag,
-    )
-
-    weatherX37Y124Task = PythonOperator(
-        task_id='weatherX37Y124Task',
-        python_callable=weatherX37Y124,
-        dag=dag,
-    )
-    weatherX37Y126Task = PythonOperator(
-        task_id='weatherX37Y126Task',
-        python_callable=weatherX37Y126,
-        dag=dag,
-    )
-    weatherX37Y127Task = PythonOperator(
-        task_id='weatherX37Y127Task',
-        python_callable=weatherX37Y127,
-        dag=dag,
-    )
-    weatherX37Y128Task = PythonOperator(
-        task_id='weatherX37Y128Task',
-        python_callable=weatherX37Y128,
-        dag=dag,
-    )
-    weatherX37Y129Task = PythonOperator(
-        task_id='weatherX37Y129Task',
-        python_callable=weatherX37Y129,
-        dag=dag,
-    )
-    weatherX37Y130Task = PythonOperator(
-        task_id='weatherX37Y130Task',
-        python_callable=weatherX37Y130,
-        dag=dag,
+        queue='queue1'
     )
 
-    weatherX38Y127Task = PythonOperator(
-        task_id='weatherX38Y127Task',
-        python_callable=weatherX38Y127,
+    weatherX43Y93Task = PythonOperator(
+        task_id='weatherX43Y93Task',
+        python_callable=weatherX43Y93,
         dag=dag,
+        queue='queue1'
     )
-    weatherX38Y128Task = PythonOperator(
-        task_id='weatherX38Y128Task',
-        python_callable=weatherX38Y128,
+    weatherX61Y93Task = PythonOperator(
+        task_id='weatherX61Y93Task',
+        python_callable=weatherX61Y93,
         dag=dag,
+        queue='queue1'
+    )
+    weatherX78Y93Task = PythonOperator(
+        task_id='weatherX78Y93Task',
+        python_callable=weatherX78Y93,
+        dag=dag,
+        queue='queue1'
+    )
+    weatherX96Y94Task = PythonOperator(
+        task_id='weatherX96Y94Task',
+        python_callable=weatherX96Y94,
+        dag=dag,
+        queue='queue1'
+    )
+
+    weatherX8Y115Task = PythonOperator(
+        task_id='weatherX8Y115Task',
+        python_callable=weatherX8Y115,
+        dag=dag,
+        queue='queue1'
+    )
+    weatherX43Y114Task = PythonOperator(
+        task_id='weatherX43Y114Task',
+        python_callable=weatherX43Y114,
+        dag=dag,
+        queue='queue1'
+    )
+    weatherX60Y114Task = PythonOperator(
+        task_id='weatherX60Y114Task',
+        python_callable=weatherX60Y114,
+        dag=dag,
+        queue='queue1'
+    )
+    weatherX78Y115Task = PythonOperator(
+        task_id='weatherX78Y115Task',
+        python_callable=weatherX78Y115,
+        dag=dag,
+        queue='queue1'
+    )
+    weatherX95Y115Task = PythonOperator(
+        task_id='weatherX95Y115Task',
+        python_callable=weatherX95Y115,
+        dag=dag,
+        queue='queue1'
+    )
+    weatherX112Y116Task = PythonOperator(
+        task_id='weatherX112Y116Task',
+        python_callable=weatherX112Y116,
+        dag=dag,
+        queue='queue1'
+    )
+
+    weatherX60Y136Task = PythonOperator(
+        task_id='weatherX60Y136Task',
+        python_callable=weatherX60Y136,
+        dag=dag,
+        queue='queue1'
+    )
+    weatherX77Y136Task = PythonOperator(
+        task_id='weatherX77Y136Task',
+        python_callable=weatherX77Y136,
+        dag=dag,
+        queue='queue1'
     )
 
 CsvToSql = PythonOperator(
         task_id='CsvToSql',
         python_callable=weatherCsvToSql,
         dag=dag,
+        queue='queue1'
     )
 # DAG 설정
 CSVSetting >> CsvToSql

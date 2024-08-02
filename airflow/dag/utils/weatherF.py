@@ -147,8 +147,8 @@ def weather_stn_create():
     recreate_sql = f"""
 CREATE TABLE IF NOT EXISTS {schema}.weather_stn (
     stn TEXT PRIMARY KEY,
-    lon TEXT, -- ny
-    lat TEXT, -- nx
+    lon TEXT,
+    lat TEXT,
     stn_ko TEXT,
     stn_en TEXT
 );

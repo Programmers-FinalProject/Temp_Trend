@@ -14,7 +14,7 @@ from airflow.models import Variable
 import pandas as pd
 import boto3
 from datetime import datetime
-from io import StringIO
+import io
 
 # S3 버킷 및 파일 설정
 FILE_KEY = 'musinsa.csv'
