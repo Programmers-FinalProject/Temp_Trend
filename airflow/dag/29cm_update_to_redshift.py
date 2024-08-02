@@ -59,8 +59,6 @@ def merge_and_upload_to_s3():
         print("AWS credentials not found.")
     except Exception as e:
         print(f"An error occurred: {e}")
-    
-    return combined_df
 
 # DAG 설정
 default_args = {
