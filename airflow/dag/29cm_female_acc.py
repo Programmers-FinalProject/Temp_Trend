@@ -166,8 +166,24 @@ def result_save_to_dir(product_data):
     product_data = json.loads(product_data)  # JSON 문자열을 파싱
     df = pd.DataFrame(product_data)
     category_name = df['category1'].unique()[0]
-    df.to_csv(f"/opt/airflow/data/29cm_{category_name}_{datetime.now().strftime('%Y%m%d')}.csv",index=False,encoding='utf-8-sig')
-    print("Done")
+    etl_time = datetime.now().strftime("%Y%m%d")
+
+    file_name = f"29cm_{category_name}_{etl_time}.csv"
+    local_file_path = f"/opt/airflow/data/{file_name}"
+
+    # CSV 파일로 저장
+    df.to_csv(local_file_path, index=False, encoding='utf-8-sig')
+    
+    # S3에 업로드
+    
+    BUCKET_NAME = Variable.get('s3')
+    AWS_ACCESS_KEY_ID = Variable.get('ACCESS_KEY')
+    AWS_SECRET_ACCESS_KEY = Variable.get('SECRET_KEY')
+    s3_client = boto3.client('s3',
+                             aws_access_key_id=AWS_ACCESS_KEY_ID,
+                             aws_secret_access_key=AWS_SECRET_ACCESS_KEY
+                             )
+    s3_client.upload_file(local_file_path, BUCKET_NAME, f'crawling/{file_name}')
 
 default_args = {
     'owner': 'airflow',
