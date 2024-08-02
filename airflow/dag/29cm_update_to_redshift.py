@@ -84,7 +84,8 @@ dag = DAG(
 merge_and_upload_task = PythonOperator(
     task_id='merge_and_upload_task',
     python_callable=merge_and_upload_to_s3,
-    dag=dag
+    dag=dag,
+    queue='queue1'
 )
 
 s3_to_redshift_task = S3ToRedshiftOperator(
@@ -97,7 +98,8 @@ s3_to_redshift_task = S3ToRedshiftOperator(
     aws_conn_id='MyS3Conn',  # Redshift 연결 ID
     redshift_conn_id='Redshift_cluster_hori1',  # Redshift 연결 ID
     method="APPEND",
-    dag=dag
+    dag=dag,
+    queue='queue1'
 )
 
 merge_and_upload_task >> s3_to_redshift_task
