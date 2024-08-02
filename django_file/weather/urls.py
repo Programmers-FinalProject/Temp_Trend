@@ -18,16 +18,14 @@ urlpatterns = [
     path('display-news/', display_news, name='display_news'),
     #위치 저장, 위치 정보 보여주기 endpoint
     path('save_location/', save_location, name='save_location'),
-<<<<<<< HEAD
-    path('musinsa-test/', musinsa_list, name='musinsa_list'),
-    path('categorize/', categorize, name='categorize'),
-=======
     path('location_name/', location_name, name='location_name'),
     path('api/session-address/', session_data_api, name='get_session_address'),
     #테스트페이지
     path('test/',test,name='test'),
     path('musinsa-test/', musinsa_list, name='musinsa_list'), #무신사 테스트페이지
     path('we-data-test/', weather_views.we_data_test, name='wedatatest'),
+    path('save_location/', save_location, name='save_location'),
+    path('musinsa-test/', musinsa_list, name='musinsa_list'),
+    path('categorize/', categorize, name='categorize'),
     path('show_cookie', show_cookies ,name='show_cookies'), #쿠키테스트   
->>>>>>> develop
 ]
