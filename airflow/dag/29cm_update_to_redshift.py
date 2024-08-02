@@ -14,7 +14,7 @@ from botocore.exceptions import NoCredentialsError
 def merge_and_upload_to_s3():
     # S3에서 CSV 파일 읽기
     s3_connection = S3Hook('MyS3Conn')
-    BUCKET_NAME = s3_connection.get_bucket()
+    BUCKET_NAME = s3_connection.get_bucket(Variable.get("s3_bucket"))
     # BUCKET_NAME = BaseHook.get_connection('MyS3Conn').extra_dejson.get('bucket_name')
 
     # S3에서 모든 CSV 파일 목록 가져오기
