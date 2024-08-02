@@ -32,8 +32,8 @@ def merge_and_upload_to_s3():
         
         # CSV 파일 목록 수집
         today_str = datetime.now().strftime("%Y%m%d")
-        csv_files = [key for key in keys if key.endswith('s3') and today_str in key]
-        logger.info(f'Read File 29cm {today_str} file List ........ : {csv_file}')
+        csv_files = [key for key in keys if key.endswith('.csv') and today_str in key]
+        logger.info(f'Read File 29cm {today_str} file List ........ : {csv_files}')
         # CSV 파일 병합 로직
         if not csv_files:
             print("No CSV files found for today's date.")
