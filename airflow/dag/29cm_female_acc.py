@@ -10,9 +10,11 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from datetime import datetime
 import json
+import boto3
 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
+from airflow.models import Variable
 
 # 성별 변환 함수
 def transform_gender(gender):
@@ -176,7 +178,7 @@ def result_save_to_dir(product_data):
     
     # S3에 업로드
     
-    BUCKET_NAME = Variable.get('s3')
+    BUCKET_NAME = Variable.get('s3_bucket')
     AWS_ACCESS_KEY_ID = Variable.get('ACCESS_KEY')
     AWS_SECRET_ACCESS_KEY = Variable.get('SECRET_KEY')
     s3_client = boto3.client('s3',
