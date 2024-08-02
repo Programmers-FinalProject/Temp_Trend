@@ -34,7 +34,7 @@ def merge_and_upload_to_s3():
         
         csv_files=[]
         for file in keys :
-            filepath = f's3://{Variable.get('s3_bucket')}/{file}'
+            filepath = f's3://{Variable.get("s3_bucket")}/{file}'
             logger.info(f'File list .......... : {filepath}')
             if filepath in today_str :
                 csv_files.append(filepath)
