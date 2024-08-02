@@ -16,24 +16,32 @@ def merge_and_upload_to_s3():
     logger = logging.getLogger(__name__)
     # S3에서 CSV 파일 읽기
     s3_connection = S3Hook('MyS3Conn')
-    BUCKET_NAME = s3_connection.get_bucket(Variable.get("s3_bucket"))
+    BUCKET_NAME = s3_connection.get_bucket(Variable.get("s3_bucket")) # s3.Bucket(name='team-hori-1-bucket')
     logger.info(f'Bucket Check ....... : {BUCKET_NAME}')
     # BUCKET_NAME = BaseHook.get_connection('MyS3Conn').extra_dejson.get('bucket_name')
 
     # S3에서 모든 CSV 파일 목록 가져오기
     prefix = 'crawling/'
     
+    today_str = datetime.now().strftime("%Y%m%d")
     try:
         # S3에서 객체 목록 가져오기
         keys = s3_connection.list_keys(bucket_name = BUCKET_NAME, prefix=prefix)
+        logger.info(f'File in Directory Check ....... : {keys}')
         if not keys :
             logger.info('No files found in the S3 bucket')
             return
         
+        csv_files=[]
+        for file in keys :
+            filepath = f's3://{Variable.get('s3_bucket')}/{file}'
+            logger.info(f'File list .......... : {filepath}')
+            if filepath in today_str :
+                csv_files.append(filepath)
+                
         # CSV 파일 목록 수집
-        today_str = datetime.now().strftime("%Y%m%d")
-        csv_files = [key for key in keys if key.endswith('.csv') and today_str in key]
-        logger.info(f'Read File 29cm {today_str} file List ........ : {csv_files}')
+        # csv_files = [key for key in keys if key.endswith('.csv') and today_str in key]
+        # logger.info(f'Read File 29cm {today_str} file List ........ : {csv_files}')
         # CSV 파일 병합 로직
         if not csv_files:
             print("No CSV files found for today's date.")
@@ -57,10 +65,6 @@ def merge_and_upload_to_s3():
         
         logger.info(f"Combined file uploaded to S3: {output_key}")
 
-
-    
-    except NoCredentialsError:
-        logger.info("AWS credentials not found.")
     except Exception as e:
         logger.info(f"An error occurred: {e}")
 
