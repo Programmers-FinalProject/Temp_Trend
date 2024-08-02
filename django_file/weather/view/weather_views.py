@@ -5,9 +5,9 @@ from weather.view import nxny
 from django.http import JsonResponse
 
 def we_data_test(request):
-    # test = WeatherData.objects.using('redshift').all()
-    test = testdataset() # [{'baseDate': '20240729', 'baseTime': '0500', 'category': 'TMP', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '26', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'UUU', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '5.5', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'VVV', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '6.6', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'VEC', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '220', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'WSD', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '8.6', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'SKY', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '3', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'PTY', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '0', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'POP', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '20', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'WAV', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '2', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'PCP', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '강수없음', 'nx': '34', 'ny': '126'}]
-    context = {'we_dataList' : we_data_setting(test)}
+    wedata = get_we_data_now()
+    # test = testdataset() # [{'baseDate': '20240729', 'baseTime': '0500', 'category': 'TMP', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '26', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'UUU', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '5.5', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'VVV', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '6.6', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'VEC', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '220', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'WSD', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '8.6', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'SKY', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '3', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'PTY', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '0', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'POP', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '20', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'WAV', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '2', 'nx': '34', 'ny': '126'}, {'baseDate': '20240729', 'baseTime': '0500', 'category': 'PCP', 'fcstDate': '20240729', 'fcstTime': '0600', 'fcstValue': '강수없음', 'nx': '34', 'ny': '126'}]
+    context = {'we_dataList' : we_data_setting(wedata)}
     return render(request, 'wedatatest.html', context)
 
 # 예보날짜 세팅
@@ -16,7 +16,7 @@ def based_ymdgetter():
 
     # 05시 30분 이전은 어제 예보 정보를 가지고 결과 보여줌
     hm = now.strftime("%H%M")
-    ckhm = datetime.strptime("0530", "%H%M")
+    ckhm = datetime.strptime("0530", "%H%M").strftime("%H%M")
     if(hm < ckhm) :
         now = now - timedelta(days=1)
 
@@ -29,27 +29,27 @@ def ymd_timegetter():
     ymd = now.strftime("%Y%m%d")
     hm = now.strftime("%H00")
     pdict["Pfcstdate"] = ymd
-    pdict["Pfcsttiime"] = hm
+    pdict["Pfcsttime"] = hm
     return pdict
 
     
-# request로 Pfcstdate와 Pfcsttiime 받아오면 됨
+# request로 Pfcstdate와 Pfcsttime 받아오면 됨
 # 또는 현재시각을 잘 손봐서 넣으면 됨
 # 전체지역 1시간
-def get_we_data_now(request):
+def get_we_data_now():
     ymd = based_ymdgetter()
     pdict = ymd_timegetter()
     Pfcstdate = pdict["Pfcstdate"]
-    Pfcsttiime = pdict["Pfcsttiime"]
-    test = WeatherData.objects.using('redshift').filter(basedate=ymd).filter(fcstdate=Pfcstdate).filter(fcsttiime=Pfcsttiime)
+    Pfcsttime = pdict["Pfcsttime"]
+    result = WeatherData.objects.using('redshift').filter(basedate=ymd).filter(fcstdate=Pfcstdate).filter(fcsttime=Pfcsttime)
+    return result
 
 # nx와 ny 값 받아서 Pnx Pny로
 # 세부 지역 - 1군데 예측된값 전부 즉 제일 최신 basedate
-def get_we_data_xy(request):
+def get_we_data_xy(Pnx, Pny):
     ymd = based_ymdgetter()
-    Pnx = "38"
-    Pny = "123"
-    test = WeatherData.objects.using('redshift').filter(basedate=ymd).filter(nx=Pnx).filter(ny=Pny)
+    result = WeatherData.objects.using('redshift').filter(basedate=ymd).filter(nx=Pnx).filter(ny=Pny)
+    return result
 
 
 def we_data_setting(dataList):    
@@ -147,23 +147,23 @@ def get_weather_data(request):
     # 세션에서 위도와 경도 정보를 가져옴
     latitude = request.session.get('latitude')
     longitude = request.session.get('longitude')
-
     if latitude is not None and longitude is not None:
         # weather_data 테이블에서 nx와 ny가 세션의 위도와 경도와 일치하는 레코드 조회
-        weather_data_records = WeatherData.objects.filter(nx=latitude, ny=longitude)
-        data = [
-            {
-                'basedate': record.basedate,
-                'basetime': record.basetime,
-                'weather_code': record.weather_code,
-                'fcstdate': record.fcstdate,
-                'fcsttime': record.fcsttime,
-                'fcstvalue': record.fcstvalue,
-                'nx': record.nx,
-                'ny': record.ny
-            }
-            for record in weather_data_records
-        ]
+        weather_data_records = get_we_data_xy(latitude, longitude) # WeatherData.objects.filter(nx=latitude, ny=longitude)
+        data = we_data_setting(weather_data_records)
+        # data = [
+        #     {
+        #         'basedate': record.basedate,
+        #         'basetime': record.basetime,
+        #         'weather_code': record.weather_code,
+        #         'fcstdate': record.fcstdate,
+        #         'fcsttime': record.fcsttime,
+        #         'fcstvalue': record.fcstvalue,
+        #         'nx': record.nx,
+        #         'ny': record.ny
+        #     }
+        #     for record in weather_data_records
+        # ]
         return JsonResponse({'status': 'success', 'data': data})
     else:
         return JsonResponse({'status': 'error', 'message': 'No location data in session'}, status=400)
