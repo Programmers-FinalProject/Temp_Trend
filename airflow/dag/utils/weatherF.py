@@ -20,6 +20,7 @@ def apiUrl(domain, options):
 # api 호출
 def weatherApi(domain, options) :
     apiurl = apiUrl(domain, options)
+    print(apiurl)
     response = requests.get(apiurl)
     response.encoding = response.apparent_encoding
     apidata = response.text
@@ -87,7 +88,7 @@ def CSVdownloader(bucket_name, s3_file_path, s3_client, file_name):
 
     # 데이터프레임 생성
     csv_string = obj['Body'].read().decode('utf-8')
-    df = pd.read_csv(StringIO(csv_string))
+    df = pd.read_csv(StringIO(csv_string), dtype=str)
 
     print("Successfully download CSV to S3:", s3_file_path+file_name)
     print(df)
@@ -147,8 +148,8 @@ def weather_stn_create():
     recreate_sql = f"""
 CREATE TABLE IF NOT EXISTS {schema}.weather_stn (
     stn TEXT PRIMARY KEY,
-    lon TEXT, -- ny
-    lat TEXT, -- nx
+    lon TEXT,
+    lat TEXT,
     stn_ko TEXT,
     stn_en TEXT
 );

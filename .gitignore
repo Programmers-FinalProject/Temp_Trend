@@ -4,3 +4,8 @@ Temp_Trend.sock
 staticfiles/
 venv/
 Temp_Trend.wsgi
+.idea/
+*.log
+*.pot
+*.pyc
+__pycache__/

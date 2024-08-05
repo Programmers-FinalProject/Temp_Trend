@@ -1,40 +1,40 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM fully loaded and parsed");
-    
+
     const currentLocationBtn = document.getElementById('current-location-btn');
+    const currentLocationElement = document.getElementById('current-location');
+
+    // 세션에 저장된 주소 가져오기
+    fetch('/api/session-address/')
+        .then(response => response.json())
+        .then(data => {
+            if (currentLocationElement) {
+                currentLocationElement.textContent = ` 현위치: ${data.address}`;
+            }
+        })
+        .catch(error => console.error('Error:', error));
+
     if (currentLocationBtn) {
         console.log("Current location button found");
         currentLocationBtn.addEventListener('click', function() {
-            console.log("Current location button clicked");
             if ("geolocation" in navigator) {
-                console.log("Geolocation is available");
                 navigator.geolocation.getCurrentPosition(function(position) {
-                    console.log("Position acquired", position);
                     var latitude = position.coords.latitude;
                     var longitude = position.coords.longitude;
-                    
-                    // 위치 정보를 화면에 표시
-                    const currentLocationElement = document.getElementById('current-location');
-                    if (currentLocationElement) {
-                        currentLocationElement.textContent = `위도: ${latitude.toFixed(4)}, 경도: ${longitude.toFixed(4)}`;
-                        console.log("Location displayed on screen");
-                    } else {
-                        console.error("Element with id 'current-location' not found");
-                    }
-                    
+
                     // 위치 정보를 서버로 전송
                     const csrftoken = getCookie('csrftoken');
                     console.log("CSRF token:", csrftoken);
-                    
+
                     fetch('/save_location/', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRFToken': csrftoken
+                            'X-CSRFToken': csrftoken,
                         },
                         body: JSON.stringify({
-                            latitude: latitude,
-                            longitude: longitude,
+                            latitude: latitude.toFixed(4),
+                            longitude: longitude.toFixed(4),
                             location_type: 'current'
                         })
                     })
@@ -44,6 +44,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     })
                     .then(data => {
                         console.log('Location saved:', data);
+                        // 위치 이름 요청
+                        fetch('/location_name/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCookie('csrftoken'),
+                            },
+                            body: JSON.stringify({
+                                latitude: latitude.toFixed(4),
+                                longitude: longitude.toFixed(4)
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (currentLocationElement) {
+                                currentLocationElement.textContent = ` 현위치: ${data.address}`;
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
                     })
                     .catch((error) => {
                         console.error('Error:', error);

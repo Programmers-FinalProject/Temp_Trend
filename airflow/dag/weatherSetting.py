@@ -48,8 +48,7 @@ dag = DAG(
     'weatherSetting',
     default_args=default_args,
     description='예보 지역 데이터 API호출',
-    schedule_interval=timedelta(days=1),
-    start_date=datetime.now() - timedelta(days=1),
+    start_date=datetime(2024, 7, 26),
     catchup=False,
 )
 
@@ -93,12 +92,14 @@ stnApiTask = PythonOperator(
     task_id='stnApiTask',
     python_callable=stnApi,
     dag=dag,
+    queue='queue1'
 )
 
 weatherStnDataToRedshiftTask = PythonOperator(
     task_id='weatherStnDataToRedshiftTask',
     python_callable=weatherStnDataToRedshift,
     dag=dag,
+    queue='queue1'
 )
 
 
@@ -107,18 +108,21 @@ with TaskGroup(group_id='weatherTableSetting', dag=dag) as weatherTableSetting:
         task_id='weatherCodeTableCreate',
         python_callable=weatherCodeTable,
         dag=dag,
+        queue='queue1'
     )
 
     weatherDataTableCreate = PythonOperator(
         task_id='weatherDataTableCreate',
         python_callable=weatherDataTable,
         dag=dag,
+        queue='queue1'
     )
 
     weatherStnTableCreate = PythonOperator(
         task_id='weatherStnTableCreate',
         python_callable=weatherStnTable,
         dag=dag,
+        queue='queue1'
     )
 
 # DAG 설정

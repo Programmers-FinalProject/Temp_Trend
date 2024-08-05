@@ -3,24 +3,151 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import json
 from weather.models import LocationRecord
+import os
+import requests
+from dotenv import load_dotenv
+from django.shortcuts import render
+
+
+load_dotenv()
+
 
 @csrf_exempt
 @require_POST
 def save_location(request):
-    data = json.loads(request.body)
-    latitude = data.get('latitude')
-    longitude = data.get('longitude')
-    location_type = data.get('location_type')
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        latitude = data.get('latitude')
+        longitude = data.get('longitude')
+        location_type = data.get('location_type')
 
-    location = LocationRecord.objects.create(
-        latitude=latitude,
-        longitude=longitude,
-        location_type=location_type
-    )
+        # 세션 키 가져오기
+        session_key = request.session.session_key
+        if not session_key:
+            request.session.create()
+            session_key = request.session.session_key
 
-    return JsonResponse({
-        'status': 'success',
-        'latitude': location.latitude,
-        'longitude': location.longitude,
-        'location_type': location.location_type
+        # 세션에 위치 정보 저장
+        request.session['latitude'] = latitude
+        request.session['longitude'] = longitude
+        request.session['location_type'] = location_type
+
+        # 데이터베이스에 위치 정보 저장 (옵션)
+        '''
+        location_record = LocationRecord(
+            latitude=latitude,
+            longitude=longitude,
+            location_type=location_type,
+            session=session_key
+        )
+        location_record.save()
+        '''
+
+        return JsonResponse({'status': 'success', 'message': 'location saved successfully.'})
+    return JsonResponse({'status': 'fail', 'message': 'Invalid request method.'})
+
+
+@csrf_exempt
+@require_POST
+def save_gender(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        gender = data.get('gender')
+        request.session['selected_gender'] = gender
+        
+        '''
+        gender_record = 테이블이름(
+            gender = gender,
+            session = session_key
+        )
+        테이블이름.save()
+        '''
+        return JsonResponse({'status': 'success', 'message': 'Gender saved successfully.'})
+    return JsonResponse({'status': 'fail', 'message': 'Invalid request method.'})
+
+
+def get_location_name_from_kakao(latitude, longitude):
+    api_key = os.getenv('KAKAO_API_KEY')  # 카카오 API 키
+    url = f"https://dapi.kakao.com/v2/local/geo/coord2address.json?x={longitude}&y={latitude}"
+    headers = {
+        "Authorization": f"KakaoAK {api_key}"
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        try:
+            address = response.json()["documents"][0]["address"]["address_name"]
+            return address
+        except (IndexError, KeyError):
+            return "No address found"
+    else:
+        return f"Error: {response.status_code}"
+
+@csrf_exempt
+def location_name(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        latitude = data.get('latitude')
+        longitude = data.get('longitude')
+
+        # 위치 이름 찾기
+        address = get_location_name_from_kakao(latitude, longitude)
+        request.session['address'] = address
+        
+        address = request.session.get('address', 'No address in session')
+        return JsonResponse({'address': address})
+    elif request.method == 'GET':
+        latitude = request.GET.get('latitude')
+        longitude = request.GET.get('longitude')
+
+        if latitude is not None and longitude is not None:
+            # 위치 이름 찾기
+            address = get_location_name_from_kakao(latitude, longitude)
+
+            return JsonResponse({'address': address})
+        return JsonResponse({'status': 'error', 'message': 'Missing parameters'}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+
+def session_data_api(request):
+    address = request.session.get('address', 'No address in session')
+    latitude = request.session.get('latitude', 'No latitude in session')
+    longitude = request.session.get('longitude', 'No longitude in session')
+    gender = request.session.get('selectedGender', 'No gender in session')
+    
+    if address[0] == 'N':
+        err_message = '현위치 찾기를 눌러주세요'
+        return render (request, 'index.html', {'err_message':err_message})
+    elif gender[0] == 'N':
+        err_message = '성을 선택해 주세요'
+        return render (request, 'index.html', {'err_message':err_message})
+    elif longitude[0] == 'N' or latitude[0] == 'N':
+        err_message = '서버에 문제가 생겼어요'
+        return render (request, 'index.html', {'err_message':err_message})
+    else :
+        return JsonResponse({
+        'address': address,
+        'latitude': latitude,
+        'longitude': longitude,
+        'selectedGender': gender,
     })
+    
+    
+
+@require_POST
+@csrf_exempt
+def session_delete(request, key=None):
+    try:
+        if key == 'location':
+            del request.session['address']
+            del request.session['latitude']
+            del request.session['longitude']
+        elif key == 'gender':
+            del request.session['selectedGender']
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid session type'})
+        return JsonResponse({'success': True})
+    except KeyError:
+        return JsonResponse({'success': False, 'error': 'Session key not found'})
+    except Exception as e:
+        print(f"Error deleting session: {e}")
+        return JsonResponse({'success': False, 'error': 'Unknown error occurred'})
