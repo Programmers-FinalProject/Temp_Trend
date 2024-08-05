@@ -1,4 +1,5 @@
 
+{% load static %}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -6,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Temp_Trend - 날씨 정보</title>        
     <style>
-        *{padding: 0; margin: 0;}
+        *{padding: 0; margin: 0; background-color: #aaa;}
         .clear::after {
             content: "";
             display: table;
@@ -18,6 +19,7 @@
         .we-data-list{float: left; padding: 0px; margin: 0;}
         .we-list {margin: 0 auto; text-align: center; border-left: 1px dotted; border-right: 1px dotted;}
         .we-atp, .we-tmp, .we-ras, .we-wind{border-bottom: 1px #cccccc dotted;}
+        .we-img>img { height: 30px;}
         
         
     </style>
@@ -73,7 +75,9 @@
             <li class="we-data-list">
                 <ul>
                     <li class="we-list we-time">{{ we_data.fcsttime|slice:":2"|default:"-" }}시</li>
-                    <li class="we-list we-pty">{{ we_data.PTY|default:"-" }}</li>
+                    <li class="we-list we-img">
+                        <img src="{% static we_data.imgurl|default:'default-image.png' %}" alt="날씨 이미지">
+                    </li>
                     <li class="we-list we-tmp">{{ we_data.TMP|default:"-"}}°C</li>
                     <li class="we-list we-pop">{{ we_data.POP|default:"-" }}%</li>
                     <li class="we-list we-ras">{{ we_data.PCP|default:"-" }}</li>
@@ -84,6 +88,7 @@
             {% endfor %}
         </ul>
         {{we_dataList}}
+        
     </div>
 </body>
 </html>

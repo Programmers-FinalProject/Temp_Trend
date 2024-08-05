@@ -31,17 +31,18 @@ function fetchSessionData() {
         .catch(error => {
             console.error('Error:', error);
             if (error instanceof SyntaxError) {
-                alert('서버 응답을 처리하는 중 오류가 발생했습니다. 응답 형식을 확인해주세요.');
+                showError('서버 응답을 처리하는 중 오류가 발생했습니다. 응답 형식을 확인해주세요.');
             } else {
-                alert(`세션 삭제 중 오류가 발생했습니다: ${error.message}`);
+                showError(`세션 데이터 가져오기 중 오류가 발생했습니다: ${error.message}`);
             }
-    });
+        });
+}
 
 // 오류 메시지를 표시하는 함수
 function showError(message) {
     const errorOverlay = document.getElementById('errorOverlay');
-    const errorMessageElement = document.getElementById('errorMessage');
-    errorMessageElement.textContent = message;
+    const errorText = document.getElementById('errorText');
+    errorText.textContent = message;
     errorOverlay.style.display = 'flex';
 
     // 페이지 이동 방지

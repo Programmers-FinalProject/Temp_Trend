@@ -50,6 +50,7 @@ dag = DAG(
     description='예보 지역 데이터 API호출',
     start_date=datetime(2024, 7, 26),
     catchup=False,
+    schedule_interval=None,
 )
 
 # 작업 함수 정의
