@@ -82,7 +82,7 @@ dag = DAG(
     '29cm_s3_to_redshift',
     default_args=default_args,
     description='Fetch today\'s data from S3 and upload to Redshift',
-    schedule_interval='30 23 * * *',  # 매일 저녁 11시 30분
+    schedule_interval='30 14 * * *',  # 매일 저녁 11시 30분
     start_date=datetime(2024, 8, 1),  
     catchup=False,
 )
