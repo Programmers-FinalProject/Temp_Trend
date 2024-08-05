@@ -34,7 +34,7 @@ def merge_files(**kwargs):
             combined_df = pd.concat([combined_df, df], ignore_index=True)
 
     combined_df['price'] = combined_df['price'].replace(',', '', regex=True).astype(float)
-    combined_df['category3'] = combined_df['category3'].fillna(value=None)  # NaN을 NULL로 변환
+    combined_df['category3'] = combined_df['category3'].fillna('')  # NaN을 NULL로 변환
 
 
     # 합쳐진 데이터프레임을 CSV로 저장하거나 다른 작업 수행
