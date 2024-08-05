@@ -55,7 +55,7 @@ def weatherTask(nx,ny):
     print(apidata)
     weatherF.weatherCSVmaker(s3_bucket, f"{s3_csv_path}weatherAPIData_{weApiOption['nx']}_{weApiOption['ny']}.csv",apidata, s3_client)
     print(f"weatherAPIData_{weApiOption['nx']}_{weApiOption['ny']} Save")
-    time.sleep(10)
+    time.sleep(5)
 
 # 작업 함수 정의
 def weatherX43Y27():
@@ -274,7 +274,8 @@ with TaskGroup(group_id='weatherTableSetting', dag=dag) as CSVSetting:
         dag=dag,
         queue='queue1'
     )
-
+    weatherX43Y27Task >> weatherX25Y49Task >> weatherX43Y49Task >> weatherX61Y49Task >> weatherX79Y49Task >> weatherX43Y71Task >> weatherX61Y71Task >> weatherX79Y71Task >> weatherX97Y72Task >> weatherX43Y93Task >> weatherX61Y93Task >> weatherX78Y93Task >> weatherX96Y94Task >> weatherX8Y115Task >> weatherX43Y114Task >> weatherX60Y114Task >> weatherX78Y115Task >> weatherX95Y115Task >> weatherX112Y116Task >> weatherX60Y136Task >> weatherX77Y136Task
+    
 CsvToSql = PythonOperator(
         task_id='CsvToSql',
         python_callable=weatherCsvToSql,

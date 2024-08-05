@@ -67,6 +67,7 @@ def we_data_setting(dataList):
             if we_validation(data, checkerDict) : 
                 newdata[data['weather_code']] = data['fcstvalue']
             else :
+                newdata['imgurl'] = weather_imgurl(newdata)
                 new_dataList.append(newdata)
                 nxnypos = nxnySetting(lon=int(data['ny']), lat=int(data['nx']))
                 print(new_dataList)
@@ -89,6 +90,7 @@ def we_data_setting(dataList):
             newdata['fcsttime'] = data['fcsttime']
             newdata['nx'] = nxnypos['nx']
             newdata['ny'] = nxnypos['ny']
+    newdata['imgurl'] = weather_imgurl(newdata)
     new_dataList.append(newdata)
     print(new_dataList)
     return new_dataList
@@ -98,7 +100,16 @@ def we_validation(data, sample):
         print(data['fcstdate'] == sample['fcstdate'], data['fcsttime'] == sample['fcsttime'], data['ny'] == data['ny'], data['nx'] == data['nx'])
         return True
     return False
-    
+
+def weather_imgurl(param):
+    path = "img/"
+    imgurl = ""
+    if param['PTY'] == "0":
+        imgurl = path+"sky"+param['SKY']+".png"
+    else :
+        imgurl = path+"pty"+param['PTY']+".png"
+    return imgurl
+
 
 def testdataset():
     json_output = [
