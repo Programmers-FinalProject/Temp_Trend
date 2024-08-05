@@ -7,7 +7,7 @@ import os
 import requests
 from dotenv import load_dotenv
 from django.shortcuts import render
-
+import logging
 
 load_dotenv()
 
@@ -46,42 +46,6 @@ def save_location(request):
         return JsonResponse({'status': 'success', 'message': 'location saved successfully.'})
     return JsonResponse({'status': 'fail', 'message': 'Invalid request method.'})
 
-
-@csrf_exempt
-@require_POST
-def save_gender(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        gender = data.get('gender')
-        request.session['selected_gender'] = gender
-        
-        '''
-        gender_record = 테이블이름(
-            gender = gender,
-            session = session_key
-        )
-        테이블이름.save()
-        '''
-        return JsonResponse({'status': 'success', 'message': 'Gender saved successfully.'})
-    return JsonResponse({'status': 'fail', 'message': 'Invalid request method.'})
-
-
-def get_location_name_from_kakao(latitude, longitude):
-    api_key = os.getenv('KAKAO_API_KEY')  # 카카오 API 키
-    url = f"https://dapi.kakao.com/v2/local/geo/coord2address.json?x={longitude}&y={latitude}"
-    headers = {
-        "Authorization": f"KakaoAK {api_key}"
-    }
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        try:
-            address = response.json()["documents"][0]["address"]["address_name"]
-            return address
-        except (IndexError, KeyError):
-            return "No address found"
-    else:
-        return f"Error: {response.status_code}"
-
 @csrf_exempt
 def location_name(request):
     if request.method == 'POST':
@@ -108,23 +72,79 @@ def location_name(request):
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
 
+
+
+logger = logging.getLogger(__name__)
+
+@csrf_exempt
+@require_POST
+def save_gender(request):
+    logger.info("save_gender view called")
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            gender = data.get('gender')
+            logger.info(f"Received gender: {gender}")
+            
+            if gender not in ['m', 'w', 'unisex']:
+                logger.warning(f"Invalid gender value received: {gender}")
+                return JsonResponse({'status': 'fail', 'message': 'Invalid gender value.'}, status=400)
+            
+            # 세션 키 가져오기
+            session_key = request.session.session_key
+            if not session_key:
+                request.session.create()
+                session_key = request.session.session_key
+
+            # 세션에 성별 정보 저장
+            request.session['selectedGender'] = gender
+            logger.info(f"Gender saved in session: {gender}")
+
+            # 데이터베이스에 성별 정보 저장 (옵션)
+            '''
+            gender_record = GenderRecord(
+                gender=gender,
+                session=session_key
+            )
+            gender_record.save()
+            '''
+
+            return JsonResponse({'status': 'success', 'message': 'Gender saved successfully.'})
+        except json.JSONDecodeError:
+            logger.error("Invalid JSON in request body")
+            return JsonResponse({'status': 'fail', 'message': 'Invalid JSON in request body.'}, status=400)
+        except Exception as e:
+            logger.exception("Unexpected error in save_gender view")
+            return JsonResponse({'status': 'fail', 'message': 'An unexpected error occurred.'}, status=500)
+    return JsonResponse({'status': 'fail', 'message': 'Invalid request method.'}, status=405)
+
+@csrf_exempt
+def get_location_name_from_kakao(latitude, longitude):
+    api_key = os.getenv('KAKAO_API_KEY')  # 카카오 API 키
+    url = f"https://dapi.kakao.com/v2/local/geo/coord2address.json?x={longitude}&y={latitude}"
+    headers = {
+        "Authorization": f"KakaoAK {api_key}"
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        try:
+            address = response.json()["documents"][0]["address"]["address_name"]
+            return address
+        except (IndexError, KeyError):
+            return "No address found"
+    else:
+        return f"Error: {response.status_code}"
+
+
+@csrf_exempt
 def session_data_api(request):
     address = request.session.get('address', 'No address in session')
     latitude = request.session.get('latitude', 'No latitude in session')
     longitude = request.session.get('longitude', 'No longitude in session')
     gender = request.session.get('selectedGender', 'No gender in session')
     
-    if address[0] == 'N':
-        err_message = '현위치 찾기를 눌러주세요'
-        return render (request, 'index.html', {'err_message':err_message})
-    elif gender[0] == 'N':
-        err_message = '성을 선택해 주세요'
-        return render (request, 'index.html', {'err_message':err_message})
-    elif longitude[0] == 'N' or latitude[0] == 'N':
-        err_message = '서버에 문제가 생겼어요'
-        return render (request, 'index.html', {'err_message':err_message})
-    else :
-        return JsonResponse({
+
+    return JsonResponse({
         'address': address,
         'latitude': latitude,
         'longitude': longitude,

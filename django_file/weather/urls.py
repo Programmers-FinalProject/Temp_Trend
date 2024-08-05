@@ -6,7 +6,7 @@ from weather.view import weather_views
 from weather.view.musinsa_views import musinsa_list
 from weather.view.musinsa_views import categorize
 from weather.tests import test
-from weather.view.save_location import save_location, location_name, session_data_api, session_delete
+from weather.view.save_location import save_location, location_name, session_data_api, session_delete,save_gender
 from weather.view.cookie import show_cookies
 
 urlpatterns = [
@@ -18,8 +18,10 @@ urlpatterns = [
     path('display-news/', display_news, name='display_news'),
     # 위치 저장, 위치 정보 보여주기 endpoint
     path('save_location/', save_location, name='save_location'),
+    path('save_gender/',save_gender,name='save_gender'),
     path('location_name/', location_name, name='location_name'),
     path('api/session-address/', session_data_api, name='get_session_address'),
+    #위치, 성별 세션 삭제
     path('delete-session-location/', session_delete, {'key': 'location'}, name='delete-session-location'),
     path('delete-session-gender/', session_delete, {'key': 'gender'}, name='delete-session-gender'),
     # 테스트페이지
