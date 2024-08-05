@@ -4,12 +4,43 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 import pandas as pd
 import boto3
-from sqlalchemy import create_engine
+from io import BytesIO
+
 from airflow.hooks.base_hook import BaseHook
 from airflow.hooks.S3_hook import S3Hook
 from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOperator
+from airflow.providers.amazon.aws.operators.s3 import S3ListOperator
 from airflow.models import Variable
 from botocore.exceptions import NoCredentialsError
+
+
+# 파일 읽고 병합하는 함수
+def merge_files(**kwargs):
+    s3_client = boto3.client('s3',
+                            aws_access_key_id=Variable.get('ACCESS_KEY'),
+                            aws_secret_access_key=Variable.get('SECRET_KEY')
+                            )
+    bucket_name = Variable.get('s3_bucket')
+    # today_str = datetime.now().strftime('%Y%m%d')
+    today_str = '20240804'
+    file_keys = kwargs['task_instance'].xcom_pull(task_ids='list_s3_files')
+
+    combined_df = pd.DataFrame()
+
+    for key in file_keys:
+        if today_str in key:
+            response = s3_client.get_object(Bucket=bucket_name, Key=key)
+            df = pd.read_csv(BytesIO(response['Body'].read()))
+            combined_df = pd.concat([combined_df, df], ignore_index=True)
+
+    # 합쳐진 데이터프레임을 CSV로 저장하거나 다른 작업 수행
+    file_name = f"29cm_bestitem_{today_str}.csv"
+    local_file_path = f"/opt/airflow/data/{file_name}"
+
+    combined_df.to_csv(local_file_path, index=False)
+    s3_client.upload_file(local_file_path, bucket_name, f'crawling/{file_name}')
+
+
 
 # S3에서 CSV 파일을 읽어 하나로 합치는 함수 읽은 파일은 삭제
 def merge_and_upload_to_s3():
@@ -87,19 +118,41 @@ dag = DAG(
     catchup=False,
 )
 
-merge_and_upload_task = PythonOperator(
-    task_id='merge_and_upload_task',
-    python_callable=merge_and_upload_to_s3,
+# S3에서 파일 목록 가져오기
+list_s3_files = S3ListOperator(
+    task_id='list_s3_files',
+    bucket=Variable.get('s3_bucket'),
+    prefix='crawling',
+    delimiter=',',
+    aws_conn_id='MyS3Conn',
     dag=dag,
     queue='queue1'
 )
+
+# merge_and_upload_task = PythonOperator(
+#     task_id='merge_and_upload_task',
+#     python_callable=merge_and_upload_to_s3,
+#     dag=dag,
+#     queue='queue1'
+# )
+
+# 파일 병합 작업 정의
+merge_s3_files = PythonOperator(
+    task_id='merge_s3_files',
+    python_callable=merge_files,
+    provide_context=True,
+    dag=dag,
+    queue='queue1'
+)
+
 
 s3_to_redshift_task = S3ToRedshiftOperator(
     task_id='s3_to_redshift_task',
     schema='raw_data',  # Redshift의 스키마
     table='shop_29cm',  # Redshift의 테이블명
     s3_bucket=Variable.get("s3_bucket"),
-    s3_key=f'crawling/29cm_bestitem_{{ ds_nodash }}.csv',  # Airflow의 템플릿 변수를 사용하여 오늘 날짜를 포함
+    # s3_key=f'crawling/29cm_bestitem_{{ ds_nodash }}.csv',  # Airflow의 템플릿 변수를 사용하여 오늘 날짜를 포함
+    s3_key=f'crawling/29cm_bestitem_20240804.csv',  # Airflow의 템플릿 변수를 사용하여 오늘 날짜를 포함
     copy_options=['CSV'],
     aws_conn_id='MyS3Conn',  # Redshift 연결 ID
     redshift_conn_id='Redshift_cluster_hori1',  # Redshift 연결 ID
@@ -108,4 +161,4 @@ s3_to_redshift_task = S3ToRedshiftOperator(
     queue='queue1'
 )
 
-merge_and_upload_task >> s3_to_redshift_task
+list_s3_files >> merge_s3_files >>s3_to_redshift_task
