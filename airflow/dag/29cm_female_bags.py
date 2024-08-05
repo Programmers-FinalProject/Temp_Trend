@@ -49,6 +49,7 @@ def fetch_product_links(**kwargs):
         category_element.click()
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[1]/ul/span[2]/label')))
         
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[2]/span[2]/label')))
         daily_btn = driver.find_element(By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[2]/span[2]/label')
         daily_btn.click()
         
@@ -206,21 +207,21 @@ with dag:
         task_id='fetch_product_links',
         python_callable=fetch_product_links,
         provide_context=True,
-        queue = 'queue2'
+        queue = 'queue1'
     )
 
     fetch_info_task = PythonOperator(
         task_id='fetch_product_info',
         python_callable=fetch_product_info,
         op_kwargs={'product_data': "{{ task_instance.xcom_pull(task_ids='fetch_product_links') }}"},
-        queue = 'queue2'
+        queue = 'queue1'
     )
 
     save_task = PythonOperator(
         task_id='result_save_to_dir',
         python_callable=result_save_to_dir,
         op_kwargs={'product_data': "{{ task_instance.xcom_pull(task_ids='fetch_product_info') }}"},
-        queue = 'queue2'
+        queue = 'queue1'
     )
 
     # 태스크 종속성 설정

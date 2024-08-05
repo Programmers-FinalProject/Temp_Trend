@@ -5,43 +5,62 @@ import pandas as pd
 import boto3
 from sqlalchemy import create_engine
 from airflow.hooks.base_hook import BaseHook
+from airflow.hooks.S3_hook import S3Hook
+from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOperator
+from airflow.models import Variable
+from botocore.exceptions import NoCredentialsError
 
-# S3에서 CSV 파일을 읽고 Redshift에 업로드하는 함수
-def merge_and_upload_to_redshift():
+# S3에서 CSV 파일을 읽어 하나로 합치는 함수 읽은 파일은 삭제
+def merge_and_upload_to_s3():
     # S3에서 CSV 파일 읽기
-    BUCKET_NAME = BaseHook.get_connection('MyS3Conn').extra_dejson.get('bucket_name')
-    s3_client = boto3.client('s3')
+    s3_connection = S3Hook('MyS3Conn')
+    BUCKET_NAME = s3_connection.get_bucket()
+    # BUCKET_NAME = BaseHook.get_connection('MyS3Conn').extra_dejson.get('bucket_name')
 
     # S3에서 모든 CSV 파일 목록 가져오기
     prefix = 'crawling/'
-    response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=prefix)
-
-    df_list = []
-    today_str = datetime.now().strftime("%Y%m%d")
     
-    if 'Contents' in response:
-        for obj in response['Contents']:
-            file_key = obj['Key']
-            if file_key.endswith('.csv') and today_str in file_key :
-                # S3에서 CSV 파일 읽기
-                csv_file = s3_client.get_object(Bucket=BUCKET_NAME, Key=file_key)
-                df = pd.read_csv(csv_file['Body'])
-                df_list.append(df)
+    try:
+        # S3에서 객체 목록 가져오기
+        keys = s3_connection.list_keys(bucket_name = BUCKET_NAME, prefix=prefix)
+        if not keys :
+            print('No files found in the S3 bucket')
+            return
+        
+        # CSV 파일 목록 수집
+        today_str = datetime.now().strftime("%Y%m%d")
+        csv_files = [key for key in keys if key.endswith('s3') and today_str in key]
 
-    # 모든 데이터프레임을 하나로 통합
-    if df_list:
-        merged_df = pd.concat(df_list, ignore_index=True)
+        # CSV 파일 병합 로직
+        if not csv_files:
+            print("No CSV files found for today's date.")
+            return
+        
+        combined_df = pd.DataFrame()
+        
+        for csv_file in csv_files:
+            # S3에서 CSV 파일 읽기
+            s3_object = s3_connection.get_key(csv_file, BUCKET_NAME)
+            df = pd.read_csv(s3_object.get()['Body'])
+            combined_df = pd.concat([combined_df, df], ignore_index=True)
 
-        # Redshift에 연결
-        redshift_conn = BaseHook.get_connection('Redshift_cluster_hori1')
-        engine = create_engine(f'redshift+psycopg2://{redshift_conn.user}:{redshift_conn.password}@{redshift_conn.host}:{redshift_conn.port}/{redshift_conn.database}')
+            s3_connection.delete_objects(bucket_name=BUCKET_NAME, keys=[csv_file])
+        
+        # S3에 합쳐진 DataFrame 저장
+        output_key = f'crawling/29cm_bestitem_{today_str}.csv'
+        combined_df.to_csv(f'/opt/airflow/data/29cm_bestitem_{today_str}.csv', index=False)  # 로컬 파일로 저장
+        s3_connection.load_file(f'/opt/airflow/data/29cm_bestitem_{today_str}.csv', output_key, bucket_name=BUCKET_NAME, replace=True)  # S3로 업로드
 
-        # 데이터프레임을 Redshift에 업로드
-        merged_df.to_sql('shop_29cm', engine, schema='raw_data', index=False, if_exists='append')  # 'append'로 설정하여 기존 데이터에 추가
+        
+        print(f"Combined file uploaded to S3: {output_key}")
 
-        print("데이터가 Redshift에 업로드되었습니다.")
-    else:
-        print("업로드할 데이터가 없습니다.")
+    
+    except NoCredentialsError:
+        print("AWS credentials not found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    
+    return combined_df
 
 # DAG 설정
 default_args = {
@@ -62,11 +81,25 @@ dag = DAG(
     catchup=False,
 )
 
-# 태스크 정의
-upload_task = PythonOperator(
-    task_id='merge_and_upload_to_redshift',
-    python_callable=merge_and_upload_to_redshift,
+merge_and_upload_task = PythonOperator(
+    task_id='merge_and_upload_task',
+    python_callable=merge_and_upload_to_s3,
     dag=dag,
+    queue='queue1'
 )
 
-upload_task
+s3_to_redshift_task = S3ToRedshiftOperator(
+    task_id='s3_to_redshift_task',
+    schema='raw_data',  # Redshift의 스키마
+    table='shop_29cm',  # Redshift의 테이블명
+    s3_bucket=Variable.get("s3_bucket"),
+    s3_key=f'crawling/29cm_bestitem_{{ ds_nodash }}.csv',  # Airflow의 템플릿 변수를 사용하여 오늘 날짜를 포함
+    copy_options=['CSV'],
+    aws_conn_id='MyS3Conn',  # Redshift 연결 ID
+    redshift_conn_id='Redshift_cluster_hori1',  # Redshift 연결 ID
+    method="APPEND",
+    dag=dag,
+    queue='queue1'
+)
+
+merge_and_upload_task >> s3_to_redshift_task

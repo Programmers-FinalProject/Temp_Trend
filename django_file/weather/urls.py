@@ -4,6 +4,7 @@ from weather.view.redis import fetch_and_store_news, display_news, news_view
 from weather.view.index import weather_view
 from weather.view import weather_views
 from weather.view.musinsa_views import musinsa_list
+from weather.view.musinsa_views import categorize
 from weather.tests import test
 from weather.view.save_location import save_location, location_name, session_data_api, session_delete
 from weather.view.cookie import show_cookies
@@ -25,5 +26,6 @@ urlpatterns = [
     path('test/', test, name='test'),
     path('musinsa-test/', musinsa_list, name='musinsa_list'),  # 무신사 테스트페이지
     path('we-data-test/', weather_views.we_data_test, name='wedatatest'),
-    path('show_cookie/', show_cookies, name='show_cookies'),  # 쿠키테스트   
+    path('categorize/', categorize, name='categorize'),
+    path('show_cookie', show_cookies ,name='show_cookies'), #쿠키테스트   
 ]
