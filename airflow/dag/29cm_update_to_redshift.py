@@ -1,66 +1,62 @@
+import logging
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 import pandas as pd
 import boto3
-from sqlalchemy import create_engine
+from io import BytesIO
+
 from airflow.hooks.base_hook import BaseHook
 from airflow.hooks.S3_hook import S3Hook
 from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOperator
+from airflow.providers.amazon.aws.operators.s3 import S3ListOperator
 from airflow.models import Variable
 from botocore.exceptions import NoCredentialsError
 
-# S3에서 CSV 파일을 읽어 하나로 합치는 함수 읽은 파일은 삭제
-def merge_and_upload_to_s3():
-    # S3에서 CSV 파일 읽기
-    s3_connection = S3Hook('MyS3Conn')
-    BUCKET_NAME = s3_connection.get_bucket()
-    # BUCKET_NAME = BaseHook.get_connection('MyS3Conn').extra_dejson.get('bucket_name')
 
-    # S3에서 모든 CSV 파일 목록 가져오기
-    prefix = 'crawling/'
-    
-    try:
-        # S3에서 객체 목록 가져오기
-        keys = s3_connection.list_keys(bucket_name = BUCKET_NAME, prefix=prefix)
-        if not keys :
-            print('No files found in the S3 bucket')
-            return
-        
-        # CSV 파일 목록 수집
-        today_str = datetime.now().strftime("%Y%m%d")
-        csv_files = [key for key in keys if key.endswith('s3') and today_str in key]
+# 파일 읽고 병합 및 임시 파일 삭제
+def merge_files(**kwargs):
+    logger = logging.getLogger(__name__)
+    s3_client = boto3.client('s3',
+                            aws_access_key_id=Variable.get('ACCESS_KEY'),
+                            aws_secret_access_key=Variable.get('SECRET_KEY')
+                            )
+    bucket_name = Variable.get('s3_bucket')
+    today_str = datetime.now().strftime('%Y%m%d')
+    file_keys = kwargs['task_instance'].xcom_pull(task_ids='list_s3_files')
 
-        # CSV 파일 병합 로직
-        if not csv_files:
-            print("No CSV files found for today's date.")
-            return
-        
-        combined_df = pd.DataFrame()
-        
-        for csv_file in csv_files:
-            # S3에서 CSV 파일 읽기
-            s3_object = s3_connection.get_key(csv_file, BUCKET_NAME)
-            df = pd.read_csv(s3_object.get()['Body'])
+    combined_df = pd.DataFrame()
+    files_to_delete = []
+
+    for key in file_keys:
+        if today_str in key and 'bestitem' not in key:
+            response = s3_client.get_object(Bucket=bucket_name, Key=key)
+            df = pd.read_csv(BytesIO(response['Body'].read()))
             combined_df = pd.concat([combined_df, df], ignore_index=True)
+            files_to_delete.append(key)  # 삭제할 파일 목록에 키 추가
 
-            s3_connection.delete_objects(bucket_name=BUCKET_NAME, keys=[csv_file])
-        
-        # S3에 합쳐진 DataFrame 저장
-        output_key = f'crawling/29cm_bestitem_{today_str}.csv'
-        combined_df.to_csv(f'/opt/airflow/data/29cm_bestitem_{today_str}.csv', index=False)  # 로컬 파일로 저장
-        s3_connection.load_file(f'/opt/airflow/data/29cm_bestitem_{today_str}.csv', output_key, bucket_name=BUCKET_NAME, replace=True)  # S3로 업로드
+    combined_df['price'] = combined_df['price'].replace(',', '', regex=True).astype(float)
+    combined_df['category3'] = combined_df['category3'].fillna('')  # NaN을 NULL로 변환
 
-        
-        print(f"Combined file uploaded to S3: {output_key}")
 
-    
-    except NoCredentialsError:
-        print("AWS credentials not found.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-    
-    return combined_df
+    # 합쳐진 데이터프레임을 CSV로 저장하거나 다른 작업 수행
+    file_name = f"29cm_bestitem_{today_str}.csv"
+    local_file_path = f"/opt/airflow/data/{file_name}"
+
+    combined_df.to_csv(local_file_path, index=False)
+    s3_client.upload_file(local_file_path, bucket_name, f'crawling/{file_name}')
+    logger.info(f'Upload Files : {file_name}')
+
+    # 읽어온 파일들을 S3에서 삭제
+    if files_to_delete:
+        delete_response = s3_client.delete_objects(
+            Bucket=bucket_name,
+            Delete={
+                'Objects': [{'Key': key} for key in files_to_delete],
+                'Quiet': True  # 삭제 결과를 반환하지 않으려면 True로 설정
+            }
+        )
+        logger.info(f"Deleted files: {delete_response.get('Deleted', [])}")  # 삭제된 파일 목록 출력
 
 # DAG 설정
 default_args = {
@@ -76,17 +72,31 @@ dag = DAG(
     '29cm_s3_to_redshift',
     default_args=default_args,
     description='Fetch today\'s data from S3 and upload to Redshift',
-    schedule_interval='30 23 * * *',  # 매일 저녁 11시 30분
+    schedule_interval='30 14 * * *',  # 매일 저녁 11시 30분
     start_date=datetime(2024, 8, 1),  
     catchup=False,
 )
 
-merge_and_upload_task = PythonOperator(
-    task_id='merge_and_upload_task',
-    python_callable=merge_and_upload_to_s3,
+# S3에서 파일 목록 가져오기
+list_s3_files = S3ListOperator(
+    task_id='list_s3_files',
+    bucket=Variable.get('s3_bucket'),
+    prefix='crawling',
+    delimiter=',',
+    aws_conn_id='MyS3Conn',
     dag=dag,
     queue='queue1'
 )
+
+# 파일 병합 작업 정의
+merge_s3_files = PythonOperator(
+    task_id='merge_s3_files',
+    python_callable=merge_files,
+    provide_context=True,
+    dag=dag,
+    queue='queue1'
+)
+
 
 s3_to_redshift_task = S3ToRedshiftOperator(
     task_id='s3_to_redshift_task',
@@ -94,7 +104,7 @@ s3_to_redshift_task = S3ToRedshiftOperator(
     table='shop_29cm',  # Redshift의 테이블명
     s3_bucket=Variable.get("s3_bucket"),
     s3_key=f'crawling/29cm_bestitem_{{ ds_nodash }}.csv',  # Airflow의 템플릿 변수를 사용하여 오늘 날짜를 포함
-    copy_options=['CSV'],
+    copy_options=['CSV',"IGNOREHEADER 1"],
     aws_conn_id='MyS3Conn',  # Redshift 연결 ID
     redshift_conn_id='Redshift_cluster_hori1',  # Redshift 연결 ID
     method="APPEND",
@@ -102,4 +112,4 @@ s3_to_redshift_task = S3ToRedshiftOperator(
     queue='queue1'
 )
 
-merge_and_upload_task >> s3_to_redshift_task
+list_s3_files >> merge_s3_files >>s3_to_redshift_task
