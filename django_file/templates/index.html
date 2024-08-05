@@ -10,9 +10,17 @@
     <link rel="stylesheet" href="{% static 'styles.css' %}">
 </head>
 <body>
+    <!-- 오류 메시지를 표시할 요소 -->
+    <div class="error-overlay" id="errorOverlay">
+        <div class="error-message">
+            <p id="errorMessage"></p>
+            <button onclick="closeError()">Close</button>
+        </div>
+    </div>
+    <script src="{% static 'err.js' %}"></script>
     <div class="container mt-4">
         <div class="location-header">
-            <i class="fas fa-map-marker-alt text-danger"></i><span id="current-location"> 현위치로 찾기를 눌러주세요</span>
+            <i class="fas fa-map-marker-alt text-danger"></i><span id="current-location"></span>
         </div>
         <div class="main-content">
             <h1 class="text-center text-white mb-4">Temp_Trend</h1>
@@ -28,7 +36,8 @@
                 <input type="text" class="form-control" placeholder="원하는 지역을 선택해 주세요">
                 <div class="mt-2">
                     <button class="btn btn-light btn-sm">저장</button>
-                    <button class="btn btn-light btn-sm">다시찾기</button>
+                    <script src="{% static 'delete.js' %}"></script>
+                    <button class="btn btn-light btn-sm" id="deleteSessionBtnLocation">다시찾기</button>
                     <button class="btn btn-light btn-sm" id="current-location-btn">현위치로 찾기</button>
                 </div>
             </div>
