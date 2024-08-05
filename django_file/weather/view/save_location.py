@@ -43,9 +43,27 @@ def save_location(request):
         location_record.save()
         '''
 
-        return JsonResponse({'status': 'success'})
-    return JsonResponse({'status': 'error'}, status=400)
+        return JsonResponse({'status': 'success', 'message': 'location saved successfully.'})
+    return JsonResponse({'status': 'fail', 'message': 'Invalid request method.'})
 
+
+@csrf_exempt
+@require_POST
+def save_gender(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        gender = data.get('gender')
+        request.session['selected_gender'] = gender
+        
+        '''
+        gender_record = 테이블이름(
+            gender = gender,
+            session = session_key
+        )
+        테이블이름.save()
+        '''
+        return JsonResponse({'status': 'success', 'message': 'Gender saved successfully.'})
+    return JsonResponse({'status': 'fail', 'message': 'Invalid request method.'})
 
 
 def get_location_name_from_kakao(latitude, longitude):
@@ -94,8 +112,42 @@ def session_data_api(request):
     address = request.session.get('address', 'No address in session')
     latitude = request.session.get('latitude', 'No latitude in session')
     longitude = request.session.get('longitude', 'No longitude in session')
-    return JsonResponse({
+    gender = request.session.get('selectedGender', 'No gender in session')
+    
+    if address[0] == 'N':
+        err_message = '현위치 찾기를 눌러주세요'
+        return render (request, 'index.html', {'err_message':err_message})
+    elif gender[0] == 'N':
+        err_message = '성을 선택해 주세요'
+        return render (request, 'index.html', {'err_message':err_message})
+    elif longitude[0] == 'N' or latitude[0] == 'N':
+        err_message = '서버에 문제가 생겼어요'
+        return render (request, 'index.html', {'err_message':err_message})
+    else :
+        return JsonResponse({
         'address': address,
         'latitude': latitude,
-        'longitude': longitude
+        'longitude': longitude,
+        'selectedGender': gender,
     })
+    
+    
+
+@require_POST
+@csrf_exempt
+def session_delete(request, key=None):
+    try:
+        if key == 'location':
+            del request.session['address']
+            del request.session['latitude']
+            del request.session['longitude']
+        elif key == 'gender':
+            del request.session['selectedGender']
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid session type'})
+        return JsonResponse({'success': True})
+    except KeyError:
+        return JsonResponse({'success': False, 'error': 'Session key not found'})
+    except Exception as e:
+        print(f"Error deleting session: {e}")
+        return JsonResponse({'success': False, 'error': 'Unknown error occurred'})
