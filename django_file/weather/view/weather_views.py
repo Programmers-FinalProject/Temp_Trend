@@ -4,6 +4,14 @@ from weather.models import WeatherData
 from weather.view import nxny
 from django.http import JsonResponse
 
+
+# 좌표로 기상 검색
+# we_data_setting(get_we_data_xy(y좌표, x좌표)) => json형태 결과값 출력 해당결과를 페이지로 보내주면됨
+
+# 현재 시간으로 기상 검색
+# we_data_setting(get_we_data_now()) => json으로 전체지역의 기상 현황 해당결과를 페이지로 보내주면됨
+
+
 def we_data_test(request):
     wedata = get_we_data_now()
     # test = testdataset() # [{'basedate': '20240729', 'basetime': '0500', 'weather_code': 'TMP', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '26', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'UUU', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '5.5', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'VVV', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '6.6', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'VEC', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '220', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'WSD', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '8.6', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'SKY', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '3', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'PTY', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '0', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'POP', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '20', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'WAV', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '2', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'PCP', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '강수없음', 'nx': '34', 'ny': '126'}]
@@ -50,11 +58,12 @@ def get_we_data_now():
     ).values()
     return result
 
-# nx와 ny 값 받아서 Pnx Pny로
+# y와 x 값 받아서 nx ny로
 # 세부 지역 - 1군데 예측된값 전부 즉 제일 최신 basedate
-def get_we_data_xy(Pnx, Pny):
+def get_we_data_xy(x, y):
     ymd = based_ymdgetter()
-    result = WeatherData.objects.using('redshift').filter(basedate=ymd).filter(nx=Pnx).filter(ny=Pny)
+    nxnypos = nxnySetting(lon=int(y), lat=int(x))
+    result = WeatherData.objects.using('redshift').filter(basedate=ymd).filter(nx=nxnypos['nx']).filter(ny=nxnypos['ny'])
     return result
 
 
@@ -69,7 +78,6 @@ def we_data_setting(dataList):
             else :
                 newdata['imgurl'] = weather_imgurl(newdata)
                 new_dataList.append(newdata)
-                nxnypos = nxnySetting(lon=int(data['ny']), lat=int(data['nx']))
                 print(new_dataList)
                 newdata = {}
                 checkerDict['fcstdate'] = data['fcstdate']
@@ -78,18 +86,17 @@ def we_data_setting(dataList):
                 checkerDict['ny'] = data['ny']
                 newdata['fcstdate'] = data['fcstdate']
                 newdata['fcsttime'] = data['fcsttime']
-                newdata['nx'] = nxnypos['nx']
-                newdata['ny'] = nxnypos['ny']
+                newdata['nx'] = data['nx']
+                newdata['ny'] = data['ny']
         else :
-            nxnypos = nxnySetting(lon=int(data['ny']), lat=int(data['nx']))
             checkerDict['fcstdate'] = data['fcstdate']
             checkerDict['fcsttime'] = data['fcsttime']
             checkerDict['nx'] = data['nx']
             checkerDict['ny'] = data['ny']
             newdata['fcstdate'] = data['fcstdate']
             newdata['fcsttime'] = data['fcsttime']
-            newdata['nx'] = nxnypos['nx']
-            newdata['ny'] = nxnypos['ny']
+            newdata['nx'] = data['nx']
+            newdata['ny'] = data['ny']
     newdata['imgurl'] = weather_imgurl(newdata)
     new_dataList.append(newdata)
     print(new_dataList)
