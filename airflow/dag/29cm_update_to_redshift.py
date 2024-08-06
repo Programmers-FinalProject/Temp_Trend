@@ -31,8 +31,10 @@ def merge_files(**kwargs):
     for key in file_keys:
         logger.info(f'Files : {key}')
         if today_str in key and 'bestitem' not in key:
+            logger.info(f'Combine Target Files : {key}')
             response = s3_client.get_object(Bucket=bucket_name, Key=key)
             df = pd.read_csv(BytesIO(response['Body'].read()))
+            logger.info(f'Data Frame Header Top3 : {df.head(3)}')
             combined_df = pd.concat([combined_df, df], ignore_index=True)
             files_to_delete.append(key)  # 삭제할 파일 목록에 키 추가
 
