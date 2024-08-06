@@ -41,7 +41,7 @@ def get_we_data_now():
     ymd = based_ymdgetter()
     pdict = ymd_timegetter()
     Pfcstdate = pdict["Pfcstdate"]
-    Pfcsttime = "0600" # pdict["Pfcsttime"]
+    Pfcsttime = pdict["Pfcsttime"]
     print(ymd, Pfcstdate, Pfcsttime)
     result = WeatherData.objects.using('redshift').filter(
         basedate=ymd, 
