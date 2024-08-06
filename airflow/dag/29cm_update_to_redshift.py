@@ -29,6 +29,7 @@ def merge_files(**kwargs):
     files_to_delete = []
 
     for key in file_keys:
+        logger.info(f'Files : {key}')
         if today_str in key and 'bestitem' not in key:
             response = s3_client.get_object(Bucket=bucket_name, Key=key)
             df = pd.read_csv(BytesIO(response['Body'].read()))
