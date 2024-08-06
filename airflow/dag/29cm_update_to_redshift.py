@@ -115,4 +115,5 @@ s3_to_redshift_task = S3ToRedshiftOperator(
     queue='queue1'
 )
 
-list_s3_files >> merge_s3_files >>s3_to_redshift_task
+# list_s3_files >> merge_s3_files >> s3_to_redshift_task
+s3_to_redshift_task
