@@ -97,13 +97,13 @@ merge_s3_files = PythonOperator(
     queue='queue1'
 )
 
-
+today_str = datetime.now().strftime('%Y%m%d')
 s3_to_redshift_task = S3ToRedshiftOperator(
     task_id='s3_to_redshift_task',
     schema='raw_data',  # Redshift의 스키마
     table='shop_29cm',  # Redshift의 테이블명
     s3_bucket=Variable.get("s3_bucket"),
-    s3_key=f'crawling/29cm_bestitem_{{ ds_nodash }}.csv',  # Airflow의 템플릿 변수를 사용하여 오늘 날짜를 포함
+    s3_key=f'crawling/29cm_bestitem_{today_str}.csv',  # Airflow의 템플릿 변수를 사용하여 오늘 날짜를 포함
     copy_options=['CSV',"IGNOREHEADER 1"],
     aws_conn_id='MyS3Conn',  # Redshift 연결 ID
     redshift_conn_id='Redshift_cluster_hori1',  # Redshift 연결 ID
