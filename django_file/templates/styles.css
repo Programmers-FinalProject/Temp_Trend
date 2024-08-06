@@ -107,3 +107,14 @@ body {
 .error-message button:hover {
     background-color: #501219;
 }
+
+/* 선택 박스 스타일링 */
+.select-container select {
+    margin-right: 10px;
+}
+
+.select-container {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* 간격 조절 */
+}

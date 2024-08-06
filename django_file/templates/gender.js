@@ -94,6 +94,8 @@ function displaySelectedGender(gender) {
         case "unisex":
             selectedText.textContent = "Unisex";
             break;
+
+            
     }
 }
 

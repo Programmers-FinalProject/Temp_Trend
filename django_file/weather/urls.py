@@ -20,7 +20,7 @@ urlpatterns = [
     path('save_location/', save_location, name='save_location'),
     path('save_gender/',save_gender,name='save_gender'),
     path('location_name/', location_name, name='location_name'),
-    path('api/session-address/', session_data_api, name='get_session_address'),
+    path('api/session-address/', session_data_api, name='get_session_address'), #이 사이트 들어가면 세션 확인가능
     #위치, 성별 세션 삭제
     path('delete-session-location/', session_delete, {'key': 'location'}, name='delete-session-location'),
     path('delete-session-gender/', session_delete, {'key': 'gender'}, name='delete-session-gender'),

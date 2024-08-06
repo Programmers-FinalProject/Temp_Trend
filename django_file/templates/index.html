@@ -12,13 +12,6 @@
 </head>
 <body>
     <!-- 오류 메시지를 표시할 요소 -->
-    <div class="error-overlay" id="errorOverlay">
-        <div class="error-message">
-            <p id="errorMessage"></p>
-            <button onclick="closeError()">Close</button>
-        </div>
-    </div>
-    
     <div id="errorOverlay" class="error-overlay">
         <div class="error-message">
             <p id="errorText"></p>
@@ -39,14 +32,96 @@
                     <button class="nav-link" id="pills-news-tab" type="button" onclick="location.href='{% url 'news' %}'">날씨뉴스</button>
                 </li>
             </ul>
-            <div class="search-bar mb-3">
-                <input type="text" class="form-control" placeholder="원하는 지역을 선택해 주세요">
-                <div class="mt-2">
-                    <button class="btn btn-light btn-sm">저장</button>
-                    <button class="btn btn-light btn-sm" id="deleteSessionBtnLocation">다시찾기</button>
-                    <button class="btn btn-light btn-sm" id="current-location-btn">현위치로 찾기</button>
-                </div>
+            <div class="search-bar mb-3 select-container">
+                <select id="area1_id" class="form-select mb-2" name="area1" required onchange="select_gu(this);">
+                    <option value="" selected disabled hidden>시/도 선택</option>
+                    <option value="01">서울특별시</option>
+                    <option value="02">부산광역시</option>
+                    <option value="03">인천광역시</option>
+                    <option value="04">대구광역시</option>
+                    <option value="05">대전광역시</option>
+                    <option value="06">광주광역시</option>
+                    <option value="07">울산광역시</option>
+                    <option value="08">세종특별자치시</option>
+                    <option value="09">경기도</option>
+                    <option value="10">충청북도</option>
+                    <option value="11">충청남도</option>
+                    <option value="12">전라남도</option>
+                    <option value="13">경상북도</option>
+                    <option value="14">경상남도</option>
+                    <option value="15">강원특별자치도</option>
+                    <option value="16">전북특별자치도</option>
+                    <option value="17">제주특별자치도</option>
+                </select>
+
+                <select id="area2_id" class="form-select mb-2" name="area2" style="display: none;" required>
+                    <option value="">시/군/구 선택</option>
+                </select>
             </div>
+
+            <div class="mt-2">
+                <button class="btn btn-light btn-sm">저장</button>
+                <button class="btn btn-light btn-sm" id="deleteSessionBtnLocation">다시찾기</button>
+                <button class="btn btn-light btn-sm" id="current-location-btn">현위치로 찾기</button>
+            </div>
+            <style>
+                .mt-2 {
+                    display: flex;
+                    justify-content: center; /* 수평 중앙 정렬 */
+                    align-items: center; /* 수직 중앙 정렬 */
+                    gap: 10px; /* 버튼 간의 간격 */
+                    margin-top: 20px;
+                    margin-bottom: 20px;
+                }
+            </style>
+
+            <script>
+                // 시/도에 따른 시/군/구 목록을 정의합니다.
+                const districtData = {
+                    '01': ['강남구', '강동구', '강북구', '강서구'],
+                    '02': ['해운대구', '수영구', '사하구', '부산진구'],
+                    '03': ['중구', '남동구', '연수구', '부평구'],
+                    '04': ['중구', '동구', '서구', '달서구'],
+                    '05': ['유성구', '서구', '중구', '대덕구'],
+                    '06': ['동구', '서구', '남구', '북구'],
+                    '07': ['중구', '남구', '동구', '북구'],
+                    '08': ['세종시'],
+                    '09': ['수원시', '고양시', '성남시', '용인시'],
+                    '10': ['청주시', '충주시', '제천시'],
+                    '11': ['천안시', '공주시', '보령시'],
+                    '12': ['목포시', '여수시', '순천시'],
+                    '13': ['포항시', '경주시', '김천시'],
+                    '14': ['창원시', '진주시', '통영시'],
+                    '15': ['춘천시', '원주시', '강릉시'],
+                    '16': ['전주시', '군산시', '익산시'],
+                    '17': ['제주시', '서귀포시']
+                };
+
+                function select_gu(area1) {
+                    const area2Select = document.getElementById('area2_id');
+                    const selectedArea1 = area1.value;
+
+                    // area2의 기존 옵션을 초기화
+                    area2Select.innerHTML = '<option value="">시/군/구 선택</option>';
+
+                    if (selectedArea1 && districtData[selectedArea1]) {
+                        // 선택된 시/도에 맞는 시/군/구 추가
+                        districtData[selectedArea1].forEach(district => {
+                            const option = document.createElement('option');
+                            option.value = district;
+                            option.textContent = district;
+                            area2Select.appendChild(option);
+                        });
+
+                        // 시/군/구 선택 박스를 표시
+                        area2Select.style.display = 'inline-block';
+                    } else {
+                        // 선택된 시/도가 없으면 시/군/구 선택 박스를 숨기기
+                        area2Select.style.display = 'none';
+                    }
+                }
+            </script>
+
             <div class="row mb-3">
                 <div class="col">
                     <button class="btn btn-light w-100" onclick="showImage('temperature'); change_btn(event)">온도</button>
