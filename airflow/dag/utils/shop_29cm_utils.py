@@ -110,7 +110,7 @@ def fetch_product_links(category,):
     finally:
         driver.quit()
     
-    return product_data
+    return json.dumps(product_data)
 
 def fetch_product_info(product_data):
     logger = logging.getLogger(__name__)
@@ -167,7 +167,7 @@ def fetch_product_info(product_data):
         except Exception as e:
             print(f"상품 정보 수집 중 오류: {e}")
             return None
-    return product_data  
+    return json.dumps(product_data)
 
 def result_save_to_dir(product_data):
     import pandas as pd 
