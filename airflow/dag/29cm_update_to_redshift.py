@@ -126,7 +126,7 @@ for dag_id in external_dag_ids:
         external_dag_id=dag_id,
         external_task_id='fetch_product_links',  # 각 DAG의 완료를 확인할 태스크 ID
         execution_date_fn=lambda execution_date: execution_date,  # 현재 DAG의 execution_date 사용
-        mode='all_success',
+        mode='poke',
         timeout=600,
         dag=dag,
     )
