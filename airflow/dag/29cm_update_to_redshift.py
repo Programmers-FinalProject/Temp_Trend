@@ -169,4 +169,4 @@ list_s3_files >> wait_for_external_dags[0]  # 첫 번째 ExternalTaskSensor와 �
 for sensor in wait_for_external_dags[1:]:
     wait_for_external_dags[0] >> sensor  # 첫 번째 센서를 나머지 센서와 연결
 
-list_s3_files >> wait_for_external_dags[-1] >> merge_s3_files >> s3_to_redshift_task >> delete_files_task
+wait_for_external_dags[-1] >> merge_s3_files >> s3_to_redshift_task >> delete_files_task
