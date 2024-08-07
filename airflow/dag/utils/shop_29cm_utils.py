@@ -112,6 +112,7 @@ def fetch_product_links(category,):
     return product_data
 
 def fetch_product_info(product_data):
+    product_data = json.loads(product_data)
     for product in product_data:
         product_link = product["product_link"]
         try:
@@ -163,6 +164,7 @@ def fetch_product_info(product_data):
 
 def result_save_to_dir(product_data):
     import pandas as pd 
+    product_data = json.loads(product_data)
     df = pd.DataFrame(product_data)
     category_name = df['category1'].unique()[0]
     etl_time = datetime.now().strftime("%Y%m%d")
