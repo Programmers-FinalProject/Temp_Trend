@@ -11,7 +11,6 @@ import json
 import requests
 from bs4 import BeautifulSoup
 import boto3
-import pandas as pd 
 
 from airflow.models import Variable
 
@@ -164,6 +163,8 @@ def fetch_product_info(product_data):
     return json.dumps(product_data)  # JSON 문자열로 반환
 
 def result_save_to_dir(product_data):
+    import pandas as pd 
+    
     product_data = json.loads(product_data)  # JSON 문자열을 파싱
     df = pd.DataFrame(product_data)
     category_name = df['category1'].unique()[0]
