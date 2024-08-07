@@ -4,14 +4,6 @@ from datetime import datetime
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 
-category = {"name": "남성신발", "xpath": '//*[@id="__next"]/div[4]/div[1]/div/ul/ul/li[7]/a'}
-
-product_data = shop_29cm_utils.fetch_product_links(category)
-
-product_data = shop_29cm_utils.fetch_product_info(product_data)
-
-shop_29cm_utils.result_save_to_dir(product_data)
-
 default_args = {
     'owner': 'airflow',
     'start_date': datetime(2024, 8, 1),
@@ -30,22 +22,22 @@ with dag:
     fetch_links_task = PythonOperator(
         task_id='fetch_product_links',
         python_callable=shop_29cm_utils.fetch_product_links,
-        provide_context=True,
-        queue = 'queue1'
+        op_kwargs={'category': {"name": "남성신발", "xpath": '//*[@id="__next"]/div[4]/div[1]/div/ul/ul/li[7]/a'}},
+        queue='queue1'
     )
 
     fetch_info_task = PythonOperator(
         task_id='fetch_product_info',
         python_callable=shop_29cm_utils.fetch_product_info,
         op_kwargs={'product_data': "{{ task_instance.xcom_pull(task_ids='fetch_product_links') }}"},
-        queue = 'queue1'
+        queue='queue1'
     )
 
     save_task = PythonOperator(
         task_id='result_save_to_dir',
         python_callable=shop_29cm_utils.result_save_to_dir,
         op_kwargs={'product_data': "{{ task_instance.xcom_pull(task_ids='fetch_product_info') }}"},
-        queue = 'queue1'
+        queue='queue1'
     )
 
     # 태스크 종속성 설정
