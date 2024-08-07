@@ -109,10 +109,9 @@ def fetch_product_links(category,):
     finally:
         driver.quit()
     
-    return json.dumps(product_data)  # JSON 문자열로 반환
+    return product_data
 
 def fetch_product_info(product_data):
-    product_data = json.loads(product_data)  # JSON 문자열을 파싱
     for product in product_data:
         product_link = product["product_link"]
         try:
@@ -160,12 +159,10 @@ def fetch_product_info(product_data):
         except Exception as e:
             print(f"상품 정보 수집 중 오류: {e}")
             return None
-    return json.dumps(product_data)  # JSON 문자열로 반환
+    return product_data  
 
 def result_save_to_dir(product_data):
     import pandas as pd 
-    
-    product_data = json.loads(product_data)  # JSON 문자열을 파싱
     df = pd.DataFrame(product_data)
     category_name = df['category1'].unique()[0]
     etl_time = datetime.now().strftime("%Y%m%d")
