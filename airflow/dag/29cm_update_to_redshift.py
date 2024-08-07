@@ -10,6 +10,7 @@ from airflow.hooks.base_hook import BaseHook
 from airflow.hooks.S3_hook import S3Hook
 from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOperator
 from airflow.providers.amazon.aws.operators.s3 import S3ListOperator
+from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from airflow.models import Variable
 from botocore.exceptions import NoCredentialsError
 
@@ -87,10 +88,12 @@ dag = DAG(
     '29cm_s3_to_redshift',
     default_args=default_args,
     description='Fetch today\'s data from S3 and upload to Redshift',
-    schedule_interval='30 14 * * *',  # 매일 저녁 11시 30분
+    schedule_interval='20 14 * * *',  # 매일 저녁 11시 20분
     start_date=datetime(2024, 8, 1),  
     catchup=False,
 )
+
+today_str = datetime.now().strftime('%Y%m%d')
 
 # S3에서 파일 목록 가져오기
 list_s3_files = S3ListOperator(
@@ -102,6 +105,33 @@ list_s3_files = S3ListOperator(
     dag=dag,
     queue='queue1'
 )
+
+# 외부 DAG의 태스크가 완료될 때까지 기다리는 External Task Sensor 추가
+external_dag_ids = [
+    '29cm_female_acc_data_extract',
+    '29cm_female_bag_data_extract',
+    '29cm_female_shoes_data_extract',
+    '29cm_female_clothes_data_extract',
+    '29cm_male_acc_data_extract',
+    '29cm_male_bag_data_extract',
+    '29cm_male_shoes_data_extract',
+    '29cm_male_clothes_data_extract',
+]
+
+wait_for_external_dags = []
+
+for dag_id in external_dag_ids:
+    sensor = ExternalTaskSensor(
+        task_id=f'wait_for_{dag_id}',
+        external_dag_id=dag_id,
+        external_task_id='fetch_product_links',  # 각 DAG의 완료를 확인할 태스크 ID
+        execution_date_fn=lambda execution_date: execution_date,  # 현재 DAG의 execution_date 사용
+        mode='all_success',
+        timeout=600,
+        dag=dag,
+    )
+    wait_for_external_dags.append(sensor)
+
 
 # 파일 병합 작업 정의
 merge_s3_files = PythonOperator(
@@ -120,7 +150,6 @@ delete_files_task = PythonOperator(
         queue='queue1'
 )
 
-today_str = datetime.now().strftime('%Y%m%d')
 s3_to_redshift_task = S3ToRedshiftOperator(
     task_id='s3_to_redshift_task',
     schema='raw_data',  # Redshift의 스키마
@@ -135,4 +164,9 @@ s3_to_redshift_task = S3ToRedshiftOperator(
     queue='queue1'
 )
 
-list_s3_files >> merge_s3_files >> s3_to_redshift_task >> delete_files_task
+# 태스크 종속성 설정
+list_s3_files >> wait_for_external_dags[0]  # 첫 번째 ExternalTaskSensor와 연결
+for sensor in wait_for_external_dags[1:]:
+    wait_for_external_dags[0] >> sensor  # 첫 번째 센서를 나머지 센서와 연결
+
+list_s3_files >> wait_for_external_dags[-1] >> merge_s3_files >> s3_to_redshift_task >> delete_files_task
