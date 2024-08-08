@@ -242,7 +242,7 @@
                                     <ul>
                                         <li class="we-list we-time">${item.fcsttime.slice(0, 2)}시</li>
                                         <li class="we-list we-img">
-                                            <img src="${item.imgurl || 'img/sky3.png'}" alt="날씨 이미지">
+                                            <img src="${'/static/'+item.imgurl || '/static/img/sky3.png'}" alt="날씨 이미지">
                                         </li>
                                         <li class="we-list we-tmp">${item.TMP || '-'}°C</li>
                                         <li class="we-list we-pop">${item.POP || '-'}%</li>
