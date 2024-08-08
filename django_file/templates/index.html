@@ -55,13 +55,33 @@
                 </select>
 
                 <select id="area2_id" class="form-select mb-2" name="area2" style="display: none;" required>
-                    <option value="">시/군/구 선택</option>
+                    <option value="" selected disabled hidden>시/군/구 선택</option>
                 </select>
             </div>
 
             <div class="mt-2">
-                <button class="btn btn-light btn-sm">저장</button>
-                <button class="btn btn-light btn-sm" id="deleteSessionBtnLocation">다시찾기</button>
+                <button onclick="submitForm()" class="btn btn-light btn-sm">저장</button>
+                <button onclick="resetForm()" class="btn btn-light btn-sm" id="deleteSessionBtnLocation">다시찾기</button>
+                <script>
+                    // 폼을 초기화하는 함수
+                    function resetForm() {
+                        // 시/도 선택을 초기화
+                        const area1Select = document.getElementById('area1_id');
+                        if (area1Select) {
+                            area1Select.selectedIndex = 0;
+                        } else {
+                            console.error('area1_id element not found');
+                        }
+
+                        // 시/군/구 선택도 초기화
+                        const area2Select = document.getElementById('area2_id');
+                        if (area2Select) {
+                            area2Select.style.display = 'none';
+                        } else {
+                            console.error('area2_id element not found');
+                        }
+                    }
+                </script>
                 <button class="btn btn-light btn-sm" id="current-location-btn">현위치로 찾기</button>
             </div>
             <style>

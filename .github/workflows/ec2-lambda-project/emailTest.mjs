@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer';
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'hayan094666@gmail.com',  // 본인의 Gmail 주소
+        user: 'hayan094666@gmail.com',  // Gmail 주소
         pass: 'sbfwebqzsawtymjr'  // 앱 비밀번호
     }
 });

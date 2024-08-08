@@ -27,6 +27,7 @@ function fetchSessionData() {
             console.log('Latitude:', data.latitude);
             console.log('Longitude:', data.longitude);
             console.log('Selected Gender:', data.selectedGender);
+            console.log('city:',data.city_code)
         })
         .catch(error => {
             console.error('Error:', error);

@@ -142,13 +142,20 @@ def session_data_api(request):
     latitude = request.session.get('latitude', 'No latitude in session')
     longitude = request.session.get('longitude', 'No longitude in session')
     gender = request.session.get('selectedGender', 'No gender in session')
-    
+    selected_city_code = request.session.get('selectedCity_code', 'No city code in session')
+    selected_district = request.session.get('selectedDistrict', 'No district in session')
+    selected_latitude = request.session.get('selectedLatitude', 'No latitude in session')
+    selected_longitude = request.session.get('selectedLongitude', 'No longitude in session')
 
     return JsonResponse({
         'address': address,
         'latitude': latitude,
         'longitude': longitude,
         'selectedGender': gender,
+        'selectedCity_code': selected_city_code,
+        'selectedDistrict': selected_district,
+        'selectedLatitude': selected_latitude,
+        'selectedLongitude': selected_longitude
     })
     
     
@@ -161,6 +168,10 @@ def session_delete(request, key=None):
             del request.session['address']
             del request.session['latitude']
             del request.session['longitude']
+            del request.session['selectedCity_code']
+            del request.session['selectedDistrict']
+            del request.session['selectedLatitude']
+            del request.session['selectedLongitude']
         elif key == 'gender':
             del request.session['selectedGender']
         else:
