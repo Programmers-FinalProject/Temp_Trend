@@ -62,7 +62,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                 if (data.address !== 'No address in session') {
                                     currentLocationElement.textContent = `현위치: ${data.address}`;
                                 }
-                                // latitude가 숫자가 아니고 address도 "No address in session"일 경우 아무것도 하지 않음
                             }
                         })
                         .catch(error => console.error('Error:', error));

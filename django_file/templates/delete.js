@@ -43,7 +43,7 @@ function updateUIAfterSessionDeletion(endpoint) {
     if (endpoint === '/delete-session-location/') {
         const locationSpan = document.getElementById('current-location');
             if (locationSpan) {
-                locationSpan.textContent = '현위치 찾기 버튼을 눌러주세요';
+                locationSpan.textContent = ' 현위치 찾기 버튼을 눌러주세요';
             }
     }
 }
