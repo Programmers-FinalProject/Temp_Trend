@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM fully loaded and parsed");
     const currentLocationBtn = document.getElementById('current-location-btn');
     const currentLocationElement = document.getElementById('current-location');
+    const loadingElement = document.getElementById('loading');
 
     // 세션에 저장된 주소 가져오기
     fetch('/api/session-address/')
@@ -17,6 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("Current location button found");
         currentLocationBtn.addEventListener('click', function() {
             if ("geolocation" in navigator) {
+
+                // 로딩 메시지 표시
+                loadingElement.style.display = 'block';
+                
                 navigator.geolocation.getCurrentPosition(function(position) {
                     var latitude = position.coords.latitude;
                     var longitude = position.coords.longitude;
@@ -64,13 +69,23 @@ document.addEventListener('DOMContentLoaded', function() {
                                 }
                             }
                         })
-                        .catch(error => console.error('Error:', error));
+                        .catch(error => console.error('Error:', error))
+                        .finally(() => {
+                            // 로딩 메시지 숨기기
+                            loadingElement.style.display = 'none';
+                        });
                     })
                     .catch((error) => {
                         console.error('Error:', error);
+                    })
+                    .finally(() => {
+                        // 로딩 메시지 숨기기
+                        loadingElement.style.display = 'none';
                     });
                 }, function(error) {
                     console.error("Error getting location:", error);
+                    // 로딩 메시지 숨기기
+                    loadingElement.style.display = 'none';
                 });
             } else {
                 console.log("Geolocation is not supported by this browser.");
