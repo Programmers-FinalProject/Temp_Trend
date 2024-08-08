@@ -42,7 +42,7 @@ dag = DAG(
     'WeatherDag',
     default_args=default_args,
     description='전국 기상 데이터 API호출',
-    schedule_interval='20 5 * * *',
+    schedule_interval='20 20 * * *',
     start_date=datetime(2024, 7, 26),
     catchup=False,
 )
