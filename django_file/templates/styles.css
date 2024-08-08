@@ -118,3 +118,23 @@ body {
     align-items: center;
     gap: 10px; /* 간격 조절 */
 }
+
+/* 기상 내역 화면 css */
+*{padding: 0; margin: 0;}
+.clear::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+ul {list-style-type: none;}
+li {list-style-type: none;}
+.we-data-box{
+    width: 80%;
+    margin: 0 auto;
+    overflow-x: auto;
+}
+.we-data-ul {width: max-content;}
+.we-data-list{float: left; padding: 0px; margin: 0; display: flex; flex-wrap: wrap; white-space:nowrap;}
+.we-list {margin: 0 auto; text-align: center; border-left: 1px dotted; border-right: 1px dotted;}
+.we-atp, .we-tmp, .we-ras, .we-wind{border-bottom: 1px #cccccc dotted;}
+.we-img>img { height: 30px;} 

@@ -34,7 +34,7 @@
             <h1 class="text-center text-white mb-4">Temp_Trend</h1>
             <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="true">예보</button>
+                    <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" onclick="call_we_data()" aria-selected="true">예보</button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="pills-news-tab" type="button" onclick="location.href='{% url 'news' %}'">날씨뉴스</button>
@@ -92,6 +92,27 @@
                 </script>
                 <button class="btn btn-light btn-sm" id="current-location-btn">현위치로 찾기</button>
             </div>
+            
+            <div class="we-data-box">
+                <ul class="clear we-data-ul">
+                    {% for we_data in we_dataList %}
+                    <li class="we-data-list">
+                        <ul>
+                            <li class="we-list we-time">{{ we_data.fcsttime|slice:":2"|default:"-" }}시</li>
+                            <li class="we-list we-img">
+                                <img src="{% static we_data.imgurl|default:'img/sky3.png' %}" alt="날씨 이미지">
+                            </li>
+                            <li class="we-list we-tmp">{{ we_data.TMP|default:"-"}}°C</li>
+                            <li class="we-list we-pop">{{ we_data.POP|default:"-" }}%</li>
+                            <li class="we-list we-ras">{{ we_data.PCP|default:"-" }}</li>
+                            <li class="we-list we-wind">{{ we_data.WSD|default:"-" }}</li>
+                            <li class="we-list we-atp">{{ we_data.REH|default:"-" }}</li>
+                        </ul>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+    
             <style>
                 .mt-2 {
                     display: flex;
@@ -197,6 +218,46 @@
                             btn.classList.remove("active");
                         }
                     });
+                }
+                function call_we_data(e) {
+                    fetch('{% url "call_we_data" %}')
+                        .then(response => response.json())
+                        .then(data => {
+                            // console.log(data);  // 콘솔에서 데이터 확인
+                            updateWeatherData(data)
+                            // document.getElementById('data-container').textContent = JSON.stringify(data, null, 2);
+                        })
+                        .catch(error => console.error('Error fetching data:', error));
+                };
+
+                function updateWeatherData(data) {
+                    const container = document.querySelector('.we-data-box');
+                    container.innerHTML = ''; // 기존 데이터를 지우고 새 데이터를 추가합니다.
+                    console.log("테스트",data['we_dataList'] && data.length > 0)
+                    if (data['we_dataList'] && data['we_dataList'].length > 0) {
+                        let html = '<ul class="clear we-data-ul">';
+                        data['we_dataList'].forEach(item => {
+                            html += `
+                                <li class="we-data-list">
+                                    <ul>
+                                        <li class="we-list we-time">${item.fcsttime.slice(0, 2)}시</li>
+                                        <li class="we-list we-img">
+                                            <img src="${item.imgurl || 'img/sky3.png'}" alt="날씨 이미지">
+                                        </li>
+                                        <li class="we-list we-tmp">${item.TMP || '-'}°C</li>
+                                        <li class="we-list we-pop">${item.POP || '-'}%</li>
+                                        <li class="we-list we-ras">${item.PCP || '-'}</li>
+                                        <li class="we-list we-wind">${item.WSD || '-'}</li>
+                                        <li class="we-list we-atp">${item.REH || '-'}</li>
+                                    </ul>
+                                </li>
+                            `;
+                        });
+                        html += '</ul>';
+                        container.innerHTML = html;
+                    } else {
+                        container.innerHTML = '<p>No data available</p>';
+                    }
                 }
             </script>
             

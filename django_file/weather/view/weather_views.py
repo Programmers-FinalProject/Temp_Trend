@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from datetime import datetime, timedelta
 from weather.models import WeatherData
-from weather.view import nxny
+from weather.view import nxny, save_location
 from django.http import JsonResponse
 
 
@@ -12,12 +12,22 @@ from django.http import JsonResponse
 # we_data_setting(get_we_data_now()) => json으로 전체지역의 기상 현황 해당결과를 페이지로 보내주면됨
 
 
-def we_data_test(request):
-    wedata = get_we_data_now()
+def we_data_usenow(request):
+    # wedata = get_we_data_now()
+    wedata = get_we_data_xy('112','116')
     # test = testdataset() # [{'basedate': '20240729', 'basetime': '0500', 'weather_code': 'TMP', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '26', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'UUU', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '5.5', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'VVV', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '6.6', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'VEC', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '220', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'WSD', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '8.6', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'SKY', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '3', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'PTY', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '0', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'POP', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '20', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'WAV', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '2', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'PCP', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '강수없음', 'nx': '34', 'ny': '126'}]
     context = { 'we_dataList' : we_data_setting(wedata)}
-    print(wedata)
+    # print("data", wedata)
     return render(request, 'wedatatest.html', context)
+
+
+def we_data_usexy(request):
+    latitude = "37.5587" #request.session.get('latitude', 'No latitude in session')
+    longitude = "126.9596" #request.session.get('longitude', 'No longitude in session')
+    posXY = nxnySetting(int(float(longitude)), int(float(latitude)))
+    wedata = get_we_data_xy(posXY['nx'], posXY['ny'])
+    context = { 'we_dataList' : we_data_setting(wedata)}
+    return JsonResponse(context)
 
 # 예보날짜 세팅
 def based_ymdgetter():
@@ -50,20 +60,22 @@ def get_we_data_now():
     pdict = ymd_timegetter()
     Pfcstdate = pdict["Pfcstdate"]
     Pfcsttime = pdict["Pfcsttime"]
-    print(ymd, Pfcstdate, Pfcsttime)
     result = WeatherData.objects.using('redshift').filter(
         basedate=ymd, 
         fcstdate=Pfcstdate, 
         fcsttime=Pfcsttime
-    ).values()
+    ).order_by('nx','ny').values()
     return result
 
 # y와 x 값 받아서 nx ny로
 # 세부 지역 - 1군데 예측된값 전부 즉 제일 최신 basedate
 def get_we_data_xy(x, y):
     ymd = based_ymdgetter()
-    nxnypos = nxnySetting(lon=int(y), lat=int(x))
-    result = WeatherData.objects.using('redshift').filter(basedate=ymd).filter(nx=nxnypos['nx']).filter(ny=nxnypos['ny'])
+    result = WeatherData.objects.using('redshift').filter(
+        basedate=ymd,
+        nx=x,
+        ny=y
+    ).order_by('nx','ny','fcstdate','fcsttime').values()
     return result
 
 
@@ -76,9 +88,7 @@ def we_data_setting(dataList):
             if we_validation(data, checkerDict) : 
                 newdata[data['weather_code']] = data['fcstvalue']
             else :
-                newdata['imgurl'] = weather_imgurl(newdata)
                 new_dataList.append(newdata)
-                print(new_dataList)
                 newdata = {}
                 checkerDict['fcstdate'] = data['fcstdate']
                 checkerDict['fcsttime'] = data['fcsttime']
@@ -88,6 +98,7 @@ def we_data_setting(dataList):
                 newdata['fcsttime'] = data['fcsttime']
                 newdata['nx'] = data['nx']
                 newdata['ny'] = data['ny']
+                newdata[data['weather_code']] = data['fcstvalue']
         else :
             checkerDict['fcstdate'] = data['fcstdate']
             checkerDict['fcsttime'] = data['fcsttime']
@@ -97,25 +108,29 @@ def we_data_setting(dataList):
             newdata['fcsttime'] = data['fcsttime']
             newdata['nx'] = data['nx']
             newdata['ny'] = data['ny']
-    newdata['imgurl'] = weather_imgurl(newdata)
-    new_dataList.append(newdata)
-    print(new_dataList)
-    return new_dataList
+            newdata[data['weather_code']] = data['fcstvalue']
+    if newdata:
+        new_dataList.append(newdata)
+    modified_data = list(map(lambda obj: {**obj, 'imgurl': weather_imgurl(obj)}, new_dataList))
+    # print(new_dataList)
+    return modified_data
 
 def we_validation(data, sample):
-    if data['fcstdate'] == sample['fcstdate'] and data['fcsttime'] == sample['fcsttime'] and data['ny'] == data['ny'] and data['nx'] == data['nx'] :
-        print(data['fcstdate'] == sample['fcstdate'], data['fcsttime'] == sample['fcsttime'], data['ny'] == data['ny'], data['nx'] == data['nx'])
+    if data['fcstdate'] == sample['fcstdate'] and data['fcsttime'] == sample['fcsttime'] and data['ny'] == sample['ny'] and data['nx'] == sample['nx'] :
+        # print(data['fcstdate'] == sample['fcstdate'], data['fcsttime'] == sample['fcsttime'], data['ny'] == sample['ny'], data['nx'] == sample['nx'])
         return True
     return False
 
 def weather_imgurl(param):
     path = "img/"
-    imgurl = ""
-    if param['PTY'] == "0":
-        imgurl = path+"sky"+param['SKY']+".png"
-    else :
-        imgurl = path+"pty"+param['PTY']+".png"
-    return imgurl
+    if param :
+        imgurl = ""
+        if param['PTY'] == "0":
+            imgurl = path+"sky"+param['SKY']+".png"
+        else :
+            imgurl = path+"pty"+param['PTY']+".png"
+        return imgurl
+    return
 
 
 def testdataset():
