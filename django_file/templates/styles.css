@@ -3,7 +3,7 @@ body {
 }
 .location-header {
     background-color: #ffffff;
-    padding: 10px;
+    padding: 18px;
     border-radius: 20px 20px 0 0;
 }
 .main-content {
@@ -34,8 +34,6 @@ body {
     padding: 10px;
     height: 200px;
 }
-
-/* 기존 CSS 스타일은 그대로 유지 */
 
 .weather-map-container {
     width: 30%;
@@ -138,3 +136,33 @@ li {list-style-type: none;}
 .we-list {margin: 0 auto; text-align: center; border-left: 1px dotted; border-right: 1px dotted;}
 .we-atp, .we-tmp, .we-ras, .we-wind{border-bottom: 1px #cccccc dotted;}
 .we-img>img { height: 30px;} 
+
+.content-wrapper {
+    display: flex;
+    flex-wrap: nowrap; /* 줄바꿈 방지 */
+    gap: 20px;
+    justify-content: space-between; /* 내용물을 양쪽 끝으로 정렬 */
+}
+
+.left-content {
+    flex: 1;
+    min-width: 0; /* flex-basis를 0으로 설정하여 축소 허용 */
+    max-width: 65%; /* 최대 너비 약간 증가 */
+}
+
+.right-content {
+    flex: 0 0 35%; /* flex-grow: 0, flex-shrink: 0, flex-basis: 35% */
+    min-width: 300px;
+}
+
+@media (max-width: 992px) {
+    .content-wrapper {
+        flex-direction: column;
+    }
+    
+    .left-content,
+    .right-content {
+        width: 100%;
+        max-width: 100%;
+    }
+}

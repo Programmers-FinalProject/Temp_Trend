@@ -1,4 +1,942 @@
-테스트성공 #23
+<!-- 테스트성공 #23
 이제 gcp 연결은 됨. 깃허브 연결만.
 {% load static %}
-<img src="{% static '5.png' %}" alt="test">
+<img src="{% static '5.png' %}" alt="test"> -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>지도 예제</title>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cardNation = document.querySelector('.card_nation');
+            const nationMap = document.querySelector('.nation_map');
+            const zones = document.querySelectorAll('.zone');
+
+            function resizeMap() {
+                const cardWidth = cardNation.offsetWidth;
+                const scale = cardWidth / 293; // 293은 원본 이미지의 너비
+
+                zones.forEach(zone => {
+                    const originalLeft = parseFloat(zone.getAttribute('data-original-left') || zone.style.left) / 100;
+                    const originalTop = parseFloat(zone.getAttribute('data-original-top') || zone.style.top) / 100;
+                    
+                    if (!zone.hasAttribute('data-original-left')) {
+                        zone.setAttribute('data-original-left', zone.style.left);
+                        zone.setAttribute('data-original-top', zone.style.top);
+                    }
+
+                    zone.style.left = `${originalLeft * 100}%`;
+                    zone.style.top = `${originalTop * 100}%`;
+                });
+            }
+
+            // 초기 리사이즈 및 창 크기 변경 시 리사이즈
+            resizeMap();
+            window.addEventListener('resize', resizeMap);
+
+            // 여기에 날짜 선택, 시간대 선택 등의 기능 구현...
+        });
+    </script>
+    <style>
+        /* 기본 지도 스타일 */
+        .card_nation {
+            border: none;
+            max-width: 368.99px;
+            margin: 15 auto;
+            position: relative;
+            padding: 0;
+            background: #87ceeb;
+        }
+
+        .card_nation .weekly_list {
+            display: table;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            margin-bottom: 20;
+            width: 100%;
+            padding: 0 10px;
+        }
+
+        .card_nation .weekly_list .item {
+            margin: 10px auto;
+            display: table-cell;
+            text-align: center
+        }
+
+        .card_nation .weekly_list .item.on .button {
+            color: #29a0fe
+        }
+
+        .card_nation .weekly_list .item.on .day {
+            font-weight: 700
+        }
+
+        .card_nation .weekly_list .item.on .date {
+            border-bottom: 2px solid #53b0f9;
+            font-weight: 500
+        }
+
+        .card_nation .weekly_list .button {
+            position: relative;
+            width: 100%;
+            height: 20px;
+            color: #666
+        }
+
+        .card_nation .weekly_list .day {
+            display: block;
+            font-size: 15px;
+            line-height: 19px;
+            letter-spacing: -.25px
+        }
+
+        .card_nation .weekly_list .date {
+            margin-top: 2px;
+            padding: 0 8px 7px;
+            font-size: 12px;
+            line-height: 16px;
+            letter-spacing: -.2px;
+            white-space: nowrap
+        }
+
+        @media all and (max-width: 319px) {
+            .card_nation .weekly_list .date {
+                padding:0 4px 7px
+            }
+        }
+
+        @media all and (min-width: 768px) {
+            .card_nation .weekly_list .date {
+                display:inline-block;
+                vertical-align: top;
+                width: 70px;
+                padding: 0 0 7px;
+                -webkit-box-sizing: border-box;
+                box-sizing: border-box
+            }
+        }
+
+        @media all and (min-width: 1025px) {
+            .card_nation .weekly_list .date {
+                width:39px
+            }
+        }
+
+        .card_nation .map_wrap {
+            
+            position: relative;
+            border-radius: 20px 20px 20px 20px;
+            border: 11px solid #77b6e6;
+            background-color: #85c6f8
+        }
+
+        .card_nation .time_area {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 1;
+            border: none; /* 테두리 제거 */
+            border-radius: 10px; /* 모서리 둥글게 */
+            padding: 8px; /* 버튼 내부의 여백을 늘립니다. */
+            background-color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 20px; /* 줄 높이는 버튼의 높이를 결정합니다. */
+            letter-spacing: -0.8px;
+            color: #1936d5;
+        }
+        .card_nation .time_area, .card_nation .time_area * {
+            border: none;
+            outline: none;
+            box-shadow: none;
+            background: #fff;
+        }
+
+        .card_nation .zone {
+            position: absolute;
+            min-width: 64px;
+            padding-top: 22px;
+            text-align: center;
+            -webkit-transform: translate(-50%,-50%);
+            transform: translate(-50%,-50%)
+        }
+
+        .card_nation .zone .ico {
+            width: 46px;
+            height: 46px;
+            -webkit-background-size: 322px 276px;
+            background-size: 322px 276px;
+            display: inline-block;
+            vertical-align: top
+        }
+
+        .card_nation .zone .ico[class*=ico_animation_wt] {
+            -webkit-background-size: 46px 46px;
+            background-size: 46px 46px
+        }
+
+        .card_nation .zone .text {
+            display: block;
+            position: relative;
+            margin: -10px 0 0 5px;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 15px;
+            color: #424242;
+            letter-spacing: -.2px
+        }
+
+        .card_nation .zone em {
+            margin-left: 2px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: -.23px
+        }
+
+        .card_nation .z1 {
+            top: 50px;
+            left: 108px;
+            z-index: 7
+        }
+
+        .card_nation .z2 {
+            top: 59px;
+            left: 19px;
+            z-index: 7
+        }
+
+        @media all and (max-width: 319px) {
+            .card_nation .z2 {
+                left:30px
+            }
+        }
+
+        .card_nation .z3 {
+            top: 110px;
+            left: 104px;
+            z-index: 4
+        }
+
+        .card_nation .z4 {
+            top: 15px;
+            left: 160px;
+            z-index: 8
+        }
+
+        .card_nation .z5 {
+            top: 48px;
+            left: 217px;
+            z-index: 7
+        }
+
+        .card_nation .z6 {
+            top: 78px;
+            left: 173px;
+            z-index: 5
+        }
+
+        .card_nation .z7 {
+            top: 153px;
+            left: 142px;
+            z-index: 3
+        }
+
+        .card_nation .z8 {
+            top: 179px;
+            left: 96px;
+            z-index: 2
+        }
+
+        .card_nation .z9 {
+            top: 233px;
+            left: 93px;
+            z-index: 1
+        }
+
+        .card_nation .z10 {
+            top: 266px;
+            left: 49px
+        }
+
+        .card_nation .z11 {
+            top: 265px;
+            left: 147px
+        }
+
+        .card_nation .z12 {
+            top: 90px;
+            left: 264px;
+            z-index: 5
+        }
+
+        .card_nation .z12 .text {
+            padding-left: 0
+        }
+
+        .card_nation .z12 em {
+            display: block;
+            margin-left: 5px
+        }
+
+        .card_nation .z13 {
+            top: 125px;
+            left: 215px;
+            z-index: 4
+        }
+
+        .card_nation .z14 {
+            top: 187px;
+            left: 195px;
+            z-index: 2
+        }
+
+        .card_nation .z15 {
+            top: 207px;
+            left: 255px;
+            z-index: 1
+        }
+
+        .card_nation .z16 {
+            top: 257px;
+            left: 230px
+        }
+
+        .card_nation .z17 {
+            top: 335px;
+            left: 45px
+        }
+        .card_nation .nation_map {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_weather_52f76bb7.png);
+            background-size: 1029px 1004px;
+            background-position: -295px 0;
+            background-repeat: no-repeat;
+            width: 293px;
+            height: 361px;
+            position: relative;
+            margin: 50 auto;
+        }
+
+        .ico_wt1 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 0 0;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt1 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt1.svg)
+        }
+
+        .ico_wt2 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 50% 40%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt2 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt2.svg)
+        }
+
+        .ico_wt3 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 33.33333% 80%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt3 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt3.svg)
+        }
+
+        .ico_wt4 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 50% 100%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt4 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt4.svg)
+        }
+
+        .ico_wt5 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 100% 20%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt5 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt5.svg)
+        }
+
+        .ico_wt6 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 100% 40%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt6 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt6.svg)
+        }
+
+        .ico_wt7 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 100% 60%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt7 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt7_210224.svg)
+        }
+
+        .ico_wt8 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 100% 80%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt8 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt8_220818.svg)
+        }
+
+        .ico_wt9 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 100% 100%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt9 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt9_220818.svg)
+        }
+
+        .ico_wt10 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 16.66667% 0;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt10 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt10_220818.svg)
+        }
+
+        .ico_wt11 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 0 20%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt11 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt11.svg)
+        }
+
+        .ico_wt12 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 16.66667% 20%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt12 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt12.svg)
+        }
+
+        .ico_wt13 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 33.33333% 0;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt13 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt13.svg)
+        }
+
+        .ico_wt14 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 33.33333% 20%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt14 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt14.svg)
+        }
+
+        .ico_wt15 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 0 40%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt15 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt15_220818.svg)
+        }
+
+        .ico_wt16 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 16.66667% 40%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt16 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt16.svg)
+        }
+
+        .ico_wt17 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 33.33333% 40%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt17 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt17.svg)
+        }
+
+        .ico_wt18 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 50% 0;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt18 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt18_220818.svg)
+        }
+
+        .ico_wt19 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 50% 20%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt19 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt19.svg)
+        }
+
+        .ico_wt20 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 0 60%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt20 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt20.svg)
+        }
+
+        .ico_wt21 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 16.66667% 60%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt21 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt21.svg)
+        }
+
+        .ico_wt22 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 33.33333% 60%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt22 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt22.svg)
+        }
+
+        .ico_wt23 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 50% 60%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt23 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt23.svg)
+        }
+
+        .ico_wt24 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 66.66667% 0;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt24 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt24.svg)
+        }
+
+        .ico_wt25 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 66.66667% 20%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt25 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt25.svg)
+        }
+
+        .ico_wt26 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 66.66667% 40%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt26 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt26_210223.svg)
+        }
+
+        .ico_wt27 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 66.66667% 60%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt27 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt27.svg)
+        }
+
+        .ico_wt28 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 0 80%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt28 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt28.svg)
+        }
+
+        .ico_wt29 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 16.66667% 80%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt29 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt29.svg)
+        }
+
+        .ico_wt30 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 50% 80%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt30 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt30.svg)
+        }
+
+        .ico_wt31 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 66.66667% 80%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt31 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt31.svg)
+        }
+
+        .ico_wt32 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 83.33333% 0;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt32 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt32.svg)
+        }
+
+        .ico_wt33 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 83.33333% 20%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt33 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt33.svg)
+        }
+
+        .ico_wt34 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 83.33333% 40%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt34 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt34.svg)
+        }
+
+        .ico_wt35 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 83.33333% 60%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt35 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt35_210223.svg)
+        }
+
+        .ico_wt36 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 83.33333% 80%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt36 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt36_210223.svg)
+        }
+
+        .ico_wt37 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 0 100%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt37 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt37.svg)
+        }
+
+        .ico_wt38 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 16.66667% 100%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt38 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt38.svg)
+        }
+
+        .ico_wt39 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 33.33333% 100%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt39 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt39.svg)
+        }
+
+        .ico_wt40 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 66.66667% 100%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt40 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt40.svg)
+        }
+
+        .ico_wt41 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 83.33333% 100%;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt41 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt41.svg)
+        }
+
+        .ico_wt42 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
+            background-position: 100% 0;
+            background-repeat: no-repeat
+        }
+
+        .ico_animation_wt42 {
+            background-image: url(https://ssl.pstatic.net/static/weather/image/icon_weather/ico_animation_wt42_220818.svg)
+        }
+
+        .blind {
+            overflow: hidden;
+            position: absolute;
+            clip: rect(0 0 0 0);
+            width: 1px;
+            height: 1px;
+            margin: -1px
+        }
+
+        .hide {
+            display: none!important
+        }
+
+    </style>
+</head>
+<body>
+    <div id="nation" class="card card_nation _cnBlockTemplate" data-template="nationFcast" data-template-index="1">
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.addEventListener('click', function(e) {
+                if (e.target && e.target.closest('#dateTabs')) {
+                    updateDateTabs();
+                }
+            });
+
+            function updateDateTabs() {
+                // 위의 날짜 업데이트 코드
+                const dateTabs = document.getElementById('dateTabs');
+                const buttons = dateTabs.getElementsByTagName('button');
+                const days = ['일', '월', '화', '수', '목', '금', '토'];
+                const today = new Date();
+
+                for (let i = 0; i < 3; i++) {
+                    const date = new Date(today);
+                    date.setDate(today.getDate() + i);
+                    
+                    const button = buttons[i];
+                    const daySpan = button.querySelector('.day');
+                    const dateSpan = button.querySelector('.date');
+
+                    // 요일 설정
+                    daySpan.textContent = days[date.getDay()];
+
+                    // 날짜 설정
+                    if (i === 0) {
+                        dateSpan.textContent = '오늘';
+                    } else {
+                        const month = date.getMonth() + 1;
+                        const day = String(date.getDate()).padStart(2, '0');
+                        dateSpan.textContent = `${month}.${day}`;
+                    }
+
+                    // data-date 속성 설정
+                    const formattedDate = date.toISOString().split('T')[0].replace(/-/g, '');
+                    button.setAttribute('data-date', formattedDate);
+                }
+            }
+            // 초기 로드 시 실행
+            updateDateTabs();
+            console.log('Date tabs updated');
+        });
+        function updateTime() {
+            var currentTime = new Date(); // 현재 시간을 가져옵니다.
+            var hours = currentTime.getHours(); // 시간
+            var minutes = currentTime.getMinutes(); // 분
+            var seconds = currentTime.getSeconds(); // 초
+
+            // 시간, 분, 초가 10보다 작으면 앞에 '0'을 붙입니다.
+            hours = (hours < 10 ? "0" : "") + hours;
+            minutes = (minutes < 10 ? "0" : "") + minutes;
+
+            // 형식을 HH:mm:ss로 설정합니다.
+            var formattedTime = "현재시각 : " + hours + "시 " + minutes + "분";
+
+            // 버튼의 텍스트를 업데이트합니다.
+            document.getElementById('currentTime').innerText = formattedTime;
+        }
+
+        // 페이지가 로드될 때 시간을 업데이트하고, 1초마다 시간을 갱신합니다.
+        window.onload = function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+        };
+        </script>
+        <div id="dateTabs" class="weekly_list" role="tablist">
+            <li class="item on">
+                <button type="button" class="btn btn-light w-75" role="tab" aria-selected="true" aria-controls="mapPanel" data-date="20240808" onclick="oCommon.fnSendClick(this, 'today.nationdaytab')">
+                    <span class="day"></span>
+                    <span class="date">오늘</span>
+                </button>
+            </li>
+            
+            <li class="item ">
+                <button type="button" class="btn btn-light w-75" role="tab" aria-selected="false" aria-controls="mapPanel" data-date="20240809" onclick="oCommon.fnSendClick(this, 'today.nationdaytab')">
+                    <span class="day"></span>
+                    <span class="date"></span>
+                </button>
+            </li>
+            
+            <li class="item ">
+                <button type="button" class="btn btn-light w-75" role="tab" aria-selected="false" aria-controls="mapPanel" data-date="20240810" onclick="oCommon.fnSendClick(this, 'today.nationdaytab')">
+                    <span class="day"></span>
+                    <span class="date"></span>
+                </button>
+            </li>    
+        </div>
+        <div class="map_wrap" role="tabpanel" id="mapPanel">
+            <div class="time_area">
+                <button type="button" id="currentTime">현재</button>
+            </div>
+            <div class="nation_map" id="nationPanel" role="tabpanel">    
+                <a href="/today/14130116" class="zone z17" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt6" data-tooltip="구름많음"></i>
+                    <span class="text">제주<em>27.1°</em></span>
+                    <span class="blind">구름많음</span>
+                </a>
+                <a href="/today/04940320" class="zone z12" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt7" data-tooltip="흐림"></i>
+                    <span class="text">울릉/독도<em>26°</em></span>
+                    <span class="blind">흐림</span>
+                </a>
+                <a href="/today/04170690" class="zone z13" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt6" data-tooltip="구름많음"></i>
+                    <span class="text">안동<em>26.1°</em></span>
+                    <span class="blind">구름많음</span>
+                </a>
+                <a href="/today/02113128" class="zone z3" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt2" data-tooltip="맑음"></i>
+                    <span class="text">수원<em>25°</em></span>
+                    <span class="blind">맑음</span>
+                </a>
+                <a href="/today/08110580" class="zone z16" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt7" data-tooltip="흐림"></i>
+                    <span class="text">부산<em>26.6°</em></span>
+                    <span class="blind">흐림</span>
+                </a>
+                <a href="/today/13113135" class="zone z8" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt6" data-tooltip="구름많음"></i>
+                    <span class="text">전주<em>26.4°</em></span>
+                    <span class="blind">구름많음</span>
+                </a>
+                <a href="/today/10110101" class="zone z15" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt7" data-tooltip="흐림"></i>
+                    <span class="text">울산<em>26°</em></span>
+                    <span class="blind">흐림</span>
+                </a>
+                <a href="/today/05110101" class="zone z9" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt6" data-tooltip="구름많음"></i>
+                    <span class="text">광주<em>26.2°</em></span>
+                    <span class="blind">구름많음</span>
+                </a>
+                <a href="/today/07110101" class="zone z7" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt6" data-tooltip="구름많음"></i>
+                    <span class="text">대전<em>23.9°</em></span>
+                    <span class="blind">구름많음</span>
+                </a>
+                <a href="/today/09140104" class="zone z1" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt2" data-tooltip="맑음"></i>
+                    <span class="text">서울<em>27.3°</em></span>
+                    <span class="blind">맑음</span>
+                </a>
+                <a href="/today/01110675" class="zone z4" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt2" data-tooltip="맑음"></i>
+                    <span class="text">춘천<em>26.3°</em></span>
+                    <span class="blind">맑음</span>
+                </a>
+                <a href="/today/12130127" class="zone z11" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt6" data-tooltip="구름많음"></i>
+                    <span class="text">여수<em>28.8°</em></span>
+                    <span class="blind">구름많음</span>
+                </a>
+                <a href="/today/16111120" class="zone z6" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt6" data-tooltip="구름많음"></i>
+                    <span class="text">청주<em>26.4°</em></span>
+                    <span class="blind">구름많음</span>
+                </a>
+                <a href="/today/12110152" class="zone z10" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt7" data-tooltip="흐림"></i>
+                    <span class="text">목포<em>27.1°</em></span>
+                    <span class="blind">흐림</span>
+                </a>
+                <a href="/today/11720330" class="zone z2" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt2" data-tooltip="맑음"></i>
+                    <span class="text">백령<em>24.2°</em></span>
+                    <span class="blind">맑음</span>
+                </a>
+                <a href="/today/01150615" class="zone z5" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt6" data-tooltip="구름많음"></i>
+                    <span class="text">강릉<em>26.2°</em></span>
+                    <span class="blind">구름많음</span>
+                </a>
+                <a href="/today/06110101" class="zone z14" onclick="oCommon.fnSendClick(this, 'today.nationclick')">
+                    <i class="ico ico_wt6" data-tooltip="구름많음"></i>
+                    <span class="text">대구<em>28.8°</em></span>
+                    <span class="blind">구름많음</span>
+                </a>
+            </div>
+        </div>
+</body>
+</html>
