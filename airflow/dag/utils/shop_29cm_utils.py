@@ -58,10 +58,10 @@ def fetch_product_links(category,):
         category_element = driver.find_element(By.XPATH, category["xpath"])
         category_element.click()
         logging.info("카테고리 클릭 ...")
-        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[1]/ul/span[2]/label')))
+        WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[1]/ul/span[2]/label')))
         
         logging.info("베스트 버튼 로딩 대기 중...")
-        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[2]/span[2]/label')))
+        WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[2]/span[2]/label')))
         daily_btn = driver.find_element(By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[2]/span[2]/label')
         daily_btn.click()
         logging.info("베스트 버튼 클릭...")
