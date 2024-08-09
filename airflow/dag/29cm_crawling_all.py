@@ -14,7 +14,7 @@ dag = DAG(
     '29cm_data_extract',
     default_args=default_args,
     description='29cm Website Data Extract',
-    schedule_interval='30 18 * * *',  # 매일 UTC 14시 실행 (한국시간 23시)
+    schedule_interval='00 14 * * *',  # 매일 UTC 14시 실행 (한국시간 23시)
     catchup=False,
 )
 
