@@ -15,8 +15,13 @@ from django.http import JsonResponse
 def we_data_usenow(request):
     wedata = get_we_data_now()
     context = { 'we_dataList' : we_data_setting(wedata)}
+    print(context)
     return render(request, 'wedatatest.html', context)
 
+def we_data_usetime(request):
+    wedata = get_we_data_time()
+    context = { 'we_dataList' : we_data_setting(wedata)}
+    return JsonResponse(context)
 
 def we_data_usexy(request):
     latitude = request.session.get('latitude', 'No latitude in session')
@@ -64,14 +69,34 @@ def get_we_data_now():
     ).order_by('nx','ny').values()
     return result
 
+def get_we_data_time(time=None):
+    ymd = based_ymdgetter()
+    pdict = ymd_timegetter()
+    if time is None :
+        Pfcstdate = pdict["Pfcstdate"]
+    else :
+        Pfcstdate = time
+    Pfcsttime = pdict["Pfcsttime"]
+    result = WeatherData.objects.using('redshift').filter(
+        basedate=ymd, 
+        fcstdate=Pfcstdate, 
+        fcsttime=Pfcsttime
+    ).order_by('nx','ny').values()
+    return result
 # y와 x 값 받아서 nx ny로
 # 세부 지역 - 1군데 예측된값 전부 즉 제일 최신 basedate
-def get_we_data_xy(x, y):
+def get_we_data_xy(x, y, time=None):
     ymd = based_ymdgetter()
+    pdict = ymd_timegetter()
+    if time is None :
+        Pfcstdate = pdict["Pfcstdate"]
+    else :
+        Pfcstdate = time
     result = WeatherData.objects.using('redshift').filter(
         basedate=ymd,
         nx=x,
-        ny=y
+        ny=y,
+        fcstdate=Pfcstdate, 
     ).order_by('nx','ny','fcstdate','fcsttime').values()
     return result
 
