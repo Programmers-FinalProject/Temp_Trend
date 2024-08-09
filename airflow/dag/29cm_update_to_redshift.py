@@ -88,7 +88,7 @@ dag = DAG(
     '29cm_s3_to_redshift',
     default_args=default_args,
     description='Fetch today\'s data from S3 and upload to Redshift',
-    schedule_interval='20 14 * * *',  # 매일 저녁 11시 20분
+    schedule_interval='10 14 * * *',  # 매일 저녁 11시 20분
     start_date=datetime(2024, 8, 1),  
     catchup=False,
 )
@@ -97,13 +97,13 @@ today_str = datetime.now().strftime('%Y%m%d')
 
 #External Task Sensor - Dependency 
 wait_for_task = ExternalTaskSensor(
-    task_id = 'result_save_to_dir_male_shoes', # 완료될 때 까지 기다릴 Task ID
+    task_id = 'wait_for_previous_dag', # 완료될 때 까지 기다릴 Task ID
     external_dag_id = '29cm_data_extract', # 완료될 때 까지 기다릴 Dag ID
     allowed_states = ['success'], # 완료될 떄 까지 기다림
     timeout = 3600, # 3600초, 즉 1시간을 기다려본다
     mode = 'poke',
     poke_interval = 60, # 60초에 한번씩 완료됐나 체크
-    execution_delta =  timedelta(minutes=30), # 동일한 시간에 스케줄링을 해야하는데 시간차이가 너무 날 경우  이를 통해 맞춰줄 수 있음. 
+    execution_delta =  timedelta(minutes=10), # 동일한 시간에 스케줄링을 해야하는데 시간차이가 너무 날 경우 이를 통해 맞춰줄 수 있음. 
     queue='queue1'
 )
 
