@@ -24,6 +24,10 @@ def transform_gender(gender):
         return "unisex"
     
 def fetch_product_links(category,):
+    import logging
+    # 로그 설정
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
     # Selenium을 사용하여 상품 링크 수집
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
@@ -31,27 +35,40 @@ def fetch_product_links(category,):
     options.add_argument("--disable-dev-shm-usage")
     
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    logging.info("Driver 정상 동작")
     product_data = []
     etl_time = datetime.now().strftime("%Y-%m-%d")
     
     try:
+        logging.info("웹사이트 접속 중...")
         driver.get("https://www.29cm.co.kr/home/")
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '/html/body/home-root/div/ruler-gnb/div/div[3]/div/ul/li[1]/a')))
         
+        logging.info("Best 버튼 클릭 대기 중...")
         best_button = driver.find_element(By.XPATH, '/html/body/home-root/div/ruler-gnb/div/div[3]/div/ul/li[1]/a')
         best_button.click()
+        logging.info("Best 버튼 클릭 ...")
+        
+        logging.info("카테고리 로딩 대기 중...")
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[1]/div/ul/ul/li[8]/a')))
         
+        
         category = category
+        logging.info("카테고리 클릭 대기 중 ...")
         category_element = driver.find_element(By.XPATH, category["xpath"])
         category_element.click()
+        logging.info("카테고리 클릭 ...")
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[1]/ul/span[2]/label')))
         
+        logging.info("베스트 버튼 로딩 대기 중...")
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[2]/span[2]/label')))
         daily_btn = driver.find_element(By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[2]/span[2]/label')
         daily_btn.click()
+        logging.info("베스트 버튼 클릭...")
         
+        logging.info("서브카테고리 목록 수집 중...")
         subcategories = driver.find_elements(By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[1]/ul/span/label')[1:]
+        logging.info("서브카테고리 수집 완료. 수집된 카테고리 수: %d", len(subcategories))
         
         for subcategory in subcategories:
             subcategory.click()
