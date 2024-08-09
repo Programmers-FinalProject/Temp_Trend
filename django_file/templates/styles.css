@@ -147,11 +147,13 @@ li {list-style-type: none;}
 .left-content {
     flex: 1;
     min-width: 0; /* flex-basis를 0으로 설정하여 축소 허용 */
-    max-width: 65%; /* 최대 너비 약간 증가 */
+    max-width: 50%; /* 최대 너비 약간 증가 */
+    
+    
 }
 
 .right-content {
-    flex: 0 0 35%; /* flex-grow: 0, flex-shrink: 0, flex-basis: 35% */
+    flex: 0 0 50%; /* flex-grow: 0, flex-shrink: 0, flex-basis: 35% */
     min-width: 300px;
 }
 

@@ -9,6 +9,7 @@ from weather.tests import test
 from weather.view.save_location import save_location, location_name, session_data_api, session_delete,save_gender
 from weather.view.cookie import show_cookies
 from weather.view.nxny import submit_location
+from weather.view.df import test_weather_view,weather_api
 
 urlpatterns = [
     # 기본 경로 설정
@@ -27,6 +28,8 @@ urlpatterns = [
     path('delete-session-gender/', session_delete, {'key': 'gender'}, name='delete-session-gender'),
     #선택위치 전송
     path('submit_location/', submit_location, name='submit_location'),
+    #전국지도
+    path('api/weather/', weather_api, name='weather_api'),
     # 테스트페이지
     path('test/', test, name='test'),
     path('musinsa-test/', musinsa_list, name='musinsa_list'),  # 무신사 테스트페이지
@@ -34,4 +37,5 @@ urlpatterns = [
     path('call_we_data/', weather_views.we_data_usexy, name='call_we_data'),
     path('categorize/', categorize, name='categorize'),
     path('show_cookie', show_cookies ,name='show_cookies'), #쿠키테스트   
+    path('test-weather/', test_weather_view, name='test_weather_view'),
 ]
