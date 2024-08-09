@@ -175,15 +175,21 @@
                     </script>
                     <div id="initial-buttons" class="row">
                         <div class="col">
-                            <button id="genderMale" class="btn btn-secondary w-100">남자</button>
+                            <button id="genderMale" class="btn btn-secondary w-100" value="m">남자</button>
                         </div>
                         <div class="col">
-                            <button id="genderFemale" class="btn btn-secondary w-100">여자</button>
+                            <button id="genderFemale" class="btn btn-secondary w-100" value="w">여자</button>
                         </div>
                         <div class="col">
-                            <button id="genderUnisex" class="btn btn-secondary w-100">unisex</button>
+                            <button id="genderUnisex" class="btn btn-secondary w-100" value="unisex">unisex</button>
                         </div>
-                    </div>
+                    </div> 
+                    <script>
+                        document.getElementById('initial-buttons').addEventListener('change', function () {
+                         var gender = this.value
+                         window.location.href = '/?gender=${gender}'
+                        });
+                    </script>
         
                     <div id="selected-gender" class="selected">
                         <span id="selected-text"></span>
@@ -212,7 +218,34 @@
                         </a>
                     </div> -->
                 </div>
-            
+                {% if musinsa_lists %}
+                <div class="musinsa_list">
+                    <table>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Product Link</th>
+                            <th>Image</th>
+                            <th>Rank</th>
+                            <th>Price</th>
+                            <th>Category</th>
+                        </tr>
+                        {% for product in musinsa_lists %}
+                            <tr>
+                                <td>{{ product.product_name }}</td>
+                                <td><a href="{{ product.product_link }}">Link</a></td>
+                                <td><img src="{{ product.image_link }}" alt="Product Image" width="100"></td>
+                                <td>{{ product.rank }}</td>
+                                <td>{{ product.price }}</td>
+                                <td>{{ product.category }}</td>
+                            </tr>
+                        {% endfor %}
+                </div>
+                <style>
+                    .musinsa_list {
+                        align-content: center;
+                    }
+                </style>
+                {% endif %}
                 <script type="text/javascript">
                     // const images = {
                     //     precipitation: { src: "{{ im }}", href: "{{ im2 }}" },

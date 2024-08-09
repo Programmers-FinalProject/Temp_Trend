@@ -66,6 +66,7 @@ function selectGender(gender) {
             console.log("Gender saved successfully");
             localStorage.setItem("selectedGender", gender);
             displaySelectedGender(gender);
+            window.location.href = `/?gender=${gender}`;
         } else {
             throw new Error(data.message || 'Unknown error occurred');
         }
@@ -73,7 +74,8 @@ function selectGender(gender) {
     .catch(error => {
         console.error("Error saving gender:", error);
         alert("성별 저장 중 오류가 발생했습니다. 다시 시도해 주세요.");
-    });
+    })
+    
 }
 
 function displaySelectedGender(gender) {

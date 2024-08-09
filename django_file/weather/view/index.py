@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from datetime import datetime
+from weather.models import musinsaData
+import json
 
 def get_weather_image(target_obs):
     obs_dict = {'강수량': 'precip', '기온': 'temp', '바람': 'wind'}
@@ -39,7 +41,11 @@ def weather_view(request):
     temp_img, temp_link = get_weather_image('기온')
     precip_img, precip_link = get_weather_image('강수량')
     wind_img, wind_link = get_weather_image('바람')
-    
+
+    selected_gender = request.GET.get('gender')
+    musinsaLists = musinsaData.objects.using('redshift').filter(gender = selected_gender)
+    musinsaLists.order_by('rank')
+
     context = {
         'im': precip_img,
         'im2': precip_link,
@@ -47,6 +53,7 @@ def weather_view(request):
         'im4': temp_link,
         'im5': wind_img,
         'im6': wind_link,
+        'musinsa_lists': musinsaLists,
     }
-    
+
     return render(request, 'index.html', context)
