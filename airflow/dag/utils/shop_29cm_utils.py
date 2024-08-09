@@ -36,11 +36,11 @@ def fetch_product_links(category,):
     
     try:
         driver.get("https://www.29cm.co.kr/home/")
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '/html/body/home-root/div/ruler-gnb/div/div[3]/div/ul/li[1]/a')))
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '/html/body/home-root/div/ruler-gnb/div/div[3]/div/ul/li[1]/a')))
         
         best_button = driver.find_element(By.XPATH, '/html/body/home-root/div/ruler-gnb/div/div[3]/div/ul/li[1]/a')
         best_button.click()
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[1]/div/ul/ul/li[4]/a')))
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[1]/div/ul/ul/li[8]/a')))
         
         category = category
         category_element = driver.find_element(By.XPATH, category["xpath"])
