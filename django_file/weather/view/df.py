@@ -63,10 +63,12 @@ def classify_weather(nx, ny, fcstdate):
         'PTY', 'TMP', 'WSD', 'SKY', 'VVV', 'REH', 'WAV'
     ]
     condition = None
-    
+    tmp = 0
     for code in priority_order:
         # 각 코드에 대한 우선순위로 상태 평가
         for _, row in current_data.iterrows():
+            if row['weather_code'] == 'TMP':
+                tmp = row['fcstvalue']
             if row['weather_code'] != code:
                 continue
             
@@ -212,7 +214,7 @@ def classify_weather(nx, ny, fcstdate):
                 break
         if condition:
             break
-    condition.append(row.get('TMP', 0))
+    condition.append(tmp)
     print(condition)
     return condition
 
