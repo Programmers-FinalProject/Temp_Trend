@@ -14,7 +14,7 @@ dag = DAG(
     '29cm_male_acc_data_extract',
     default_args=default_args,
     description='29cm Website Data Extract - Male Accessories',
-    schedule_interval='10 14 * * *',  # 매일 UTC 14시 10분에 실행 (한국시간 23시)
+    schedule_interval='10 14 * * *',  # 매일 UTC 14시 10분에 실행 (한국시간 23시 10분)
 )
 
 with dag:

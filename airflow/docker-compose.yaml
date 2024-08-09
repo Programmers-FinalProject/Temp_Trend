@@ -54,6 +54,7 @@ x-airflow-common:
   # build: .
   environment:
     &airflow-common-env
+    TZ: Asia/Seoul
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgreshori!@hori-1-airflow-metadb.ch4xfyi6stod.ap-northeast-2.rds.amazonaws.com:5432/airflow
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgreshori!@hori-1-airflow-metadb.ch4xfyi6stod.ap-northeast-2.rds.amazonaws.com:5432/airflow

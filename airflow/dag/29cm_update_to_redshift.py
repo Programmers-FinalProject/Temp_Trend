@@ -95,6 +95,18 @@ dag = DAG(
 
 today_str = datetime.now().strftime('%Y%m%d')
 
+#External Task Sensor - Dependency 
+wait_for_task = ExternalTaskSensor(
+    task_id = 'result_save_to_dir_male_shoes', # 완료될 때 까지 기다릴 Task ID
+    external_dag_id = '29cm_data_extract', # 완료될 때 까지 기다릴 Dag ID
+    allowed_states = ['success'], # 완료될 떄 까지 기다림
+    timeout = 3600, # 3600초, 즉 1시간을 기다려본다
+    mode = 'poke',
+    poke_interval = 60, # 60초에 한번씩 완료됐나 체크
+    execution_delta =  timedelta(minutes=30), # 동일한 시간에 스케줄링을 해야하는데 시간차이가 너무 날 경우  이를 통해 맞춰줄 수 있음. 
+    queue='queue1'
+)
+
 # S3에서 파일 목록 가져오기
 list_s3_files = S3ListOperator(
     task_id='list_s3_files',
@@ -106,32 +118,6 @@ list_s3_files = S3ListOperator(
     queue='queue1'
 )
 
-# 외부 DAG의 태스크가 완료될 때까지 기다리는 External Task Sensor 추가
-external_dag_ids = [
-    '29cm_female_acc_data_extract',
-    '29cm_female_bag_data_extract',
-    '29cm_female_shoes_data_extract',
-    '29cm_female_clothes_data_extract',
-    '29cm_male_acc_data_extract',
-    '29cm_male_bag_data_extract',
-    '29cm_male_shoes_data_extract',
-    '29cm_male_clothes_data_extract',
-]
-
-wait_for_external_dags = []
-
-for dag_id in external_dag_ids:
-    sensor = ExternalTaskSensor(
-        task_id=f'wait_for_{dag_id}',
-        external_dag_id=dag_id,
-        external_task_id='fetch_product_links',  # 각 DAG의 완료를 확인할 태스크 ID
-        execution_date_fn=lambda execution_date: execution_date,  # 현재 DAG의 execution_date 사용
-        mode='poke',
-        timeout=600,
-        dag=dag,
-    )
-    wait_for_external_dags.append(sensor)
-
 
 # 파일 병합 작업 정의
 merge_s3_files = PythonOperator(
@@ -140,14 +126,6 @@ merge_s3_files = PythonOperator(
     provide_context=True,
     dag=dag,
     queue='queue1'
-)
-
-delete_files_task = PythonOperator(
-        task_id='delete_files',
-        python_callable=delete_files,
-        provide_context=True,
-        dag=dag,
-        queue='queue1'
 )
 
 s3_to_redshift_task = S3ToRedshiftOperator(
@@ -164,9 +142,12 @@ s3_to_redshift_task = S3ToRedshiftOperator(
     queue='queue1'
 )
 
-# 태스크 종속성 설정
-list_s3_files >> wait_for_external_dags[0]  # 첫 번째 ExternalTaskSensor와 연결
-for sensor in wait_for_external_dags[1:]:
-    wait_for_external_dags[0] >> sensor  # 첫 번째 센서를 나머지 센서와 연결
+delete_files_task = PythonOperator(
+        task_id='delete_files',
+        python_callable=delete_files,
+        provide_context=True,
+        dag=dag,
+        queue='queue1'
+)
 
-wait_for_external_dags[-1] >> merge_s3_files >> s3_to_redshift_task >> delete_files_task
+wait_for_task >> list_s3_files >> merge_s3_files >> s3_to_redshift_task >> delete_files_task

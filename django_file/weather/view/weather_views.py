@@ -13,17 +13,19 @@ from django.http import JsonResponse
 
 
 def we_data_usenow(request):
-    # wedata = get_we_data_now()
-    wedata = get_we_data_xy('112','116')
-    # test = testdataset() # [{'basedate': '20240729', 'basetime': '0500', 'weather_code': 'TMP', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '26', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'UUU', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '5.5', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'VVV', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '6.6', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'VEC', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '220', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'WSD', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '8.6', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'SKY', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '3', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'PTY', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '0', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'POP', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '20', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'WAV', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '2', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'PCP', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '강수없음', 'nx': '34', 'ny': '126'}]
+    wedata = get_we_data_now()
     context = { 'we_dataList' : we_data_setting(wedata)}
-    # print("data", wedata)
+    print(context)
     return render(request, 'wedatatest.html', context)
 
+def we_data_usetime(request):
+    wedata = get_we_data_time()
+    context = { 'we_dataList' : we_data_setting(wedata)}
+    return JsonResponse(context)
 
 def we_data_usexy(request):
-    latitude = "37.5587" #request.session.get('latitude', 'No latitude in session')
-    longitude = "126.9596" #request.session.get('longitude', 'No longitude in session')
+    latitude = request.session.get('latitude', 'No latitude in session')
+    longitude = request.session.get('longitude', 'No longitude in session')
     posXY = nxnySetting(int(float(longitude)), int(float(latitude)))
     wedata = get_we_data_xy(posXY['nx'], posXY['ny'])
     context = { 'we_dataList' : we_data_setting(wedata)}
@@ -67,14 +69,34 @@ def get_we_data_now():
     ).order_by('nx','ny').values()
     return result
 
+def get_we_data_time(time=None):
+    ymd = based_ymdgetter()
+    pdict = ymd_timegetter()
+    if time is None :
+        Pfcstdate = pdict["Pfcstdate"]
+    else :
+        Pfcstdate = time
+    Pfcsttime = pdict["Pfcsttime"]
+    result = WeatherData.objects.using('redshift').filter(
+        basedate=ymd, 
+        fcstdate=Pfcstdate, 
+        fcsttime=Pfcsttime
+    ).order_by('nx','ny').values()
+    return result
 # y와 x 값 받아서 nx ny로
 # 세부 지역 - 1군데 예측된값 전부 즉 제일 최신 basedate
-def get_we_data_xy(x, y):
+def get_we_data_xy(x, y, time=None):
     ymd = based_ymdgetter()
+    pdict = ymd_timegetter()
+    if time is None :
+        Pfcstdate = pdict["Pfcstdate"]
+    else :
+        Pfcstdate = time
     result = WeatherData.objects.using('redshift').filter(
         basedate=ymd,
         nx=x,
-        ny=y
+        ny=y,
+        fcstdate=Pfcstdate, 
     ).order_by('nx','ny','fcstdate','fcsttime').values()
     return result
 
