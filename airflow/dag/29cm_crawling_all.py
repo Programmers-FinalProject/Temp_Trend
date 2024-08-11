@@ -1,5 +1,5 @@
 from utils import shop_29cm_utils
-from datetime import datetime
+from datetime import datetime,timedelta
 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -50,6 +50,8 @@ for category in categories:
         op_kwargs={'category': category},
         queue='queue1',
         dag=dag,
+        retries=3,  # 최대 3회 재시도
+        retry_delay=timedelta(minutes=2),  # 2분 대기 후 재시도
     )
 
     fetch_info_task = PythonOperator(

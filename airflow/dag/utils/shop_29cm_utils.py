@@ -122,8 +122,13 @@ def fetch_product_links(category,):
                     "gender": transform_gender(category['name'][:2])
                 })
 
+        if not product_data: # 정확히 데이터를 수집하지 못한 경우
+            raise ValueError('Something went wrong during data collection!!')
+
     except Exception as e:
-        print(f"상품 링크 수집 중 오류: {e}")
+        logging.error(f"Error in fetch_product_links: {e}")
+        raise  # 예외를 다시 발생시켜서 다음 작업이 실행되지 않도록 함
+    
     finally:
         driver.quit()
     
