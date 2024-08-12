@@ -21,7 +21,7 @@ else:
 print("Unique CATEGORY and GENDER combinations:")
 print(unique_df)
 
-# 필요한 경우 리스트로 변환
+# 리스트로 변환
 unique_combinations = unique_df[['CATEGORY', 'GENDER']].values.tolist()
 
 # 결과 리스트 출력
@@ -131,7 +131,7 @@ def recommend_categories(weather_info, product_df, target_gender):
 
     predictions = pipeline.predict(combined_df_imputed)
     
-    # 추천 제품 필터링 (선호도 ~ 이상)
+    # 추천 제품 필터링 (일단 선호도 1 이상)
     recommended_products = combined_df[np.array(predictions) >= 1]
     
     # 성별에 따라 필터링
@@ -156,8 +156,8 @@ def recommend_categories(weather_info, product_df, target_gender):
 # 추천 결과 생성
 weather_info = {'TMP': 28, 'PTY': 0, 'forecast_time': '09:00'}
 # 각 성별에 대한 추천
-recommended_products_women = recommend_categories(weather_info, product_data, target_gender='women')
-recommended_products_men = recommend_categories(weather_info, product_data, target_gender='men')
+recommended_products_women = recommend_categories(weather_info, product_data, target_gender='w')
+recommended_products_men = recommend_categories(weather_info, product_data, target_gender='m')
 recommended_products_unisex = recommend_categories(weather_info, product_data, target_gender='unisex')
 # 추천 결과를 JSON으로 변환
 recommended_products_women_json = recommended_products_women.to_json(orient='records', force_ascii=False)
@@ -171,3 +171,28 @@ print("\nMen's Recommended Products (JSON):")
 print(recommended_products_men_json)
 print("\nUnisex Recommended Products (JSON):")
 print(recommended_products_unisex_json)
+
+
+from django.http import JsonResponse
+
+def learn(request):
+    # 요청에서 날씨 정보 가져오기
+    weather_info = request.GET.get('weather_info')  #일단 post로 했습니다.
+    #예시 : weather_info = {'TMP': 28, 'PTY': 0, 'forecast_time': '09:00'} 이런식으로 들어와야 함
+
+    # 세션에서 선택된 성별 가져오기
+    g = request.session.get('selectedGender')
+
+    # 성별에 따라 제품 추천
+    if g == 'w':
+        recommended_products = recommend_categories(weather_info, product_data, target_gender='w')
+    elif g == 'm':
+        recommended_products = recommend_categories(weather_info, product_data, target_gender='m')
+    else:
+        recommended_products = recommend_categories(weather_info, product_data, target_gender='unisex')
+
+    # 추천 결과를 JSON으로 변환
+    recommended_products_json = recommended_products.to_json(orient='records', force_ascii=False)
+
+    # JSON 응답 반환
+    return JsonResponse(recommended_products_json, safe=False)
