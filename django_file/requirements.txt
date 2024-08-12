@@ -66,3 +66,4 @@ geopy
 django-background-tasks
 boto3
 awscli  #aws configure 실행해주세요
+scikit-learn
