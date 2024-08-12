@@ -1,5 +1,6 @@
 import pandas as pd
 from pathlib import Path
+import json
 
 # 현재 스크립트의 부모 디렉토리
 current_dir = Path(__file__).parent
@@ -176,9 +177,17 @@ print(recommended_products_unisex_json)
 from django.http import JsonResponse
 
 def learn(request):
+    body = request.body.decode('utf-8')
+    print("Request Body:", body)  # 디버깅용 출력
+
+    # JSON 데이터 파싱
+    data = json.loads(body)
+    weather_info = data.get('weather_info')
+    print("data" ,weather_info)
     # 요청에서 날씨 정보 가져오기
-    weather_info = request.GET.get('weather_info')  #일단 post로 했습니다.
-    #예시 : weather_info = {'TMP': 28, 'PTY': 0, 'forecast_time': '09:00'} 이런식으로 들어와야 함
+    # weather_info = request.GET.get('weather_info')  #일단 post로 했습니다.
+    print(weather_info)
+    # 예시 : weather_info = {'TMP': 28, 'PTY': 0, 'forecast_time': '09:00'} 이런식으로 들어와야 함
 
     # 세션에서 선택된 성별 가져오기
     g = request.session.get('selectedGender')

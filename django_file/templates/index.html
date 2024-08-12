@@ -291,12 +291,13 @@
                     function updateWeatherData(data) {
                         const container = document.querySelector('.we-data-box');
                         container.innerHTML = ''; // 기존 데이터를 지우고 새 데이터를 추가합니다.
-                        console.log("테스트",data['we_dataList'] && data.length > 0)
                         if (data['we_dataList'] && data['we_dataList'].length > 0) {
                             let html = '<ul class="clear we-data-ul">';
+                            
                             data['we_dataList'].forEach(item => {
                                 html += `
-                                    <li class="we-data-list">
+                                    <li class="we-data-list" onclick="sendweData(this)">
+                                        <input type="hidden" class="we-data" data-fcsttime="${item.fcsttime}" data-tmp="${item.TMP}" data-pty="${item.PTY}">
                                         <ul>
                                             <li class="we-list we-time">${item.fcsttime.slice(0, 2)}시</li>
                                             <li class="we-list we-img">
@@ -317,6 +318,25 @@
                             container.innerHTML = '<p>No data available</p>';
                         }
                     }
+
+                    function sendweData(e) {
+                        const dataTag = e.querySelector('.we-data')
+                        const data = {'weather_info' : {
+                            'forecast_time' : dataTag.getAttribute('data-fcsttime').slice(0, 2)+":"+dataTag.getAttribute('data-fcsttime').slice(2, 4),
+                            'TMP' : parseInt(dataTag.getAttribute('data-tmp'),10),
+                            'PTY' : parseInt(dataTag.getAttribute('data-pty'),10),
+                        }};
+                        console.log(data)
+                        fetch('{% url "learn" %}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: JSON.stringify(data)
+                        })
+                    };
+
                 </script>
             </div>
         </div>
