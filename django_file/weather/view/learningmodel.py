@@ -72,11 +72,20 @@ import numpy as np
 # 예시 제품 데이터: 각 카테고리별
 product_data = df
 
-# 날씨 데이터 예시
+# 24시간의 시간대 생성
+hours = [f"{i:02d}:00" for i in range(24)]
+
+# 임의의 온도 데이터 생성 (10도에서 30도 사이)
+temperatures = np.random.randint(10, 31, 24)
+
+# 임의의 강수 형태 데이터 생성 (0: 없음, 1: 비, 2: 진눈깨비, 3: 눈)
+precipitation_types = np.random.choice([0, 1, 2, 3], 24, p=[0.7, 0.2, 0.05, 0.05])
+
+# 데이터프레임 생성
 weather_data = pd.DataFrame({
-    'TMP': [28, 22, 17, 29],
-    'PTY': [0, 1, 0, 0],
-    'forecast_time': ['09:00', '12:00', '15:00', '18:00']
+    'forecast_time': hours,
+    'TMP': temperatures,
+    'PTY': precipitation_types
 })
 
 # 학습 프레임 생성
