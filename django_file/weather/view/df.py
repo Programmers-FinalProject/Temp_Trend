@@ -58,20 +58,21 @@ def classify_weather(nx, ny, fcstdate):
     # 'fcsttime'이 현재 시각의 '시'와 일치하는 데이터 필터링
     # current_hour_str = f"{current_hour:02}00"
     current_data = df[df['fcsttime'] == current_hour_str]
+    tmp = None
+    for _, row in current_data.iterrows():
+        if row['weather_code'] == 'TMP':
+            tmp = row['fcstvalue']
+            break  # TMP 값을 찾으면 중단
     
     # 우선순위 기반으로 가장 중요한 상태 결정
     priority_order = [
-        'TMP', 'PTY', 'TMP', 'WSD', 'SKY', 'VVV', 'REH', 'WAV'
+        'PTY','SKY', 'TMP', 'WSD','VVV', 'REH', 'WAV'
     ]
-    condition = None
-    tmp = 0
+
+
     for code in priority_order:
         # 각 코드에 대한 우선순위로 상태 평가
         for _, row in current_data.iterrows():
-            if row['weather_code'] == 'TMP':
-                tmp = row['fcstvalue']
-            if row['weather_code'] != code:
-                continue
             
             value = float(row['fcstvalue'])
             time = int(row['fcsttime'])
@@ -86,30 +87,30 @@ def classify_weather(nx, ny, fcstdate):
                 if value == 1:  
                     condition = [1, "맑음"]
                     if night:
-                        condition = [13, "밤에 맑음"]
+                        condition = [2, "밤에 맑음"]
                 elif value == 3:
-                    condition = [2, "구름 많음"]
+                    condition = [3, "구름 많음"]
                     if night:
-                        condition = [30, "밤에 구름 많음"]
+                        condition = [4, "밤에 구름 많음"]
                 elif value == 4:  # 흐림
-                    condition = [4, "흐림"]
+                    condition = [5, "흐림"]
                     if night:
-                        condition = [15, "밤에 흐림"]
+                        condition = [6, "밤에 흐림"]
 
             # 강수 형태(PTY)
-            elif code == 'PTY':
+            if code == 'PTY':
                 if value == 0:
                     condition = [1, "맑음"]  # 맑음 (하늘 상태로 따로 처리)
                 elif value == 1:
-                    condition = [5, "흐리고 비"]
+                    condition = [10, "흐리고 비"]
                 elif value == 2:
-                    condition = [25, "진눈깨비"]
+                    condition = [21, "진눈깨비"]
                 elif value == 3:
-                    condition = [21, "흐리고 눈"]
+                    condition = [12, "눈"]
                 elif value == 4:
-                    condition = [6, "소나기"]
+                    condition = [9, "소나기"]
                     if night:
-                        condition = [33, "밤에 소나기"]
+                        condition = [38, "밤에 소나기"]
                 elif value == 5:
                     condition = [26, "빗방울"]
                 elif value == 6:
@@ -117,101 +118,9 @@ def classify_weather(nx, ny, fcstdate):
                 elif value == 7:
                     condition = [28, "눈날림"]
 
-            # 기온(TMP)
-            elif code == 'TMP':
-                if value > 35:
-                    condition = [41, "매우 더운 날"]
-                elif value > 30:
-                    condition = [8, "더운 날"]
-                    if night:
-                        condition = [39, "더운 밤"]
-                elif value < 0:
-                    condition = [9, "추운 날"]
-                    if 5 <= hour <= 8:
-                        condition = [38, "차가운 아침"]
-                    if night:
-                        condition = [40, "추운 밤"]
-                elif value < -10:
-                    condition = [42, "매우 추운 날"]
-
-            # 습도(REH)
-            elif code == 'REH':
-                if value > 90:
-                    condition = [16, "습도가 높아 안개"]
-                elif value > 80:
-                    if row.get('SKY') == 3:
-                        condition = [29, "구름 많고 습도 높음"]
-                    elif row.get('SKY') == 4:
-                        condition = [31, "흐리고 습도 높음"]
-
-            # 습도와 기온 조합
-            if code == 'REH' and value > 70 and row.get('TMP', 0) > 30:
-                condition = [32, "고온 다습"]
-            elif code == 'REH' and value < 40 and row.get('TMP', 0) < 10:
-                condition = [35, "저온 건조"]
-
-            # 풍속(WSD)
-            elif code == 'WSD':
-                if value > 8:
-                    if row.get('SKY', 0) == 3:
-                        condition = [11, "구름 많고 바람이 강한 날"]
-                    elif row.get('SKY', 0) == 4:
-                        condition = [12, "흐리고 바람이 강한 날"]
-                    else:
-                        condition = [10, "강풍"]
-                elif value > 10:
-                    condition = [34, "매우 강풍"]
-
-            # 풍향(VEC), 바람 동서성분(VVV)
-            elif code == 'VVV':
-                if value < 0:
-                    condition = [18, "서풍"]
-                elif value > 0:
-                    condition = [19, "동풍"]
-
-            # 파고(WAV)
-            elif code == 'WAV':
-                if value > 2:
-                    condition = [20, "높은 파도"]
-
-            # 특정 날씨 조합
-            if code == 'PTY' and value == 1 and row.get('WSD', 0) > 8:
-                condition = [22, "비와 강풍"]
-            elif code == 'PTY' and value == 3 and row.get('WSD', 0) > 8:
-                condition = [23, "눈과 강풍"]
-
-            # 시간 및 특정 조건에 따른 추가 상태
-            if condition is None:
-                if night:
-                    if code == 'SKY' and value == 1:
-                        condition = [13, "밤에 맑음"]
-                    elif code == 'SKY' and value == 3:
-                        condition = [30, "밤에 구름 많음"]
-                if 5 <= hour <= 8 and code == 'TMP' and value < 0:
-                    condition = [38, "차가운 아침"]
-                elif 18 <= hour <= 20 and code == 'SKY' and value == 1:
-                    condition = [41, "해질녘 맑음"]
-                elif 4 <= hour <= 6 and code == 'SKY' and value == 1:
-                    condition = [42, "해뜰 때 맑음"]
-
-            # 추가 조건 정의
-            if code == 'SKY' and value == 3 and row.get('REH', 0) > 85:
-                condition = [3, "구름 조금"]
-            if code == 'PTY' and value == 4 and row.get('WSD', 0) > 10:
-                condition = [7, "폭우와 강풍"]
-            if code == 'SKY' and value == 3 and row.get('REH', 0) > 95:
-                condition = [14, "밤에 안개"]
-            if code == 'SKY' and value == 4 and row.get('REH', 0) > 95:
-                condition = [17, "밤에 흐리고 안개"]
-            if code == 'VVV' and row.get('WSD', 0) > 15:
-                condition = [24, "강한 바람"]
-            if code == 'SKY' and value == 3 and row.get('TMP', 0) < 15:
-                condition = [36, "구름 많고 추운 날"]
-            if code == 'SKY' and value == 4 and row.get('TMP', 0) < 15:
-                condition = [37, "흐리고 추운 날"]
-
             # 첫 번째로 발견된 가장 높은 우선순위의 상태에서 탈출
             if condition:
+                condition.append(tmp)
                 break
         if condition:
             break
