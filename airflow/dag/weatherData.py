@@ -91,7 +91,7 @@ def weatherX73Y134():
 def weatherX92Y131():
     weatherTask("92", "131")
 def weatherX69Y106():
-    weatherTask("69", "106")
+    weatherTask("69", "106") 
 def weatherX67Y100():
     weatherTask("67", "100")
 def weatherX63Y89():
@@ -114,7 +114,6 @@ def weatherX98Y76():
     weatherTask("98", "76")
 def weatherX52Y38():
     weatherTask("52", "38")
-
 def weatherX87Y106():
     weatherTask("87", "106")
 def weatherX60Y120():
@@ -135,12 +134,24 @@ def weatherX69Y107():
     weatherTask("69", "107")
 
 
+# 특수성 있는 지역들
+weather_nxny = [
+    {"nx": 21 , "ny": 135},
+    {"nx": 60 , "ny": 121},
+    {"nx": 92 , "ny": 131},
+    {"nx": 69 , "ny": 106},
+    {"nx": 50 , "ny": 67},
+    {"nx": 73 , "ny": 66},
+    {"nx": 127 , "ny": 127},
+    {"nx": 91 , "ny": 106},
+]
 
 def weatherCsvToSql():
-    sql = "SELECT left(lat,2) nx, left(lon,3) ny FROM raw_data.weather_stn GROUP BY left(lat,2), left(lon,3) ORDER BY left(lat,2), left(lon,3)"
+    sql = "SELECT nx, ny FROM ( SELECT location2, location3, location1, nx, ny, ROW_NUMBER() OVER (PARTITION BY location1 ORDER BY location1) AS row_num FROM raw_data.weather_stn) AS count WHERE row_num = 1 ORDER BY location2 DESC, location3 DESC"
     xydf = redShiftUtils.sql_selecter(sql)
     xyjson = xydf.to_json(orient="records")
     xyjson = json.loads(xyjson)
+    xyjson = xyjson + weather_nxny
     csvDf = pd.DataFrame()
     for xy in xyjson :
         nxnypos = nxny.nxnySetting(lon=int(xy['ny']), lat=int(xy['nx']))
@@ -148,16 +159,13 @@ def weatherCsvToSql():
         csvDf = pd.concat([csvDf, s3CsvData], ignore_index=True)
     csvDf = dataAsType(csvDf)
     print("csv",csvDf)
-    redshiftData = redShiftUtils.sql_selecter("SELECT * FROM raw_data.weather_data")
-    merged_data = pd.concat([csvDf, redshiftData], ignore_index=True)
 
     eg = redShiftUtils.redshift_engine()
     try : 
-        merged_data.to_sql("weather_data", eg, index=False, if_exists='append', schema="raw_data", )
-        print("DATA = ",merged_data)
+        csvDf.to_sql("weather_data", eg, index=False, if_exists='replace', schema="raw_data", )
+        print("저장완료", redShiftUtils.sql_selecter("SELECT * FROM raw_data.weather_data limit 10"))
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
-    print(redShiftUtils.sql_selecter("SELECT * FROM raw_data.weather_data"))
 
 def dataAsType(df):
     df = df.rename(columns={
@@ -355,7 +363,7 @@ with TaskGroup(group_id='weatherTableSetting', dag=dag) as CSVSetting:
         queue='queue1'
     )
 
-    weatherX60Y127Task >> weatherX21Y135Task >> weatherX60Y121Task >> weatherX73Y134Task >> weatherX92Y131Task >> weatherX69Y106Task >> weatherX67Y100Task >> weatherX63Y89Task >> weatherX58Y74Task >> weatherX50Y67Task >> weatherX127Y127Task >> weatherX91Y106Task >> weatherX89Y90Task >> weatherX102Y84Task >> weatherX98Y76Task >> weatherX52Y38Task >> weatherX87Y106Task >> weatherX60Y120Task >> weatherX66Y103Task >> weatherX55Y124Task >> weatherX51Y67Task >> weatherX28Y8Task >> weatherX68Y100Task >> weatherX69Y107Task 
+    weatherX60Y127Task >> weatherX21Y135Task >> weatherX60Y121Task >> weatherX73Y134Task >> weatherX92Y131Task >> weatherX69Y106Task >> weatherX67Y100Task >> weatherX63Y89Task >> weatherX58Y74Task >> weatherX50Y67Task >> weatherX127Y127Task >> weatherX91Y106Task >> weatherX89Y90Task >> weatherX102Y84Task >> weatherX98Y76Task >> weatherX52Y38Task >> weatherX87Y106Task >> weatherX60Y120Task >> weatherX66Y103Task >> weatherX55Y124Task >> weatherX51Y67Task >> weatherX28Y8Task >> weatherX68Y100Task >> weatherX69Y107Task >> weatherX73Y66Task >> weatherX91Y77Task
     
 CsvToSql = PythonOperator(
         task_id='CsvToSql',

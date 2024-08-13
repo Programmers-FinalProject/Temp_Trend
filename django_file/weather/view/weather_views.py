@@ -35,7 +35,7 @@ def we_data_usexy(request):
         longitude = request.session.get('longitude', 'No longitude in session')
         head = "현 위치의 날씨"
     else :
-        wedata = get_we_data_xy(43, 114)
+        wedata = get_we_data_xy(60, 127)
         context = { 'head' : "서울의 날씨", 'we_dataList' : we_data_setting(wedata)}
         return JsonResponse(context)
         
