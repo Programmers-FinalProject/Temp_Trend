@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from datetime import datetime, timedelta
-from weather.models import WeatherData
+from weather.models import WeatherData, WeatherStn
 from weather.view import nxny, save_location
 from django.http import JsonResponse
 
@@ -39,7 +39,7 @@ def we_data_usexy(request):
         context = { 'head' : "서울의 날씨", 'we_dataList' : we_data_setting(wedata)}
         return JsonResponse(context)
         
-    posXY = nxnySetting(int(float(longitude)), int(float(latitude)))
+    posXY = nxnySetting(longitude, latitude)
     wedata = get_we_data_xy(posXY['nx'], posXY['ny'])
     context = { 'head' : head ,'we_dataList' : we_data_setting(wedata)}
     return JsonResponse(context)
@@ -197,10 +197,16 @@ def testdataset():
 
 
 def nxnySetting(lon, lat):
-    print(lon, lat)
-    lon, lat, x, y = nxny.map_conv(lon, lat, 0.0, 0.0, 0)
-    result = {'lon':str(lon), 'lat':str(lat), 'nx':str(x),'ny':str(y)}
-    print(result)
+    result = WeatherStn.objects.filter(
+        lon__startswith=lon[:5],
+        lat__startswith=lat[:4]
+    ).order_by('-location2', '-location3').values('location1').first()
+
+    # 기존 변환기는 사용안함
+    # print(lon, lat)
+    # lon, lat, x, y = nxny.map_conv(lon, lat, 0.0, 0.0, 0)
+    # result = {'lon':str(lon), 'lat':str(lat), 'nx':str(x),'ny':str(y)}
+    # print(result)
     
     return result
 
