@@ -1,3 +1,10 @@
+a {
+    text-decoration: none; /* 모든 링크에서 밑줄 제거 */
+}
+.bold-text {
+    font-weight: bold; /* 특정 클래스에만 적용 */
+}
+
 html, body {
     background-color: #f0f8ff;
     margin: 0;
