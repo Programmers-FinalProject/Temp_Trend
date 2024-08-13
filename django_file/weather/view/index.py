@@ -9,7 +9,7 @@ import requests
 def weather_view(request):
     selected_gender = request.GET.get('gender')
     musinsaLists = musinsaData.objects.using('redshift').filter(gender=selected_gender).order_by('rank')
-    response = requests.get('http://127.0.0.1:8000/learn') #https://34.64.100.195/learn 으로 바꿔야 함
+    response = requests.get('https://34.64.100.195/learn') #https://34.64.100.195/learn(배포) http://127.0.0.1:8000/learn(로컬)
     if response.status_code == 200:
         data = response.json()
         recommended_products = data['recommended_products']
