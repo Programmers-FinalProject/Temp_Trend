@@ -1,44 +1,84 @@
-body {
+html, body {
     background-color: #f0f8ff;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
 }
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
 .location-header {
     background-color: #ffffff;
     padding: 18px;
     border-radius: 20px 20px 0 0;
+    margin-bottom: 10px;
 }
+
 .main-content {
     background-color: #87CEEB;
     border-radius: 0 0 20px 20px;
     padding: 20px;
 }
+
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.top-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+}
+
+.left-content, .right-content {
+    flex: 1 1 45%;
+    min-width: 300px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
+    padding: 15px;
+}
+
+.center-content {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
+    padding: 15px;
+}
+
 .nav-pills .nav-link {
     color: #000;
     background-color: #f8f9fa;
     margin-right: 5px;
+    border-radius: 15px;
 }
+
 .nav-pills .nav-link.active {
     background-color: #87CEEB;
     color: #fff;
 }
+
 .search-bar {
     background-color: #6c757d;
     border-radius: 20px;
     padding: 10px;
+    margin-bottom: 15px;
 }
+
 .btn-light {
     border-radius: 20px;
 }
-.map-container {
-    background-color: #ffffff;
-    border-radius: 20px;
-    padding: 10px;
-    height: 200px;
-}
 
 .weather-map-container {
-    width: 30%;
-    max-width: 640px; /* 이미지의 원본 너비 */
-    margin: 0 auto;
+    width: 100%;
+    max-width: 640px;
+    margin: 15px auto;
     background-color: #ffffff;
     border-radius: 20px;
     padding: 10px;
@@ -51,24 +91,18 @@ body {
     display: block;
 }
 
-/* 미디어 쿼리를 사용하여 작은 화면에서의 스타일 조정 */
-@media (max-width: 768px) {
-    .weather-map-container {
-        padding: 5px;
-    }
-}
-
 .selected {
     display: none;
     justify-content: space-between;
     align-items: center;
     margin-top: 20px;
 }
+
 .selected span {
     font-size: 1.2em;
     font-weight: bold;
 }
-/* 오류 메시지를 중앙에 표시하는 스타일(오버레이) */ 
+
 .error-overlay {
     position: fixed;
     top: 0;
@@ -76,10 +110,10 @@ body {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    display: none; /* 기본적으로 숨김 */
+    display: none;
     justify-content: center;
     align-items: center;
-    z-index: 9999; /* 다른 콘텐츠 위에 나타나도록 설정 */
+    z-index: 9999;
 }
 
 .error-message {
@@ -106,65 +140,76 @@ body {
     background-color: #501219;
 }
 
-/* 선택 박스 스타일링 */
-.select-container select {
-    margin-right: 10px;
-}
-
 .select-container {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 10px; /* 간격 조절 */
+    gap: 10px;
 }
 
-/* 기상 내역 화면 css */
-*{padding: 0; margin: 0;}
-.clear::after {
-    content: "";
-    display: table;
-    clear: both;
-}
-ul {list-style-type: none;}
-li {list-style-type: none;}
-.we-data-box{
-    width: 80%;
-    margin: 0 auto;
+.we-data-box {
+    width: 100%;
     overflow-x: auto;
+    margin-top: 15px;
 }
-.we-data-ul {width: max-content;}
-.we-data-list{float: left; padding: 0px; margin: 0; display: flex; flex-wrap: wrap; white-space:nowrap;}
-.we-list {margin: 0 auto; text-align: center; border-left: 1px dotted; border-right: 1px dotted;}
-.we-atp, .we-tmp, .we-ras, .we-wind{border-bottom: 1px #cccccc dotted;}
-.we-img>img { height: 30px;} 
+.we-data-box h3 {
+    margin-bottom: 10px; /* <h3>와 <ul> 간의 여백 설정 */
+    font-size: 1.5em; /* 제목의 크기를 조정 */
+    font-weight: bold;
+    text-align: center; /* 텍스트 중앙 정렬 */
+}
+.we-list we-img{
+    height: 50px;
+}
 
-.content-wrapper {
+.we-data-ul {
     display: flex;
-    flex-wrap: nowrap; /* 줄바꿈 방지 */
+    gap: 10px;
+}
+
+
+.we-list {
+    margin: 5px 0;
+    text-align: center;
+}
+li::marker {
+    content: none;  /* 마커를 제거합니다 */
+}
+
+
+.musinsa_list ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 20px;
-    justify-content: space-between; /* 내용물을 양쪽 끝으로 정렬 */
+    padding: 0;
+    list-style-type: none;
 }
 
-.left-content {
-    flex: 1;
-    min-width: 0; /* flex-basis를 0으로 설정하여 축소 허용 */
-    max-width: 50%; /* 최대 너비 약간 증가 */
-    
-    
+.musinsa_list li {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.right-content {
-    flex: 0 0 50%; /* flex-grow: 0, flex-shrink: 0, flex-basis: 35% */
-    min-width: 300px;
+.musinsa_list img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-bottom: 10px;
 }
 
-@media (max-width: 992px) {
-    .content-wrapper {
+.musinsa_list .product-info {
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .top-content {
         flex-direction: column;
     }
     
-    .left-content,
-    .right-content {
-        width: 100%;
-        max-width: 100%;
+    .left-content, .right-content {
+        flex: 1 1 100%;
     }
 }

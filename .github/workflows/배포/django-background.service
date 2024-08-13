@@ -1,0 +1,13 @@
+[Unit]
+Description=Django Background Tasks
+After=network.target
+
+[Service]
+User=junghwa010609
+Group=junghwa010609
+WorkingDirectory=/home/junghwa010609/django/django_file
+ExecStart=/home/junghwa010609/django/django_file/venv/bin/python manage.py process_tasks
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
