@@ -29,10 +29,11 @@ def we_data_usexy(request):
         latitude = request.session.get('selectedLatitude', 'No latitude in session')
         longitude = request.session.get('selectedLongitude', 'No longitude in session')
         head = request.session.get('selectedDistrict')
-        head = head+"의 날씨"
+        # head = head+"의 날씨"
+        head = "현 위치의 날씨"
     elif param == '1' :
-        latitude = request.session.get('latitude', 'No latitude in session')
-        longitude = request.session.get('longitude', 'No longitude in session')
+        latitude = request.session.get('selectedLatitude', 'No latitude in session')
+        longitude = request.session.get('selectedLongitude', 'No longitude in session')
         head = "현 위치의 날씨"
     else :
         wedata = get_we_data_xy(60, 127)
@@ -200,8 +201,7 @@ def nxnySetting(lon, lat):
     result = WeatherStn.objects.filter(
         lon__startswith=lon[:5],
         lat__startswith=lat[:4]
-    ).order_by('-location2', '-location3').values('location1').first()
-
+    ).order_by('location2', 'location3').values('nx','ny').first()
     # 기존 변환기는 사용안함
     # print(lon, lat)
     # lon, lat, x, y = nxny.map_conv(lon, lat, 0.0, 0.0, 0)
