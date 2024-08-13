@@ -154,8 +154,7 @@ def weatherCsvToSql():
     xyjson = xyjson + weather_nxny
     csvDf = pd.DataFrame()
     for xy in xyjson :
-        nxnypos = nxny.nxnySetting(lon=int(xy['ny']), lat=int(xy['nx']))
-        s3CsvData = weatherF.CSVdownloader(s3_bucket, s3_csv_path, s3_client=s3_client, file_name=f"weatherAPIData_{nxnypos['nx']}_{nxnypos['ny']}.csv")
+        s3CsvData = weatherF.CSVdownloader(s3_bucket, s3_csv_path, s3_client=s3_client, file_name=f"weatherAPIData_{xy['nx']}_{xy['ny']}.csv")
         csvDf = pd.concat([csvDf, s3CsvData], ignore_index=True)
     csvDf = dataAsType(csvDf)
     print("csv",csvDf)
