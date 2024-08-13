@@ -320,41 +320,7 @@ def preprocess_data(learning_data):
     
     # 인코딩된 데이터 통합
     learning_data_encoded = pd.concat([learning_data.drop(categorical_columns, axis=1), encoded_features_df], axis=1)
-# 예시 제품 데이터: 각 카테고리별
-product_data = df
-
-# 24시간의 시간대 생성
-hours = [f"{i:02d}:00" for i in range(24)]
-
-# 임의의 온도 데이터 생성 (10도에서 30도 사이)
-temperatures = np.random.randint(10, 31, 24)
-
-# 임의의 강수 형태 데이터 생성 (0: 없음, 1: 비, 2: 진눈깨비, 3: 눈)
-precipitation_types = np.random.choice([0, 1, 2, 3], 24, p=[0.7, 0.2, 0.05, 0.05])
-
-# 데이터프레임 생성
-weather_data = pd.DataFrame({
-    'forecast_time': hours,
-    'TMP': temperatures,
-    'PTY': precipitation_types
-})
-
-# 학습 프레임 생성
-def create_training_frame(weather_df, product_df):
-    return pd.merge(weather_df, product_df, how='cross')
-
-# 학습 프레임 생성
-training_frame = create_training_frame(weather_data, product_data)
-training_frame['user_preference'] = np.random.choice([1, 2, 3, 4], size=len(training_frame))  # 임의의 사용자 선호도
-
-# 범주형 데이터 인코딩
-encoder = OneHotEncoder(sparse_output=False)
-encoded_product = encoder.fit_transform(training_frame[['category1', 'category2', 'gender', 'forecast_time']])
-encoded_product_df = pd.DataFrame(encoded_product, columns=encoder.get_feature_names_out(['category1', 'category2', 'gender', 'forecast_time']))
-
-# 인코딩된 학습 데이터
-training_frame_encoded = pd.concat([training_frame.drop(['category1', 'category2', 'gender', 'forecast_time'], axis=1), encoded_product_df], axis=1)
-
+    
     # 결측값 처리
     imputer = SimpleImputer(strategy='mean')
     X_imputed = imputer.fit_transform(learning_data_encoded.drop(['preference'], axis=1))
@@ -581,20 +547,12 @@ def recommend_categories(weather_info, product_df, target_gender, pipeline, enco
 
 
 def learn(request):
-    body = request.body.decode('utf-8')
-    print("Request Body:", body)  # 디버깅용 출력
-
-    # JSON 데이터 파싱
-    data = json.loads(body)
-    weather_info = data.get('weather_info')
-    print("data" ,weather_info)
     # 요청에서 날씨 정보 가져오기
     #data = json.loads(request.body)
     #weather_info = data.get('weather_info', {})
     weather_info = {'TMP': 28, 'PTY': 0, 'forecast_time': '09:00'}
     weather_info["TMP"] = (np.floor((weather_info["TMP"] + 1) / 2) * 2).astype(int)
     a = ""
-    # weather_info = request.GET.get('weather_info')  #일단 post로 했습니다.
     print(weather_info)
     # 예시 : weather_info = {'TMP': 28, 'PTY': 0, 'forecast_time': '09:00'} 이런식으로 들어와야 함
 
@@ -604,6 +562,9 @@ def learn(request):
     learning_data = concatenate_csv_files_from_s3(bucket_name)
     if learning_data is not None and weather_info:     
         trained_pipeline,encoder,imputer,X = main(learning_data)
+    else : 
+        context = { 'error' : "에러" }
+        return JsonResponse(context)
 
     # 성별에 따라 제품 추천
     if g == 'w':
