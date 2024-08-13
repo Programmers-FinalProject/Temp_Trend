@@ -63,3 +63,7 @@ yarl==1.9.4
 zipp==3.19.2
 pandas
 geopy
+django-background-tasks
+boto3
+awscli  #aws configure 실행해주세요
+scikit-learn

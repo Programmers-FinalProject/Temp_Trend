@@ -10,6 +10,7 @@ from weather.view.save_location import save_location, location_name, session_dat
 from weather.view.cookie import show_cookies
 from weather.view.nxny import submit_location
 from weather.view.df import test_weather_view,weather_api
+from weather.view.learningmodel import learn,index
 
 urlpatterns = [
     # 기본 경로 설정
@@ -38,4 +39,6 @@ urlpatterns = [
     path('categorize/', categorize, name='categorize'),
     path('show_cookie', show_cookies ,name='show_cookies'), #쿠키테스트   
     path('test-weather/', test_weather_view, name='test_weather_view'),
+    path('learn/',learn,name='learn'), #카테고리추천정보
+    path('learning',index,name='index_learn')
 ]

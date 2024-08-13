@@ -48,7 +48,7 @@ def classify_weather(nx, ny, fcstdate):
         fcstdate=fcstdate,
         nx=nx,
         ny=ny
-    ).values()
+    ).order_by('nx','ny').values()
     
     df = pd.DataFrame(weather_data)
     print(df.head())  # 데이터 확인
