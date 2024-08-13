@@ -43,24 +43,26 @@ def classify_weather(nx, ny, fcstdate):
     print(latest_basedate)
 
     # 최신 basedate로 데이터 필터링
+    current_hour_str = f"{current_hour:02}00"
     weather_data = WeatherData.objects.filter(
         basedate=latest_basedate,
         fcstdate=fcstdate,
+        fcsttime=current_hour_str,
         nx=nx,
         ny=ny
-    ).order_by('nx','ny').values()
+    ).order_by('nx','ny','basedate', 'weather_code').values()
     
     df = pd.DataFrame(weather_data)
     print(df.head())  # 데이터 확인
 
     # 'fcsttime'이 현재 시각의 '시'와 일치하는 데이터 필터링
-    current_hour_str = f"{current_hour:02}00"
+    # current_hour_str = f"{current_hour:02}00"
     current_data = df[df['fcsttime'] == current_hour_str]
-    print(current_data)
+    print("!!!!!!!!!!!!!!!!!!!!!",nx,ny, current_data)
     
     # 우선순위 기반으로 가장 중요한 상태 결정
     priority_order = [
-        'PTY', 'TMP', 'WSD', 'SKY', 'VVV', 'REH', 'WAV'
+        'TMP', 'PTY', 'TMP', 'WSD', 'SKY', 'VVV', 'REH', 'WAV'
     ]
     condition = None
     tmp = 0
