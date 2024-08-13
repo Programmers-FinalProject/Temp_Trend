@@ -32,6 +32,14 @@ LOCATIONS = [
     {'name': '제주', 'nx': 52, 'ny': 38, 'zone': 'z17'},
 ]
 
+def setting(row):
+    value = int(row['fcstvalue'])
+    time = int(row['fcsttime'])
+    hour = time // 100
+    night = hour < 6 or hour > 18
+
+    return value,night
+    
 def classify_weather(nx, ny, fcstdate):
     # 가장 최근인 basedate 가져오기
     latest_basedate = WeatherData.objects.filter(
@@ -67,21 +75,19 @@ def classify_weather(nx, ny, fcstdate):
         if row['weather_code'] == 'TMP':
             tmp = row['fcstvalue']
             break  # TMP 값을 찾으면 중단
+            
     
     # 우선순위 기반으로 가장 중요한 상태 결정
-    priority_order = [
-        'PTY','SKY', 'TMP', 'WSD','VVV', 'REH', 'WAV'
-    ]
-
-
+    
+    priority_order = [ 'PTY','SKY']
+    
     for code in priority_order:
         # 각 코드에 대한 우선순위로 상태 평가
         for _, row in current_data.iterrows():
+            if row['weather_code'] == code :
+                value,night = setting(row)
+            else : continue
             
-            value = float(row['fcstvalue'])
-            time = int(row['fcsttime'])
-            hour = time // 100
-            night = hour < 6 or hour > 18
 
             # 상태 번호와 설명을 저장할 리스트
             condition = None
@@ -104,7 +110,8 @@ def classify_weather(nx, ny, fcstdate):
             # 강수 형태(PTY)
             if code == 'PTY':
                 if value == 0:
-                    condition = [1, "맑음"]  # 맑음 (하늘 상태로 따로 처리)
+                    code = "SKY"
+                    continue
                 elif value == 1:
                     condition = [10, "흐리고 비"]
                 elif value == 2:
@@ -115,12 +122,6 @@ def classify_weather(nx, ny, fcstdate):
                     condition = [9, "소나기"]
                     if night:
                         condition = [38, "밤에 소나기"]
-                elif value == 5:
-                    condition = [26, "빗방울"]
-                elif value == 6:
-                    condition = [27, "빗방울눈날림"]
-                elif value == 7:
-                    condition = [28, "눈날림"]
 
             # 첫 번째로 발견된 가장 높은 우선순위의 상태에서 탈출
             if condition:
