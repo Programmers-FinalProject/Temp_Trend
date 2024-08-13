@@ -1,5 +1,5 @@
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 from weather.models import WeatherData
 from django.http import HttpResponse
@@ -33,7 +33,7 @@ LOCATIONS = [
 ]
 
 def classify_weather(nx, ny, fcstdate):
-        # 가장 최근의 basedate 가져오기
+    # 가장 최근인 basedate 가져오기
     latest_basedate = WeatherData.objects.filter(
         fcstdate=fcstdate,
         nx=nx,
@@ -51,6 +51,10 @@ def classify_weather(nx, ny, fcstdate):
         nx=nx,
         ny=ny
     ).order_by('nx','ny','basedate', 'weather_code').values()
+    
+    if not weather_data:
+        print("No weather data found for the given parameters.")
+        return None
     
     df = pd.DataFrame(weather_data)
     print(df.head())  # 데이터 확인
@@ -146,15 +150,23 @@ def test_weather_view(request):
         return HttpResponse("No weather data available")
 
 
-@require_GET
+@require_GET #null값이 들어있을 때, 새로고침하면 캐시 비움
 def weather_api(request):
-    fcstdate = datetime.now(seoul_tz).strftime("%Y%m%d") #얘도 나중에 3일치로 for문 돌릴 예정
+    now = datetime.now(seoul_tz)
+    current_hour = now.hour
+    fcstdate = now.strftime("%Y%m%d") #얘도 나중에 3일치로 for문 돌릴 예정
     #캐시 키 생성
     cache_key = f'weather_data_{fcstdate}_{current_hour}'
     
     # 캐시에서 데이터 확인
     cached_data = cache.get(cache_key)
     if cached_data is not None:
+        # 캐시된 데이터 중 하나라도 condition_code가 None이면 오류를 반환
+        for zone, data in cached_data.items():
+            if data["condition_code"] is None:
+                #캐시비우기
+                cache.delete(cache_key)
+                return JsonResponse({'error': '데이터 오류'}, status=500)
         return JsonResponse(cached_data)
     
     # 캐시에 데이터가 없으면 새로 생성
@@ -167,7 +179,18 @@ def weather_api(request):
             'weather_condition': condition[1] if condition else None,
             'tmp': condition[2] if condition else None,
         }
-    
+    # 이전 시간의 캐시 삭제
+    if current_hour == 0:
+        # 자정을 넘어갈 경우 fcstdate도 전날로 설정
+        previous_day = now - timedelta(days=1)
+        previous_fcstdate = previous_day.strftime("%Y%m%d")
+    else:
+        previous_fcstdate = fcstdate
+
+    previous_hour = (now - timedelta(hours=1)).hour
+    previous_cache_key = f'weather_data_{previous_fcstdate}_{previous_hour}'
+    cache.delete(previous_cache_key)
+
     # 데이터를 1시간 동안 캐시에 저장
     cache.set(cache_key, all_weather_data, 60 * 60)  # 60분 * 60초 = 1시간
     
