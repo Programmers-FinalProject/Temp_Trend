@@ -53,12 +53,12 @@ dag = DAG(
     schedule_interval=None,
 )
 
-# 작업 함수 정의
-def stnApi():    
-    stnData = weatherF.weatherApiParser2(weatherF.weatherApi(Variable.get("stnDomain"), stnOption), columns=json.loads(Variable.get("stnColumns")))
-    weatherF.weatherCSVmaker(s3_bucket, f"{s3_csv_path}stnDataCsv.csv",stnData,s3_client)
+# 작업 함수 정의 nx ny 변환값과 호환되지않는 문제로 제거됨
+# def stnApi():    
+#     stnData = weatherF.weatherApiParser2(weatherF.weatherApi(Variable.get("stnDomain"), stnOption), columns=json.loads(Variable.get("stnColumns")))
+#     weatherF.weatherCSVmaker(s3_bucket, f"{s3_csv_path}stnDataCsv.csv",stnData,s3_client)
     
-    print("STNDATA :  " , stnData)
+#     print("STNDATA :  " , stnData)
 
 def weatherCodeTable():
     weatherF.weather_code_create()
@@ -89,12 +89,12 @@ def weatherStnDataToRedshift():
     print(redShiftUtils.sql_selecter("SELECT * FROM raw_data.weather_stn"))
 
 # PythonOperator를 사용하여 작업 정의
-stnApiTask = PythonOperator(
-    task_id='stnApiTask',
-    python_callable=stnApi,
-    dag=dag,
-    queue='queue1'
-)
+# stnApiTask = PythonOperator(
+#     task_id='stnApiTask',
+#     python_callable=stnApi,
+#     dag=dag,
+#     queue='queue1'
+# )
 
 weatherStnDataToRedshiftTask = PythonOperator(
     task_id='weatherStnDataToRedshiftTask',
@@ -127,6 +127,6 @@ with TaskGroup(group_id='weatherTableSetting', dag=dag) as weatherTableSetting:
     )
 
 # DAG 설정
-weatherTableSetting >> stnApiTask >> weatherStnDataToRedshiftTask
+weatherTableSetting >>  weatherStnDataToRedshiftTask
 
 

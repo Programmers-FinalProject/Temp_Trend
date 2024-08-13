@@ -13,23 +13,23 @@ seoul_tz = pytz.timezone('Asia/Seoul')
 current_hour = datetime.now(seoul_tz).hour
 
 LOCATIONS = [
-    {'name': '서울', 'nx': 43, 'ny': 114, 'zone': 'z1'},
-    {'name': '백령도', 'nx': 8, 'ny': 115, 'zone': 'z2'},
-    {'name': '수원', 'nx': 43, 'ny': 114, 'zone': 'z3'},  # 수원도 서울과 같은 nx, ny를 사용
-    {'name': '춘천', 'nx': 60, 'ny': 114, 'zone': 'z4'},
-    {'name': '강릉', 'nx': 78, 'ny': 115, 'zone': 'z5'},
-    {'name': '청주', 'nx': 61, 'ny': 93, 'zone': 'z6'},
-    {'name': '대전', 'nx': 61, 'ny': 93, 'zone': 'z7'},
-    {'name': '전주', 'nx': 61, 'ny': 71, 'zone': 'z8'},
-    {'name': '광주', 'nx': 43, 'ny': 71, 'zone': 'z9'},
-    {'name': '목포', 'nx': 43, 'ny': 49, 'zone': 'z10'},
-    {'name': '여수', 'nx': 61, 'ny': 49, 'zone': 'z11'},
-    {'name': '울릉도', 'nx': 112, 'ny': 116, 'zone': 'z12'},
-    {'name': '안동', 'nx': 78, 'ny': 93, 'zone': 'z13'},
-    {'name': '대구', 'nx': 79, 'ny': 71, 'zone': 'z14'},
-    {'name': '울산', 'nx': 97, 'ny': 72, 'zone': 'z15'},
-    {'name': '부산', 'nx': 97, 'ny': 72, 'zone': 'z16'},
-    {'name': '제주', 'nx': 43, 'ny': 27, 'zone': 'z17'},
+    {'name': '서울', 'nx': 60, 'ny': 127, 'zone': 'z1'},
+    {'name': '백령도', 'nx': 21, 'ny': 135, 'zone': 'z2'},
+    {'name': '수원', 'nx': 60, 'ny': 121, 'zone': 'z3'},  # 수원도 서울과 같은 nx, ny를 사용
+    {'name': '춘천', 'nx': 73, 'ny': 134, 'zone': 'z4'},
+    {'name': '강릉', 'nx': 92, 'ny': 131, 'zone': 'z5'},
+    {'name': '청주', 'nx': 69, 'ny': 106, 'zone': 'z6'},
+    {'name': '대전', 'nx': 67, 'ny': 100, 'zone': 'z7'},
+    {'name': '전주', 'nx': 63, 'ny': 89, 'zone': 'z8'},
+    {'name': '광주', 'nx': 58, 'ny': 74, 'zone': 'z9'},
+    {'name': '목포', 'nx': 50, 'ny': 67, 'zone': 'z10'},
+    {'name': '여수', 'nx': 73, 'ny': 66, 'zone': 'z11'},
+    {'name': '울릉도', 'nx': 127, 'ny': 127, 'zone': 'z12'},
+    {'name': '안동', 'nx': 91, 'ny': 106, 'zone': 'z13'},
+    {'name': '대구', 'nx': 89, 'ny': 90, 'zone': 'z14'},
+    {'name': '울산', 'nx': 102, 'ny': 84, 'zone': 'z15'},
+    {'name': '부산', 'nx': 98, 'ny': 76, 'zone': 'z16'},
+    {'name': '제주', 'nx': 52, 'ny': 38, 'zone': 'z17'},
 ]
 
 def classify_weather(nx, ny, fcstdate):
@@ -58,7 +58,6 @@ def classify_weather(nx, ny, fcstdate):
     # 'fcsttime'이 현재 시각의 '시'와 일치하는 데이터 필터링
     # current_hour_str = f"{current_hour:02}00"
     current_data = df[df['fcsttime'] == current_hour_str]
-    print("!!!!!!!!!!!!!!!!!!!!!",nx,ny, current_data)
     
     # 우선순위 기반으로 가장 중요한 상태 결정
     priority_order = [
