@@ -1,0 +1,13 @@
+[Unit]
+Description=Django Startup Service
+After=network.target
+
+[Service]
+User=junghwa010609
+Group=junghwa010609
+ExecStart=/bin/bash /home/junghwa010609/django/django_files/django_startup.sh
+Type=oneshot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

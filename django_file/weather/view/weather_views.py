@@ -24,11 +24,24 @@ def we_data_usetime(request):
     return JsonResponse(context)
 
 def we_data_usexy(request):
-    latitude = request.session.get('latitude', 'No latitude in session')
-    longitude = request.session.get('longitude', 'No longitude in session')
+    param = request.GET.get('param')
+    if param == '2' :
+        latitude = request.session.get('selectedLatitude', 'No latitude in session')
+        longitude = request.session.get('selectedLongitude', 'No longitude in session')
+        head = request.session.get('selectedDistrict')
+        head = head+"의 날씨"
+    elif param == '1' :
+        latitude = request.session.get('latitude', 'No latitude in session')
+        longitude = request.session.get('longitude', 'No longitude in session')
+        head = "현 위치의 날씨"
+    else :
+        wedata = get_we_data_xy(43, 114)
+        context = { 'head' : "서울의 날씨", 'we_dataList' : we_data_setting(wedata)}
+        return JsonResponse(context)
+        
     posXY = nxnySetting(int(float(longitude)), int(float(latitude)))
     wedata = get_we_data_xy(posXY['nx'], posXY['ny'])
-    context = { 'we_dataList' : we_data_setting(wedata)}
+    context = { 'head' : head ,'we_dataList' : we_data_setting(wedata)}
     return JsonResponse(context)
 
 # 예보날짜 세팅
