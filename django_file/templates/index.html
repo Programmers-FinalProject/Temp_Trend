@@ -75,7 +75,12 @@
                             <script>
                                 // 폼을 초기화하는 함수
                                 function selectLocationFind(){
-                                    submitForm(); 
+                                    submitreuslt = submitForm(); 
+                                    console.log(submitreuslt)
+                                    console.log(submitreuslt.status)
+                                    if (submitreuslt.status === "success") {
+                                        call_we_data(2);
+                                    }
                                 }
                                 function resetForm() {
                                     // 시/도 선택을 초기화
