@@ -44,6 +44,7 @@ def fetch_data():
         driver.implicitly_wait(10)
         for i in range(1, 4):
             for j in range(1, 4):
+                driver.implicitly_wait(10)
                 rank = (i - 1) * 3 + j
                 item = driver.find_element(By.XPATH, f'/html/body/div[1]/div/main/div/section[3]/div[1]/div/div[{i}]/div[{j}]/div[2]/a[2]').text
                 link = driver.find_element(By.XPATH, f'/html/body/div[1]/div/main/div/section[3]/div[1]/div/div[{i}]/div[{j}]/div[2]/a[2]').get_attribute("href")
