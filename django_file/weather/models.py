@@ -29,6 +29,37 @@ class WeatherData(models.Model):
         
     def __str__(self):
         return f"예보 일 : {self.basedate} | 예보 시 :{self.basetime} | 코드 : {self.weather_code} | 예보 일 : {self.fcstdate} | 예보 시 : {self.fcsttime} | 예보 값 {self.fcstvalue} | 예보 지역{self.nx},{self.ny}"
+    
+class WeatherStn(models.Model):
+    location1 = models.CharField(max_length=10, help_text="location1")
+    location2 = models.CharField(max_length=10, help_text="location2")
+    location3 = models.CharField(max_length=10, help_text="location3")
+    nx = models.CharField(max_length=10, help_text="nx")
+    ny = models.CharField(max_length=10, help_text="ny")
+    lon = models.CharField(max_length=10, help_text="lon", primary_key=True)
+    lat = models.CharField(max_length=10, help_text="lat")
+
+    
+    class Meta:
+        app_label = 'weather'
+        managed = False
+        db_table = 'weather_stn'
+    
+    @staticmethod
+    def getnxny():
+        sql = '''
+            SELECT nx, ny, lon, lat FROM (
+                SELECT location2, location3, location1, nx, ny, lon, lat,
+                ROW_NUMBER() OVER (PARTITION BY location1 ORDER BY location1) AS row_num 
+                FROM raw_data.weather_stn) AS count
+            WHERE row_num = 1 
+            ORDER BY location2 DESC, location3 DESC
+        '''
+        return WeatherStn.objects.using('redshift').raw(sql)
+
+    def __str__(self):
+        return f"location1 : {self.location1}, location2 : {self.location2}, location3 : {self.location3}, nx : {self.nx}, ny : {self.ny}, lon : {self.lon}, lat : {self.lat},"
+
 
 class musinsaData(models.Model):
     product_name = models.TextField(primary_key=True)

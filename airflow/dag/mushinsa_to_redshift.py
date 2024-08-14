@@ -9,8 +9,7 @@ from datetime import datetime
 # 기본 인수 설정
 default_args = {
     'owner': 'airflow',
-    'depends_on_past': False,
-    'start_date': datetime(2024, 7, 24),
+    'start_date': datetime(2024, 1, 1),
     'catchup' : False,
     'retries': 1,
 }
@@ -19,7 +18,7 @@ default_args = {
 dag = DAG(
     dag_id = 'mushinsa_to_redshift',
     default_args=default_args,
-    schedule_interval='@daily',
+    schedule_interval='00 20 * * *',
     max_active_runs=1,
 )
 
