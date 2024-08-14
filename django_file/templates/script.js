@@ -211,7 +211,7 @@ const locationData = {
 
 
 // 폼 제출 함수
-async function submitForm() {
+function submitForm() {
     const area1Select = document.getElementById('area1_id');
     const area2Select = document.getElementById('area2_id');
     const cityCode = area1Select.value;

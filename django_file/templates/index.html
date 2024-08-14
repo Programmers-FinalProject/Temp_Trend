@@ -74,10 +74,9 @@
                             <button onclick="resetForm()" class="btn btn-light btn-sm" id="deleteSessionBtnLocation">다시찾기</button>
                             <script>
                                 // 폼을 초기화하는 함수
-                                function selectLocationFind(){
+                                async function selectLocationFind() {
                                     await submitForm(); 
                                     call_we_data(2);
-                                    
                                 }
                                 function resetForm() {
                                     // 시/도 선택을 초기화
