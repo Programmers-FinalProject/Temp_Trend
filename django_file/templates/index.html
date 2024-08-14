@@ -75,8 +75,8 @@
                             <script>
                                 // 폼을 초기화하는 함수
                                 function selectLocationFind(){
-                                    submitForm(); 
-                                    // call_we_data(2);
+                                    await submitForm(); 
+                                    call_we_data(2);
                                     
                                 }
                                 function resetForm() {
@@ -230,7 +230,20 @@
                                     }
                                 });
                             }
-                            
+                            function call_we_data(param) {
+                                const url = `{% url "call_we_data" %}?param=${encodeURIComponent(param)}`;
+                                fetch(url)
+                                    .then(response => {
+                                        console.log("Response received:", response); // 응답 객체 로그
+                                        return response.json();
+                                    })
+                                    .then(data => {
+                                        console.log(data);  // 콘솔에서 데이터 확인
+                                        updateWeatherData(data)
+                                        // document.getElementById('data-container').textContent = JSON.stringify(data, null, 2);
+                                    })
+                                    .catch(error => console.error('Error fetching data:', error));
+                            };
 
                             function updateWeatherData(data) {
                                 const container = document.querySelector('.we-data-box');
