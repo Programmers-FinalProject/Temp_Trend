@@ -10,6 +10,9 @@ from botocore.exceptions import NoCredentialsError
 import pytz
 from datetime import datetime
 import joblib
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+
 #import tempfile
 
 #def load_model_from_s3(bucket_name, s3_key):
@@ -418,6 +421,9 @@ def main(learning_data):
     imputer = SimpleImputer(strategy='mean')
     imputer.fit(X)
     
+    # known_categories 생성
+    known_categories = learning_data[['category1', 'category2', 'gender']].drop_duplicates().reset_index(drop=True)
+    
     # 모델 저장
     model_key = f'learning_model/model/trained_model_{timestamp}.joblib'
     save_model_to_s3(trained_pipeline, 'team-hori-1-bucket', model_key)
@@ -430,9 +436,42 @@ def main(learning_data):
     
     print(f"Model and associated objects saved to S3 with timestamp: {timestamp}")
     
-    return trained_pipeline, encoder, imputer, X
+    return trained_pipeline, encoder, imputer, X, known_categories
 
-def recommend_categories(weather_info, product_df, target_gender, pipeline, encoder, imputer, X):
+
+
+def find_most_similar_category(target_category, target_gender, known_categories, encoder):
+    """
+    학습되지 않은 카테고리에 대해 가장 유사한 학습된 카테고리를 찾습니다.
+
+    매개변수:
+    target_category (tuple): ('category1', 'category2') 형태의 카테고리 조합
+    target_gender (str): 성별 ('w', 'm', 'unisex')
+    known_categories (DataFrame): 학습된 ('category1', 'category2', 'gender') 조합의 DataFrame
+    encoder (OneHotEncoder): 학습된 인코더
+
+    반환값:
+    tuple: 가장 유사한 ('category1', 'category2', 'gender') 조합
+    """
+    # 대상 카테고리와 성별을 원-핫 인코딩
+    target_df = pd.DataFrame([{'category1': target_category[0], 'category2': target_category[1], 'gender': target_gender}])
+    target_encoded = encoder.transform(target_df)
+    
+    # 모든 학습된 카테고리와 성별을 원-핫 인코딩
+    known_encoded = encoder.transform(known_categories[['category1', 'category2', 'gender']])
+    
+    # 코사인 유사도를 계산
+    similarities = cosine_similarity(target_encoded, known_encoded)
+    
+    # 가장 유사한 카테고리 인덱스 선택
+    most_similar_index = np.argmax(similarities)
+    
+    # 가장 유사한 학습된 카테고리 조합 반환
+    most_similar_category = known_categories.iloc[most_similar_index]
+    return most_similar_category['category1'], most_similar_category['category2'], most_similar_category['gender']
+
+
+def recommend_categories(weather_info, product_df, target_gender, pipeline, encoder, imputer, X, known_categories):
     """
     주어진 날씨 정보와 성별에 맞는 제품을 추천합니다.
 
@@ -444,6 +483,7 @@ def recommend_categories(weather_info, product_df, target_gender, pipeline, enco
     encoder (OneHotEncoder): 학습된 인코더
     imputer (SimpleImputer): 학습된 결측값 처리기
     X (DataFrame): 학습 데이터의 특성 (모델 훈련에 사용된 특성)
+    known_categories (DataFrame): 학습된 ('category1', 'category2', 'gender') 조합의 DataFrame
 
     반환값:
     DataFrame: 추천 제품 리스트
@@ -456,6 +496,16 @@ def recommend_categories(weather_info, product_df, target_gender, pipeline, enco
         weather_df = pd.DataFrame([weather_info])
         combined_df = weather_df.loc[weather_df.index.repeat(len(product_df))].reset_index(drop=True)
         combined_df = pd.concat([combined_df, product_df], axis=1)
+        
+        # 학습되지 않은 카테고리 처리
+        for i, row in combined_df.iterrows():
+            if (row['category1'], row['category2'], row['gender']) not in known_categories.values:
+                most_similar_category1, most_similar_category2, most_similar_gender = find_most_similar_category(
+                    (row['category1'], row['category2']), row['gender'], known_categories, encoder
+                )
+                combined_df.at[i, 'category1'] = most_similar_category1
+                combined_df.at[i, 'category2'] = most_similar_category2
+                combined_df.at[i, 'gender'] = most_similar_gender
 
         # 범주형 데이터 인코딩
         encoded_combined = encoder.transform(combined_df[['category1', 'category2', 'gender']])
@@ -473,7 +523,7 @@ def recommend_categories(weather_info, product_df, target_gender, pipeline, enco
         predictions = pipeline.predict(combined_df_imputed)
         
         # 추천 제품 필터링 (예: 선호도가 2 이상인 제품만 추천)
-        recommended_products = combined_df[np.array(predictions) >= 1]
+        recommended_products = combined_df[np.array(predictions) > 1]
         
         # 성별에 따라 필터링
         if target_gender == 'unisex':
@@ -496,53 +546,8 @@ def recommend_categories(weather_info, product_df, target_gender, pipeline, enco
         return recommended_products_musinsa , "ok"
     
     except ValueError as e:
-        print(f"Error during recommendation: {e}")
-        # 에러 메시지에서 학습되지 않은 카테고리를 추출
-        unknown_categories = set(str(e).split('[')[1].split(']')[0].replace("'", "").split(', '))
-        print("Untrained categories:", unknown_categories)
-        # 학습되지 않은 카테고리를 데이터프레임에서 필터링
-        return df[df['category2'].isin(unknown_categories)] , "retry"
-
-# 예시 날씨 정보
-# weather_info = {'TMP': 28, 'PTY': 0}
-
-# 제품 데이터 로드
-
-
-#product_df = pd.DataFrame({
-#    'category1': ['상의', '하의', '신발', '악세사리'] * 25,
-#    'category2': ['반소매 티셔츠', '청바지', '운동화', '시계'] * 25,
-#    'gender': ['w', 'm', 'unisex'] * 33 + ['w']
-#})
-
-
-#trained_pipeline,encoder,imputer,X = main(learning_data)
-# 예시 추천 함수 호출
-#recommended_products = recommend_categories(weather_info, df, target_gender='w', pipeline=trained_pipeline, encoder=encoder, imputer=imputer, X=X)
-#print("추천 제품 목록:")
-#print(recommended_products)
-
-    
-
-
-# 추천 결과 생성
-#weather_info = {'TMP': 28, 'PTY': 0}
-# 각 성별에 대한 추천
-#recommended_products_women = recommend_categories(weather_info, product_data, target_gender='w')
-#recommended_products_men = recommend_categories(weather_info, product_data, target_gender='m')
-#recommended_products_unisex = recommend_categories(weather_info, product_data, target_gender='unisex')
-# 추천 결과를 JSON으로 변환
-#recommended_products_women_json = recommended_products_women.to_json(orient='records', force_ascii=False)
-#recommended_products_men_json = recommended_products_men.to_json(orient='records', force_ascii=False)
-#recommended_products_unisex_json = recommended_products_unisex.to_json(orient='records', force_ascii=False)
-
-# 결과 출력
-#print("Women's Recommended Products (JSON):")
-#print(recommended_products_women_json)
-#print("\nMen's Recommended Products (JSON):")
-#print(recommended_products_men_json)
-#print("\nUnisex Recommended Products (JSON):")
-#print(recommended_products_unisex_json)
+        return print(f"Error during recommendation: {e}")
+        
 
 
 
@@ -561,18 +566,18 @@ def learn(request):
     bucket_name = 'team-hori-1-bucket'
     learning_data = concatenate_csv_files_from_s3(bucket_name)
     if learning_data is not None and weather_info:     
-        trained_pipeline,encoder,imputer,X = main(learning_data)
+        trained_pipeline,encoder,imputer,X,known_categories = main(learning_data)
     else : 
         context = { 'error' : "에러" }
         return JsonResponse(context)
 
     # 성별에 따라 제품 추천
     if g == 'w':
-        recommended_products , a = recommend_categories(weather_info, df, target_gender='w',pipeline=trained_pipeline, encoder=encoder, imputer=imputer, X=X)
+        recommended_products , a = recommend_categories(weather_info, df, target_gender='w',pipeline=trained_pipeline, encoder=encoder, imputer=imputer, X=X,known_categories=known_categories)
     elif g == 'm':
-        recommended_products, a = recommend_categories(weather_info, df, target_gender='m',pipeline=trained_pipeline, encoder=encoder, imputer=imputer, X=X)
+        recommended_products, a = recommend_categories(weather_info, df, target_gender='m',pipeline=trained_pipeline, encoder=encoder, imputer=imputer, X=X,known_categories=known_categories)
     else:
-        recommended_products, a = recommend_categories(weather_info, df, target_gender='unisex',pipeline=trained_pipeline, encoder=encoder, imputer=imputer, X=X)
+        recommended_products, a = recommend_categories(weather_info, df, target_gender='unisex',pipeline=trained_pipeline, encoder=encoder, imputer=imputer, X=X,known_categories=known_categories)
 
     # DataFrame을 딕셔너리 리스트로 변환
     recommended_products = recommended_products.to_dict(orient='records')

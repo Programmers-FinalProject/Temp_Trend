@@ -14,7 +14,7 @@ from airflow.models import Variable
 import pandas as pd
 import boto3
 from datetime import datetime
-import io
+from io import StringIO
 
 # S3 버킷 및 파일 설정
 FILE_KEY = 'musinsa.csv'
@@ -25,6 +25,7 @@ AWS_SECRET_ACCESS_KEY = Variable.get('SECRET_KEY')
 def fetch_data():
     data = []
     chrome_options=wd.ChromeOptions()
+    chrome_options.add_argument("--headless")
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-extensions')
@@ -43,6 +44,7 @@ def fetch_data():
         driver.implicitly_wait(10)
         for i in range(1, 4):
             for j in range(1, 4):
+                driver.implicitly_wait(10)
                 rank = (i - 1) * 3 + j
                 item = driver.find_element(By.XPATH, f'/html/body/div[1]/div/main/div/section[3]/div[1]/div/div[{i}]/div[{j}]/div[2]/a[2]').text
                 link = driver.find_element(By.XPATH, f'/html/body/div[1]/div/main/div/section[3]/div[1]/div/div[{i}]/div[{j}]/div[2]/a[2]').get_attribute("href")
@@ -99,14 +101,15 @@ def upload_to_s3(**kwargs):
 
 default_args = {
     'owner': 'airflow',
-    'start_date': datetime(2024, 1, 1),
+    'start_date': datetime(2024, 8, 10),
     'catchup' : False,
+    'retries': 1,
 }
 
 dag = DAG(
     dag_id ='musinsa_crawl_and_upload_to_s3',
     default_args=default_args,
-    schedule_interval='@daily',
+    schedule_interval='00 17 * * *',
     max_active_runs=1,
 )
 
@@ -115,6 +118,7 @@ fetch_data_task = PythonOperator(
     python_callable=fetch_data,
     provide_context=True,
     dag=dag,
+    queue='queue1',
 )
 
 data_to_csv_task = PythonOperator(
@@ -122,6 +126,7 @@ data_to_csv_task = PythonOperator(
     python_callable=data_to_csv,
     provide_context=True,
     dag=dag,
+    queue='queue1',
 )
 
 upload_to_s3_task = PythonOperator(
@@ -129,6 +134,7 @@ upload_to_s3_task = PythonOperator(
     python_callable=upload_to_s3,
     provide_context=True,
     dag=dag,
+    queue='queue1',
 )
 
 fetch_data_task >> data_to_csv_task >> upload_to_s3_task
