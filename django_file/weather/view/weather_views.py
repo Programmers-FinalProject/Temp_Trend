@@ -26,8 +26,8 @@ def we_data_usetime(request):
 def we_data_usexy(request):
     param = request.GET.get('param')
     if param == '2' :
-        latitude = 35.1425 # request.session.get('selectedLatitude', 'No latitude in session')
-        longitude = 129.1154 # request.session.get('selectedLongitude', 'No longitude in session')
+        latitude = request.session.get('selectedLatitude', 'No latitude in session')
+        longitude = request.session.get('selectedLongitude', 'No longitude in session')
         head = None # request.session.get('selectedDistrict')
         if head is None :
             head = "선택 지역의 날씨"
