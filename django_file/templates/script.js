@@ -216,7 +216,6 @@ function submitForm() {
     const area2Select = document.getElementById('area2_id');
     const cityCode = area1Select.value;
     const district = area2Select.value;
-
     if (cityCode && district) {
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         const lat = locationData[cityCode][district].lat;
