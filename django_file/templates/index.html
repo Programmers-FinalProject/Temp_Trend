@@ -434,36 +434,6 @@
     
         </div>
     </div>
-    {% if musinsa_lists %}
-        <div class="main-content">
-            <div class="content-wrapper">
-                <table>
-                    <tr>
-                        <th>Product Name</th>
-                        <th>Product Link</th>
-                        <th>Image</th>
-                        <th>Rank</th>
-                        <th>Price</th>
-                        <th>Category</th>
-                    </tr>
-                    {% for product in musinsa_lists %}
-                        <tr>
-                            <td>{{ product.product_name }}</td>
-                            <td><a href="{{ product.product_link }}">Link</a></td>
-                            <td><img src="{{ product.image_link }}" alt="Product Image" width="100"></td>
-                            <td>{{ product.rank }}</td>
-                            <td>{{ product.price }}</td>
-                            <td>{{ product.category }}</td>
-                        </tr>
-                    {% endfor %}
-            </div>
-        </div>
-        <style>
-            .musinsa_list {
-                align-content: center;
-            }
-        </style>
-    {% endif %}
     <script src="{% static 'err.js' %}"></script>
     <script src="{% static 'gender.js' %}"></script>
     <script src="{% static 'delete.js' %}"></script>

@@ -1,4 +1,4 @@
-models = ['weatherdata', 'musinsaData', 'WeatherStn',]
+models = ['weatherdata', 'musinsaData', 'weatherStn',]
 class DBRouter:
     def db_for_read(self, model, **hints):
         if model._meta.app_label == 'weather':

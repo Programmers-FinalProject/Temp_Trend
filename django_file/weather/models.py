@@ -36,17 +36,29 @@ class WeatherStn(models.Model):
     location3 = models.CharField(max_length=10, help_text="location3")
     nx = models.CharField(max_length=10, help_text="nx")
     ny = models.CharField(max_length=10, help_text="ny")
-    lon = models.CharField(max_length=10, help_text="lon")
-    lat = models.CharField(max_length=3, help_text="lat")
+    lon = models.CharField(max_length=10, help_text="lon", primary_key=True)
+    lat = models.CharField(max_length=10, help_text="lat")
 
     
     class Meta:
         app_label = 'weather'
         managed = False
         db_table = 'weather_stn'
-        
+    
+    @staticmethod
+    def getnxny():
+        sql = '''
+            SELECT nx, ny, lon, lat FROM (
+                SELECT location2, location3, location1, nx, ny, lon, lat,
+                ROW_NUMBER() OVER (PARTITION BY location1 ORDER BY location1) AS row_num 
+                FROM raw_data.weather_stn) AS count
+            WHERE row_num = 1 
+            ORDER BY location2 DESC, location3 DESC
+        '''
+        return WeatherStn.objects.using('redshift').raw(sql)
+
     def __str__(self):
-        return f"location1 : {self.location1}, location1 : {self.location2}, location1 : {self.location3}, nx : {self.nx}, ny : {self.ny}, lon : {self.lon}, lat : {self.lat},"
+        return f"location1 : {self.location1}, location2 : {self.location2}, location3 : {self.location3}, nx : {self.nx}, ny : {self.ny}, lon : {self.lon}, lat : {self.lat},"
 
 
 class musinsaData(models.Model):
