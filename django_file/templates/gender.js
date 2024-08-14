@@ -65,8 +65,8 @@ function selectGender(gender) {
         if (data.status === 'success') {
             console.log("Gender saved successfully");
             localStorage.setItem("selectedGender", gender);
-            displaySelectedGender(gender);
             window.location.href = `/?gender=${gender}`;
+            displaySelectedGender(gender);
         } else {
             throw new Error(data.message || 'Unknown error occurred');
         }

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from datetime import datetime, timedelta
-from weather.models import WeatherData
+from weather.models import WeatherData, WeatherStn
 from weather.view import nxny, save_location
 from django.http import JsonResponse
 
@@ -24,11 +24,25 @@ def we_data_usetime(request):
     return JsonResponse(context)
 
 def we_data_usexy(request):
-    latitude = request.session.get('latitude', 'No latitude in session')
-    longitude = request.session.get('longitude', 'No longitude in session')
-    posXY = nxnySetting(int(float(longitude)), int(float(latitude)))
+    param = request.GET.get('param')
+    if param == '2' :
+        latitude = request.session.get('selectedLatitude', 'No latitude in session')
+        longitude = request.session.get('selectedLongitude', 'No longitude in session')
+        head = request.session.get('selectedDistrict')
+        # head = head+"의 날씨"
+        head = "현 위치의 날씨"
+    elif param == '1' :
+        latitude = request.session.get('selectedLatitude', 'No latitude in session')
+        longitude = request.session.get('selectedLongitude', 'No longitude in session')
+        head = "현 위치의 날씨"
+    else :
+        wedata = get_we_data_xy(60, 127)
+        context = { 'head' : "서울의 날씨", 'we_dataList' : we_data_setting(wedata)}
+        return JsonResponse(context)
+        
+    posXY = nxnySetting(str(longitude), str(latitude))
     wedata = get_we_data_xy(posXY['nx'], posXY['ny'])
-    context = { 'we_dataList' : we_data_setting(wedata)}
+    context = { 'head' : head ,'we_dataList' : we_data_setting(wedata)}
     return JsonResponse(context)
 
 # 예보날짜 세팅
@@ -184,10 +198,15 @@ def testdataset():
 
 
 def nxnySetting(lon, lat):
-    print(lon, lat)
-    lon, lat, x, y = nxny.map_conv(lon, lat, 0.0, 0.0, 0)
-    result = {'lon':str(lon), 'lat':str(lat), 'nx':str(x),'ny':str(y)}
-    print(result)
+    result = WeatherStn.objects.filter(
+        lon__startswith=lon[:5],
+        lat__startswith=lat[:4]
+    ).order_by('location2', 'location3').values('nx','ny').first()
+    # 기존 변환기는 사용안함
+    # print(lon, lat)
+    # lon, lat, x, y = nxny.map_conv(lon, lat, 0.0, 0.0, 0)
+    # result = {'lon':str(lon), 'lat':str(lat), 'nx':str(x),'ny':str(y)}
+    # print(result)
     
     return result
 
