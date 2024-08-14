@@ -216,7 +216,7 @@ function submitForm() {
     const area2Select = document.getElementById('area2_id');
     const cityCode = area1Select.value;
     const district = area2Select.value;
-
+    var result = {}
     if (cityCode && district) {
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         const lat = locationData[cityCode][district].lat;
@@ -234,6 +234,7 @@ function submitForm() {
         .then(response => response.json())
         //데이터post 확인용. 배포시 없앨 예정
         .then(data => {
+            result = data
             if (data.status === 'success') {
                 alert('데이터가 성공적으로 전송되었습니다.');
             } else {
@@ -244,4 +245,5 @@ function submitForm() {
     } else {
         alert('모든 필드를 선택해 주세요.');
     }
+    return result
 }
