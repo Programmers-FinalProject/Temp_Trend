@@ -25,6 +25,7 @@ AWS_SECRET_ACCESS_KEY = Variable.get('SECRET_KEY')
 def fetch_data():
     data = []
     chrome_options=wd.ChromeOptions()
+    chrome_options.add_argument("--headless")
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-extensions')
