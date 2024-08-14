@@ -31,7 +31,7 @@ AWS_ACCESS_KEY_ID = Variable.get('ACCESS_KEY')
 AWS_SECRET_ACCESS_KEY = Variable.get('SECRET_KEY')
 
 # Redshift 연결 ID
-REDSHIFT_CONN_ID = 'redshift_default'
+REDSHIFT_CONN_ID = 'Redshift_cluster_hori1'
 
 # 테이블 드랍 및 생성 쿼리
 drop_table_sql = f"""
