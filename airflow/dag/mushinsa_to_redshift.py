@@ -59,6 +59,7 @@ drop_table = PostgresOperator(
     postgres_conn_id=REDSHIFT_CONN_ID,
     sql=drop_table_sql,
     dag=dag,
+    queue='queue1',
 )
 
 # 테이블 생성 작업 정의
@@ -67,6 +68,7 @@ create_table = PostgresOperator(
     postgres_conn_id=REDSHIFT_CONN_ID,
     sql=create_table_sql,
     dag=dag,
+    queue='queue1',
 )
 
 # S3에서 Redshift로 데이터를 로드하는 작업 정의
@@ -80,6 +82,7 @@ load_to_redshift = S3ToRedshiftOperator(
     aws_conn_id='MyS3Conn',  # AWS 연결 ID, Airflow에서 설정한 ID
     redshift_conn_id=REDSHIFT_CONN_ID,
     dag=dag,
+    queue='queue1',
 )
 
 # 작업 순서 정의
