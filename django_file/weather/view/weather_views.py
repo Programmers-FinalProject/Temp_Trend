@@ -40,7 +40,7 @@ def we_data_usexy(request):
         context = { 'head' : "서울의 날씨", 'we_dataList' : we_data_setting(wedata)}
         return JsonResponse(context)
         
-    posXY = nxnySetting(longitude, latitude)
+    posXY = nxnySetting(str(longitude), str(latitude))
     wedata = get_we_data_xy(posXY['nx'], posXY['ny'])
     context = { 'head' : head ,'we_dataList' : we_data_setting(wedata)}
     return JsonResponse(context)
