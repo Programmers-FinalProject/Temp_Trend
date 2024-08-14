@@ -235,6 +235,7 @@ function submitForm() {
         .then(data => {
             if (data.status === 'success') {
                 alert('데이터가 성공적으로 전송되었습니다.');
+                call_we_data(2)
             } else {
                 alert('데이터 전송에 실패했습니다.');
             }
@@ -244,3 +245,18 @@ function submitForm() {
         alert('모든 필드를 선택해 주세요.');
     }
 }
+
+function call_we_data(param) {
+    const url = `{% url "call_we_data" %}?param=${encodeURIComponent(param)}`;
+    fetch(url)
+        .then(response => {
+            console.log("Response received:", response); // 응답 객체 로그
+            return response.json();
+        })
+        .then(data => {
+            console.log(data);  // 콘솔에서 데이터 확인
+            updateWeatherData(data)
+            // document.getElementById('data-container').textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(error => console.error('Error fetching data:', error));
+};
