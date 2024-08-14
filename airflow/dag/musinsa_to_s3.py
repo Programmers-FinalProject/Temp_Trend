@@ -14,7 +14,7 @@ from airflow.models import Variable
 import pandas as pd
 import boto3
 from datetime import datetime
-import io
+from io import StringIO
 
 # S3 버킷 및 파일 설정
 FILE_KEY = 'musinsa.csv'
@@ -101,12 +101,13 @@ default_args = {
     'owner': 'airflow',
     'start_date': datetime(2024, 1, 1),
     'catchup' : False,
+    'retries': 1,
 }
 
 dag = DAG(
     dag_id ='musinsa_crawl_and_upload_to_s3',
     default_args=default_args,
-    schedule_interval='@daily',
+    schedule_interval='00 17 * * *',
     max_active_runs=1,
 )
 
@@ -115,6 +116,7 @@ fetch_data_task = PythonOperator(
     python_callable=fetch_data,
     provide_context=True,
     dag=dag,
+    queue='queue1',
 )
 
 data_to_csv_task = PythonOperator(
@@ -122,6 +124,7 @@ data_to_csv_task = PythonOperator(
     python_callable=data_to_csv,
     provide_context=True,
     dag=dag,
+    queue='queue1',
 )
 
 upload_to_s3_task = PythonOperator(
@@ -129,6 +132,7 @@ upload_to_s3_task = PythonOperator(
     python_callable=upload_to_s3,
     provide_context=True,
     dag=dag,
+    queue='queue1',
 )
 
 fetch_data_task >> data_to_csv_task >> upload_to_s3_task
