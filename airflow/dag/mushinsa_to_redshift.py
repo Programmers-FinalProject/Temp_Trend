@@ -9,7 +9,7 @@ from datetime import datetime
 # 기본 인수 설정
 default_args = {
     'owner': 'airflow',
-    'start_date': datetime(2024, 1, 1),
+    'start_date': datetime(2024, 8, 10),
     'catchup' : False,
     'retries': 1,
 }

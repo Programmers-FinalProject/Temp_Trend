@@ -100,7 +100,7 @@ def upload_to_s3(**kwargs):
 
 default_args = {
     'owner': 'airflow',
-    'start_date': datetime(2024, 1, 1),
+    'start_date': datetime(2024, 8, 10),
     'catchup' : False,
     'retries': 1,
 }
