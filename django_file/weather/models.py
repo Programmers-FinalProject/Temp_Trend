@@ -55,7 +55,7 @@ class WeatherStn(models.Model):
             WHERE row_num = 1 
             ORDER BY location2 DESC, location3 DESC
         '''
-        return WeatherStn.objects.raw(sql)
+        return WeatherStn.objects.using('redshift').raw(sql)
 
     def __str__(self):
         return f"location1 : {self.location1}, location2 : {self.location2}, location3 : {self.location3}, nx : {self.nx}, ny : {self.ny}, lon : {self.lon}, lat : {self.lat},"
