@@ -237,6 +237,7 @@ function submitForm() {
             result = data
             if (data.status === 'success') {
                 alert('데이터가 성공적으로 전송되었습니다.');
+                call_we_data(2);
             } else {
                 alert('데이터 전송에 실패했습니다.');
             }
