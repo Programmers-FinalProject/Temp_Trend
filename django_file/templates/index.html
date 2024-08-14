@@ -358,101 +358,6 @@
                         </ul>
                     </div>
                 </div>
-<<<<<<< HEAD
-                <script type="text/javascript">
-                    // const images = {
-                    //     precipitation: { src: "{{ im }}", href: "{{ im2 }}" },
-                    //     temperature: { src: "{{ im3 }}", href: "{{ im4 }}" },
-                    //     wind: { src: "{{ im5 }}", href: "{{ im6 }}" }
-                    // };
-                
-                    // function showImage(weatherType) {
-                    //     const image = document.getElementById('weatherImage');
-                    //     const link = document.getElementById('imageLink');
-                
-                    //     image.src = images[weatherType].src;
-                    //     image.alt = weatherType + " Image";
-                    //     link.href = images[weatherType].href;
-                    // }
-                    
-                    // window.onload = function() {
-                    //     showImage('temperature');
-                    //     document.getElementById('b1').classList.add("active");
-                    // }
-                    
-                    function change_btn(e) {
-                        var btns = document.querySelectorAll(".button");
-                        btns.forEach(function (btn, i) {
-                            if (e.currentTarget == btn) {
-                                btn.classList.add("active");
-                            } else {
-                                btn.classList.remove("active");
-                            }
-                        });
-                    }
-                    function call_we_data(e) {
-                        fetch('{% url "call_we_data" %}')
-                            .then(response => response.json())
-                            .then(data => {
-                                // console.log(data);  // 콘솔에서 데이터 확인
-                                updateWeatherData(data)
-                                // document.getElementById('data-container').textContent = JSON.stringify(data, null, 2);
-                            })
-                            .catch(error => console.error('Error fetching data:', error));
-                    };
-
-                    function updateWeatherData(data) {
-                        const container = document.querySelector('.we-data-box');
-                        container.innerHTML = ''; // 기존 데이터를 지우고 새 데이터를 추가합니다.
-                        if (data['we_dataList'] && data['we_dataList'].length > 0) {
-                            let html = '<ul class="clear we-data-ul">';
-                            
-                            data['we_dataList'].forEach(item => {
-                                html += `
-                                    <li class="we-data-list" onclick="sendweData(this)">
-                                        <input type="hidden" class="we-data" data-fcsttime="${item.fcsttime}" data-tmp="${item.TMP}" data-pty="${item.PTY}">
-                                        <ul>
-                                            <li class="we-list we-time">${item.fcsttime.slice(0, 2)}시</li>
-                                            <li class="we-list we-img">
-                                                <img src="${'/static/'+item.imgurl || '/static/img/sky3.png'}" alt="날씨 이미지">
-                                            </li>
-                                            <li class="we-list we-tmp">${item.TMP || '-'}°C</li>
-                                            <li class="we-list we-pop">${item.POP || '-'}%</li>
-                                            <li class="we-list we-ras">${item.PCP || '-'}</li>
-                                            <li class="we-list we-wind">${item.WSD || '-'}</li>
-                                            <li class="we-list we-atp">${item.REH || '-'}</li>
-                                        </ul>
-                                    </li>
-                                `;
-                            });
-                            html += '</ul>';
-                            container.innerHTML = html;
-                        } else {
-                            container.innerHTML = '<p>No data available</p>';
-                        }
-                    }
-
-                    function sendweData(e) {
-                        const dataTag = e.querySelector('.we-data')
-                        const data = {'weather_info' : {
-                            'forecast_time' : dataTag.getAttribute('data-fcsttime').slice(0, 2)+":"+dataTag.getAttribute('data-fcsttime').slice(2, 4),
-                            'TMP' : parseInt(dataTag.getAttribute('data-tmp'),10),
-                            'PTY' : parseInt(dataTag.getAttribute('data-pty'),10),
-                        }};
-                        console.log(data)
-                        fetch('{% url "learn" %}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRFToken': '{{ csrf_token }}'
-                            },
-                            body: JSON.stringify(data)
-                        })
-                    };
-
-                </script>
-            </div> 
-=======
                 <div class="musinsa_category">
                     <h3>아이템</h3>
                     <div class="musinsa_list">
@@ -527,7 +432,6 @@
         </div>
         {% endif %}
     
->>>>>>> develop
         </div>
     </div>
     {% if musinsa_lists %}
