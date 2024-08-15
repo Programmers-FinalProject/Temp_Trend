@@ -62,17 +62,52 @@ def delete_files(**kwargs):
                             aws_secret_access_key=Variable.get('SECRET_KEY')
                             )
     bucket_name = Variable.get('s3_bucket')
-    files_to_delete = kwargs['task_instance'].xcom_pull(key='files_to_delete', task_ids='merge_files')
+    # 기존 Xcom 으로 받아오는 부분이 동작하지 않아서 주석처리
+    # files_to_delete = kwargs['task_instance'].xcom_pull(key='files_to_delete', task_ids='merge_files')
     
-    if files_to_delete:
-        delete_response = s3_client.delete_objects(
-            Bucket=bucket_name,
-            Delete={
-                'Objects': [{'Key': key} for key in files_to_delete],
-                'Quiet': True
-            }
-        )
-        logger.info(f"Deleted files: {delete_response.get('Deleted', [])}")
+    # if files_to_delete:
+    #     delete_response = s3_client.delete_objects(
+    #         Bucket=bucket_name,
+    #         Delete={
+    #             'Objects': [{'Key': key} for key in files_to_delete],
+    #             'Quiet': True
+    #         }
+    #     )
+    #     logger.info(f"Deleted files: {delete_response.get('Deleted', [])}")
+    
+    today_str = datetime.now().strftime("%Y%m%d")
+    
+    # 삭제/제외할 파일 이름 패턴 정의
+    file_name_pattern = f'29cm_.*_{today_str}.csv'
+    exclude_file_name = f'29cm_bestitem_{today_str}.csv' 
+
+    try:
+        response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix='crawling/')
+        files_to_delete = []
+
+        if 'Contents' in response:
+            for obj in response['Contents']:
+                key = obj['Key']
+                # 특정 패턴을 가진 파일을 필터링 (제외할 파일은 제외)
+                if key.endswith('.csv') and today_str in key and exclude_file_name not in key:
+                    files_to_delete.append({'Key': key})
+                    logger.info(f"File to delete: {key}")
+        
+        if files_to_delete:
+            # 파일 삭제 요청
+            delete_response = s3_client.delete_objects(
+                Bucket=bucket_name,
+                Delete={
+                    'Objects': files_to_delete,
+                    'Quiet': True
+                }
+            )
+            logger.info(f"Deleted files: {delete_response.get('Deleted', [])}")
+        else:
+            logger.info("No files matched the criteria to delete.")
+    except Exception as e:
+        logger.error(f"Error occurred while deleting files: {e}")
+
 
 # DAG 설정
 default_args = {

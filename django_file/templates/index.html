@@ -230,19 +230,10 @@
                                 });
                             }
                             async function call_we_data(param) {
-                                
                                 const url = `{% url "call_we_data" %}?param=${encodeURIComponent(param)}`;
+                                //  과거세션 끌고오는 오류때문에 앞에 과거세션 처리를 위해 동작시킴
                                 fetch(url)
-                                    .then(response => {
-                                        console.log("Response received:", response); // 응답 객체 로그
-                                        return response.json();
-                                    })
-                                    .then(data => {
-                                        console.log(data);  // 콘솔에서 데이터 확인
-                                        updateWeatherData(data)
-                                        // document.getElementById('data-container').textContent = JSON.stringify(data, null, 2);
-                                    })
-                                    .catch(error => console.error('Error fetching data:', error));
+
                                 fetch(url)
                                     .then(response => {
                                         console.log("Response received:", response); // 응답 객체 로그
