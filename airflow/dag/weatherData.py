@@ -155,7 +155,7 @@ def dataAsType(df):
 })
     return df
 
-with TaskGroup(group_id='weatherTableSetting', dag=dag) as CSVSetting:
+with TaskGroup(group_id='weatherDataSetting', dag=dag) as CSVSetting:
     # PythonOperator를 사용하여 작업 정의
     # 서울
     weatherX60Y127Task = PythonOperator(

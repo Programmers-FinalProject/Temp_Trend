@@ -211,12 +211,13 @@ const locationData = {
 
 
 // 폼 제출 함수
-function submitForm() {
+async function submitForm() {
     const area1Select = document.getElementById('area1_id');
     const area2Select = document.getElementById('area2_id');
     const cityCode = area1Select.value;
     const district = area2Select.value;
-
+    console.log(area1Select.value)
+    console.log(area2Select.value)
     if (cityCode && district) {
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         const lat = locationData[cityCode][district].lat;

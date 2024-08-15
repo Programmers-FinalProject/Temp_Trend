@@ -202,29 +202,12 @@ def testdataset():
 
 
 def nxnySetting(lon, lat):
-    value = WeatherStn.getnxny()[0]
+    value = WeatherStn.getnxny(lon[:5],lat[:4])[0]
     result = {
         'nx' : value.nx,
         'ny' : value.ny
     }
-    # 기존 변환기는 사용안함
-    # print(lon, lat)
-    # lon, lat, x, y = nxny.map_conv(lon, lat, 0.0, 0.0, 0)
-    # result = {'lon':str(lon), 'lat':str(lat), 'nx':str(x),'ny':str(y)}
-    # print(result)
     return result
-
-# { 
-#     "date" : "",
-#     "time" : "",
-#     "values" : {
-#         "TMP" : 
-#         }
-#     },
-#     'nx' : '',
-#     'ny' : '',
-# }
-
 
 
 def get_weather_data(request):
