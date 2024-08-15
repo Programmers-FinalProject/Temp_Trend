@@ -6,6 +6,7 @@ ENV AIRFLOW__WORKER__NAME="worker_node"
 
 ENV AIRFLOW__MASTER__IP="ec2-15-165-132-35.ap-northeast-2.compute.amazonaws.com"
 ENV AIRFLOW__REDIS__HOST=${AIRFLOW__MASTER__IP}:6379
+ENV AIRFLOW__POSTGRESQL__HOST=${AIRFLOW__MASTER__IP}:5432
 ENV AIRFLOW__CORE__EXECUTOR="CeleryExecutor"
 
 ENV AIRFLOW__DATABASE__SQL_ALCHEMY_CONN="postgresql+psycopg2://postgres:postgreshori!@hori-1-airflow-metadb.ch4xfyi6stod.ap-northeast-2.rds.amazonaws.com:5432/airflow"
@@ -23,7 +24,6 @@ ENV AIRFLOW__CORE__LOAD_EXAMPLES="false"
 ENV AIRFLOW__API__AUTH_BACKENDS="airflow.api.auth.backend.basic_auth"
 ENV AIRFLOW__FLOWER__AUTHENTICATED_API="true"
 ENV _PIP_ADDITIONAL_REQUIREMENTS="pandas requests s3fs boto3 webdriver_manager"
-ENV AIRFLOW__CORE__LOAD_EXAMPLES="false"
 
 ARG DEBIAN_FRONTEND=noninteractive
 
