@@ -15,6 +15,7 @@ import pandas as pd
 import boto3
 from datetime import datetime
 from io import StringIO
+import timedelta
 
 # S3 버킷 및 파일 설정
 FILE_KEY = 'musinsa.csv'
@@ -26,9 +27,11 @@ def fetch_data():
     data = []
     chrome_options=wd.ChromeOptions()
     chrome_options.add_argument("--headless")
+    """
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-extensions')
+    """
     chrome_options.add_argument('user_agent = Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36')
     driver = wd.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     item_codes = ['005014', '005004', '005019', '005012', '005018', '005015', '005017',
@@ -106,6 +109,7 @@ dag = DAG(
     default_args=default_args,
     schedule_interval='00 17 * * *',
     max_active_runs=1,
+    retry_delay = timedelta(minutes=1),
 )
 
 fetch_data_task = PythonOperator(
