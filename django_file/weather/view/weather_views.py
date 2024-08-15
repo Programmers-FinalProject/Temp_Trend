@@ -35,8 +35,8 @@ def we_data_usexy(request):
             head = head+"의 날씨"
         
     elif param == '1' :
-        latitude = request.session.get('selectedLatitude', 'No latitude in session')
-        longitude = request.session.get('selectedLongitude', 'No longitude in session')
+        latitude = request.session.get('latitude', 'No latitude in session')
+        longitude = request.session.get('longitude', 'No longitude in session')
         head = "현 위치의 날씨"
     else :
         wedata = get_we_data_xy(60, 127)

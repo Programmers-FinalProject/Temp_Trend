@@ -1,4 +1,8 @@
+
+from datetime import datetime
 import os
+import pandas as pd
+import pytz
 import requests
 from django.http import JsonResponse
 from dotenv import load_dotenv
@@ -8,7 +12,17 @@ from django.shortcuts import render
 import urllib.parse
 import html
 from bs4 import BeautifulSoup
-from weather.models import LocationRecord
+
+
+# 대한민국 시간대 설정
+korea_timezone = pytz.timezone("Asia/Seoul")
+
+# 현재 시간을 대한민국 시간대로 얻기
+current_time = datetime.now(korea_timezone)
+
+# 파일명에 사용할 수 있는 형식으로 변환
+formatted_time = current_time.strftime("%Y%m%d_%H%M%S")
+
 
 
 def decode_html_entities(text):
@@ -58,26 +72,28 @@ def fetch_and_store_news(request):
         data = response.json()
         items = data['items']
         
+        
         for idx, item in enumerate(items):
             item_id = f"news:{idx+1}"
             clean_title = decode_html_entities(remove_html_tags(item['title']))
             clean_description = decode_html_entities(remove_html_tags(item['description']))
             image_url = get_image_from_url(item['link'])  # 이미지 URL 크롤링
-            r.hset(item_id, mapping={
+            context = {
                 "title": clean_title,
                 "description": clean_description,
                 "link": item['link'],
                 "pubDate": item['pubDate'],
                 "image_url": image_url if image_url else ""
-            })
-        
+            }
+            data.append(context)
+            
+        df = pd.DataFrame(data)
+        df.to_csv(f"news_{formatted_time}.csv", encoding='utf-8-sig')
         return JsonResponse({"message": "Data successfully stored in Redis"}, status=200)
     else:
         return JsonResponse({"error": "Failed to fetch data from Naver API"}, status=response.status_code)
 
-def display_news(request):
-    latest_location = LocationRecord.objects.order_by('-created_at').first()
-    
+def display_news(request):    
     keys = r.keys("news:*")
     news_items = []
     
@@ -92,13 +108,10 @@ def display_news(request):
         })
     
     context = {
-        'latest_location': latest_location,
         'news_items': news_items,
-
     }
     
     return render(request, 'news.html', context)
 
 def news_view(request):
-    #fetch_and_store_news(request)
     return display_news(request)

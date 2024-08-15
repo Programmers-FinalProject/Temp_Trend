@@ -523,7 +523,7 @@ def recommend_categories(weather_info, product_df, target_gender, pipeline, enco
         predictions = pipeline.predict(combined_df_imputed)
         
         # 추천 제품 필터링 (예: 선호도가 2 이상인 제품만 추천)
-        recommended_products = combined_df[np.array(predictions) > 1]
+        recommended_products = combined_df[np.array(predictions) >= 1]
         
         # 성별에 따라 필터링
         if target_gender == 'unisex':
@@ -550,18 +550,12 @@ def recommend_categories(weather_info, product_df, target_gender, pipeline, enco
         
 
 
-
 def learn(request):
-    # 요청에서 날씨 정보 가져오기
-    #data = json.loads(request.body)
-    #weather_info = data.get('weather_info', {})
-    weather_info = {'TMP': 28, 'PTY': 0, 'forecast_time': '09:00'}
-    weather_info["TMP"] = (np.floor((weather_info["TMP"] + 1) / 2) * 2).astype(int)
-    a = ""
-    print(weather_info)
     # 예시 : weather_info = {'TMP': 28, 'PTY': 0, 'forecast_time': '09:00'} 이런식으로 들어와야 함
-
+    a = ""
     # 세션에서 선택된 성별 가져오기
+    weather_info = request.session.get("weather_info")
+    weather_info["TMP"] = (np.floor((weather_info["TMP"] + 1) / 2) * 2)
     g = request.session.get('selectedGender')
     bucket_name = 'team-hori-1-bucket'
     learning_data = concatenate_csv_files_from_s3(bucket_name)
@@ -586,6 +580,7 @@ def learn(request):
         'a' : a,
         'recommended_products' : recommended_products,
     }
+    request.session['learn_data'] = context
 
     # JSON 응답 반환
     return JsonResponse(context)

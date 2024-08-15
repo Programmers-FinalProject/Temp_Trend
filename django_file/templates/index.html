@@ -69,8 +69,27 @@
                         </div>
 
                         <div class="mt-2">
+                            <script>
+                                function jj2(){
+                                    const musinsa = document.getElementsByClassName('center-content')[0];
+                                    musinsa.style.display = 'none';
+                                    submitForm();
+                                    setTimeout(function() {
+                                        call_we_data(2);
+                                    }, 500);  // 500ms 후 실행
+                                }
+                                function jj1(){
+                                    const musinsa = document.getElementsByClassName('center-content')[0];
+                                    musinsa.style.display = 'none';
+                                    submitForm();
+                                    setTimeout(function() {
+                                        call_we_data(1);
+                                    }, 500);  // 500ms 후 실행
+                                }
+
+                            </script>
                             
-                            <button onclick="submitForm(); call_we_data(2);" class="btn btn-light btn-sm">선택지역의 옷 추천받기</button>
+                            <button onclick="jj2()" class="btn btn-light btn-sm">선택지역의 옷 추천받기</button>
                             <button onclick="resetForm()" class="btn btn-light btn-sm" id="deleteSessionBtnLocation">다시찾기</button>
                             <script>
                                 // 폼을 초기화하는 함수
@@ -92,7 +111,7 @@
                                     }
                                 }
                             </script>
-                            <button class="btn btn-light btn-sm" id="current-location-btn" onclick=call_we_data(1)>현위치 날씨로 옷 추천받기</button>
+                            <button class="btn btn-light btn-sm" id="current-location-btn" onclick="jj1()">현위치 날씨로 옷 추천받기</button>
                             <style>
                                 .mt-2 {
                                     display: flex;
@@ -183,16 +202,26 @@
                                     area2Select.style.display = 'none';
                                 }
                             }
+                            function changeButtonColor(button) {
+                                // 모든 버튼에서 active 클래스를 제거
+                                var buttons = document.querySelectorAll('.btn');
+                                buttons.forEach(function(btn) {
+                                    btn.classList.remove('active');
+                                });
+
+                                // 클릭된 버튼에 active 클래스 추가
+                                button.classList.add('active');
+                            }
                         </script>
                         <div id="initial-buttons" class="row">
                             <div class="col">
-                                <button id="genderMale" class="btn btn-secondary w-100" value="m">남자</button>
+                                <button id="genderMale" class="btn btn-secondary w-100" onclick="fetchProducts('m')" value="m">남자</button>
                             </div>
                             <div class="col">
-                                <button id="genderFemale" class="btn btn-secondary w-100" value="w">여자</button>
+                                <button id="genderFemale" class="btn btn-secondary w-100" onclick="fetchProducts('w')" value="w">여자</button>
                             </div>
                             <div class="col">
-                                <button id="genderUnisex" class="btn btn-secondary w-100" value="unisex">unisex</button>
+                                <button id="genderUnisex" class="btn btn-secondary w-100" onclick="fetchProducts('unisex')" value="unisex">unisex</button>
                             </div>
                         </div> 
 
@@ -208,23 +237,73 @@
                         {% include 'test.html' %}
                     
                         <script>
+                            
                             window.onload = function() {
-                                const storedGender = localStorage.getItem('selectedGender');
-                                if (storedGender) {
-                                    displaySelectedGender(storedGender);
-                                    call_we_data(0);
-                                }
-                            };
-                            function change_btn(e) {
-                                var btns = document.querySelectorAll(".button");
-                                btns.forEach(function (btn, i) {
-                                    if (e.currentTarget == btn) {
-                                        btn.classList.add("active");
+                                call_we_data(0);
+                                // sessionStorage에서 플래그 확인
+                            }
+                            function hh() {
+                                //fetch('/api/session-address/')
+                                //.then(response => response.json())
+                                //.then(data => {
+                                //    console.log("Session data:", data);
+                                //    if (data.selectedGender) {
+                                //        displaySelectedGender(data.selectedGender);
+                                //    }
+
+                                //})
+                                setTimeout(function() {
+                                    processWeatherData();
+                                }, 500);  // 500ms 후 실행
+
+                            }
+                            function getCurrentKSTHour() {
+                                const now = new Date();
+                                const utcHour = now.getUTCHours();
+                                const kstHour = (utcHour + 9) % 24;
+                                return kstHour.toString().padStart(2, '0') + '00';
+                            }
+
+                            // 데이터에서 시간을 추출하는 함수
+                            function extractHourFromFcsttime(fcsttime) {
+                                return parseInt(fcsttime.substring(0, 2), 10);
+                            }
+
+                            // 주어진 we_dataList를 처리하는 함수
+                            function processWeatherData() {
+                                const currentHour = getCurrentKSTHour();
+                                console.log("Current hour:", currentHour);
+                                
+                                const dataListItems = document.querySelectorAll('li.we-data-list');
+                                console.log("Number of weather data items:", dataListItems.length);
+
+                                dataListItems.forEach((listItem, index) => {
+                                    const hiddenInput = listItem.querySelector('input.we-data');
+                                    if (!hiddenInput) {
+                                        console.error(`Hidden input not found in item ${index}`);
+                                        return;
+                                    }
+
+                                    const fcsttime = hiddenInput.getAttribute('data-fcsttime');
+                                    const tmp = hiddenInput.getAttribute('data-tmp');
+                                    const pty = hiddenInput.getAttribute('data-pty');
+
+                                    console.log(`Item ${index} - fcsttime: ${fcsttime}, tmp: ${tmp}, pty: ${pty}`);
+
+                                    if (fcsttime) {
+                                        const itemHour = extractHourFromFcsttime(fcsttime);
+                                        
+                                        if (fcsttime === currentHour) {
+                                            console.log("일치하는 시간 데이터 찾음:", fcsttime);
+                                            sendweData(hiddenInput);
+                                        }
                                     } else {
-                                        btn.classList.remove("active");
+                                        console.error(`Missing data-fcsttime for item ${index}`);
                                     }
                                 });
                             }
+                            
+
                             function call_we_data(param) {
                                 const url = `{% url "call_we_data" %}?param=${encodeURIComponent(param)}`;
                                 fetch(url)
@@ -253,16 +332,17 @@
                                     data['we_dataList'].forEach(item => {
                                         html += `
                                             <li class="we-data-list">
+                                                <input type="hidden" class="we-data" data-fcsttime="${item.fcsttime}" data-tmp="${item.TMP}" data-pty="${item.PTY}">
                                                 <ul>
                                                     <li class="we-list we-time">${item.fcsttime.slice(0, 2)}시</li>
                                                     <li class="we-list we-img">
-                                                        <img src="${item.imgurl ? '/static/' + item.imgurl : '/static/img/sky3.png'}" alt="날씨 이미지">
+                                                        <img src="${item.imgurl ? '/static/' + item.imgurl : '/static/img/sky3.png'}" alt="날씨 이미지" class="weather-icon">
                                                     </li>
                                                     <li class="we-list we-tmp">${item.TMP || '-'}°C</li>
-                                                    <li class="we-list we-pop">${item.POP || '-'}%</li>
+                                                    <li class="we-list we-pop">강수 확률 : ${item.POP || '-'}%</li>
                                                     <li class="we-list we-ras">${item.PCP || '-'}</li>
-                                                    <li class="we-list we-wind">${item.WSD || '-'}</li>
-                                                    <li class="we-list we-atp">${item.REH || '-'}</li>
+                                                    <li class="we-list we-wind">풍속 : ${item.WSD || '-'}m/s</li>
+                                                    <li class="we-list we-atp">습도 : ${item.REH || '-'}%</li>
                                                 </ul>
                                             </li>
                                         `;
@@ -276,29 +356,72 @@
                                 container.innerHTML = html;
                             }
 
-                            function sendweData(e) {
-                                const dataTag = e.querySelector('.we-data')
-                                const data = {'weather_info' : {
-                                    'forecast_time' : dataTag.getAttribute('data-fcsttime').slice(0, 2)+":"+dataTag.getAttribute('data-fcsttime').slice(2, 4),
-                                    'TMP' : parseInt(dataTag.getAttribute('data-tmp'),10),
-                                    'PTY' : parseInt(dataTag.getAttribute('data-pty'),10),
-                                }};
-                                console.log(data)
-                                fetch('{% url "learn" %}', {
+                            function sendweData(dataTag) {
+                                const data = {
+                                    'weather_info': {
+                                        'forecast_time': dataTag.getAttribute('data-fcsttime').slice(0, 2) + ":" + dataTag.getAttribute('data-fcsttime').slice(2, 4),
+                                        'TMP': parseInt(dataTag.getAttribute('data-tmp'), 10),
+                                        'PTY': parseInt(dataTag.getAttribute('data-pty'), 10),
+                                    }
+                                };
+                                console.log('Sending data:', data);
+
+                                // CSRF 토큰 가져오기
+                                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                                fetch('/api/session-address/', {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',
-                                        'X-CSRFToken': '{{ csrf_token }}'
+                                        'X-CSRFToken': csrftoken
                                     },
                                     body: JSON.stringify(data)
                                 })
-                            };
+                                .then(response => {
+                                    if (!response.ok) {
+                                        return response.text().then(text => {
+                                            throw new Error(`Server error: ${response.status} ${text}`);
+                                        });
+                                    }
+                                    return response.json();
+                                })
+                                .then(responseData => {
+                                    console.log('Success:', responseData);
+                                    // if (responseData.message) {
+                                    //     alert(responseData.message);
+                                    // } else {
+                                    //     alert('Data has been successfully sent and saved.');
+                                    // }
+                                    // 여기에 성공 후 추가 작업을 수행할 수 있습니다.
+                                    // 예: updateUIWithWeatherData(responseData);
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    alert(`Failed to send data: ${error.message}`);
+                                    // 여기에 오류 발생 시 수행할 추가 작업을 넣을 수 있습니다.
+                                    // 예: showErrorMessage(error.message);
+                                });
+                            }
+
                         </script>
                     </div>
                 </div>  
             </div>
+        <div class="center-content">
+            <div id="musinsaContent"></div>
+            <style>
+                #loading-spinner {
+                    display: none; /* 처음에는 보이지 않게 설정 */
+                    font-size: 10px;
+                    color: rgb(255, 0, 221);
+                }
+            </style>
+            <div id="loading-spinner">로딩 중...</div>
             
-        {% if products %}
+        </div>
+        
+
+        <!-- {% if products %}
         <div class="center-content" id="musinsaContent">
             <div class="musinsa_categories">
                 <div class="musinsa_category">
@@ -430,7 +553,7 @@
             }
             </style>
         </div>
-        {% endif %}
+        {% endif %} -->
     
         </div>
     </div>

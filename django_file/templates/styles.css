@@ -50,9 +50,11 @@ html, body {
     background-color: rgba(255, 255, 255, 0.8);
     border-radius: 15px;
     padding: 15px;
+    box-sizing: border-box;
 }
 
 .center-content {
+    display: none;
     width: 100%;
     background-color: rgba(255, 255, 255, 0.8);
     border-radius: 15px;
@@ -80,22 +82,6 @@ html, body {
 
 .btn-light {
     border-radius: 20px;
-}
-
-.weather-map-container {
-    width: 100%;
-    max-width: 640px;
-    margin: 15px auto;
-    background-color: #ffffff;
-    border-radius: 20px;
-    padding: 10px;
-    overflow: hidden;
-}
-
-.weather-map {
-    width: 100%;
-    height: auto;
-    display: block;
 }
 
 .selected {
@@ -165,15 +151,11 @@ html, body {
     font-weight: bold;
     text-align: center; /* 텍스트 중앙 정렬 */
 }
-.we-list we-img{
-    height: 50px;
-}
 
 .we-data-ul {
     display: flex;
-    gap: 10px;
+    gap: 3px;
 }
-
 
 .we-list {
     margin: 5px 0;
@@ -184,7 +166,7 @@ li::marker {
 }
 
 
-.musinsa_list ul {
+/* .musinsa_list ul {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 20px;
@@ -219,4 +201,62 @@ li::marker {
     .left-content, .right-content {
         flex: 1 1 100%;
     }
+} */
+.musinsa_categories {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+}
+.musinsa_category {
+    flex: 1 1 calc(50% - 10px);
+    min-width: 300px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.musinsa_category h3 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #333;
+}
+.musinsa_list ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 15px;
+}
+.musinsa_list li {
+    flex: 0 0 auto;
+    width: 200px;
+    background-color: white;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.musinsa_list img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+.musinsa_list .product-info {
+    font-size: 14px;
+}
+.musinsa_list .product-info p {
+    margin: 5px 0;
+}
+.we-data-box ul{
+    padding: 4px;
+    margin-bottom: auto;
+}
+
+img.weather-icon {
+  width: 110px; /* 너비를 90px로 설정 */
+  height: auto; /* 높이를 자동으로 설정, 비율을 유지 */
 }

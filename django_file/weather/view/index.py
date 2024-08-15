@@ -1,33 +1,45 @@
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from weather.models import musinsaData
-from weather.view import learningmodel
 import requests
+from django.shortcuts import redirect
 
 
 
 def weather_view(request):
-    selected_gender = request.GET.get('gender')
-    musinsaLists = musinsaData.objects.using('redshift').filter(gender=selected_gender).order_by('rank')
-    response = requests.get('https://34.64.100.195/learn', verify=False) #https://34.64.100.195/learn(배포) http://127.0.0.1:8000/learn(로컬)
-    if response.status_code == 200:
-        data = response.json()
-        recommended_products = data['recommended_products']
-        # 이후로 recommended_products를 사용한 로직 처리
-        dic = {}
-        for i in recommended_products:
-            category2 = i['category2']  # 셔츠/블라우스 이런거
-            category1 = i['category'] #상의,하의,신발,아이템
-            for j in musinsaLists:
-                if category2 == j.category:
-                    if category1 not in dic:
-                        dic[category1] = []
-                    dic[category1].append(j)
-        return render(request, 'index.html', {'products': dic})
-    else:
-        return HttpResponse("Failed to retrieve data", status=500)
+
+        return render(request, 'index.html')
     
+def musinsajjj(request):
+    # 세션에서 성별 선택 가져오기
+    selected_gender = request.session.get('selectedGender')
     
+    if not selected_gender:
+        return JsonResponse({'error': 'Gender not selected'}, status=400)
+    
+    # Redshift에서 데이터 필터링
+    musinsaLists = musinsaData.objects.using('redshift').filter(gender=selected_gender).order_by('rank').values()
+    
+    # 세션에서 추천된 제품 가져오기
+    learn_data = request.session.get('learn_data')
+    if not learn_data:
+        return JsonResponse({'error': 'No learn data in session'}, status=400)
+    
+    recommended_products = learn_data.get('recommended_products')
+    
+    if not recommended_products:
+        return JsonResponse({'error': 'No recommended products found'}, status=400)
+    
+    dic = {}
+    for i in recommended_products:
+        category2 = i['category2']  # 셔츠/블라우스 등
+        category1 = i['category']   # 상의, 하의, 신발, 아이템 등
+        for j in musinsaLists:
+                    if category2 == j["category"]:
+                        if category1 not in dic:
+                            dic[category1] = []
+                        dic[category1].append(j)
+    return JsonResponse({'products': dic})
 
     
 

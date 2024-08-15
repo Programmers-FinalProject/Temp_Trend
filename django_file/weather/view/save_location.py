@@ -2,11 +2,10 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import json
-from weather.models import LocationRecord
+import numpy as np
 import os
 import requests
 from dotenv import load_dotenv
-from django.shortcuts import render
 import logging
 
 load_dotenv()
@@ -138,26 +137,30 @@ def get_location_name_from_kakao(latitude, longitude):
 
 @csrf_exempt
 def session_data_api(request):
-    address = request.session.get('address', 'No address in session')
-    latitude = request.session.get('latitude', 'No latitude in session')
-    longitude = request.session.get('longitude', 'No longitude in session')
-    gender = request.session.get('selectedGender', 'No gender in session')
-    selected_city_code = request.session.get('selectedCity_code', 'No city code in session')
-    selected_district = request.session.get('selectedDistrict', 'No district in session')
-    selected_latitude = request.session.get('selectedLatitude', 'No latitude in session')
-    selected_longitude = request.session.get('selectedLongitude', 'No longitude in session')
-
-    return JsonResponse({
-        'address': address,
-        'latitude': latitude,
-        'longitude': longitude,
-        'selectedGender': gender,
-        'selectedCity_code': selected_city_code,
-        'selectedDistrict': selected_district,
-        'selectedLatitude': selected_latitude,
-        'selectedLongitude': selected_longitude
-    })
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            weather_info = data.get('weather_info', {})
+            request.session['weather_info'] = weather_info
+            return JsonResponse({"message": "Weather info saved successfully"})
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON data"}, status=400)
+    weather_info = request.session.get('weather_info', 'No weather info in session')
+    print(weather_info)
+    data = {
+        'address': request.session.get('address', 'No address in session'),
+        'latitude': request.session.get('latitude', 'No latitude in session'),
+        'longitude': request.session.get('longitude', 'No longitude in session'),
+        'selectedGender': request.session.get('selectedGender', 'No gender in session'),
+        'selectedCity_code': request.session.get('selectedCity_code', 'No city code in session'),
+        'selectedDistrict': request.session.get('selectedDistrict', 'No district in session'),
+        'selectedLatitude': request.session.get('selectedLatitude', 'No latitude in session'),
+        'selectedLongitude': request.session.get('selectedLongitude', 'No longitude in session'),
+        'learn_data': request.session.get('learn_data', 'No learn data in session'),
+        'weather_info': request.session.get('weather_info', 'No weather info in session')
+    }
     
+    return JsonResponse(data)
     
 
 @require_POST

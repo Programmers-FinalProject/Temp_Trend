@@ -1,7 +1,7 @@
 # weather/urls.py
 from django.urls import path
 from weather.view.redis import fetch_and_store_news, display_news, news_view
-from weather.view.index import weather_view
+from weather.view.index import weather_view,musinsajjj
 from weather.view import weather_views
 from weather.view.musinsa_views import musinsa_list
 from weather.view.musinsa_views import categorize
@@ -15,6 +15,7 @@ from weather.view.learningmodel import learn,index
 urlpatterns = [
     # 기본 경로 설정
     path('', weather_view, name='index'),
+    path('musinsajjj/',musinsajjj,name='musinsajjj'),
     # 뉴스페이지
     path('news/', news_view, name='news'), 
     path('fetch-news/', fetch_and_store_news, name='fetch_news'),

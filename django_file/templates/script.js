@@ -235,7 +235,7 @@ function submitForm() {
         //데이터post 확인용. 배포시 없앨 예정
         .then(data => {
             if (data.status === 'success') {
-                alert('데이터가 성공적으로 전송되었습니다.');
+                alert('성별을 선택해 주세요');
             } else {
                 alert('데이터 전송에 실패했습니다.');
             }
