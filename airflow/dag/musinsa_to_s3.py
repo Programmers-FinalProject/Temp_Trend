@@ -112,7 +112,6 @@ dag = DAG(
     default_args=default_args,
     schedule_interval='00 17 * * *',
     max_active_runs=1,
-    retry_delay = timedelta(minutes=1),
 )
 
 fetch_data_task = PythonOperator(
