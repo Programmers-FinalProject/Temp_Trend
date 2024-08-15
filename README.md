@@ -14,12 +14,12 @@
 
 | 분류                | 기술                                          |
 |---------------------|-----------------------------------------------|
-| 프로그래밍언어       | ![Python](img/python.svg),![JavaScript](img/javascript.svg|
-| 웹 프레임워크        | ![Django](img/django.svg)|
-| 데이터베이스         | ![Postgres](img/postgresql.svg),![Redis](img/redis.svg), ![RedshiftCluster](img/amazonredshift.svg)|
-| 클라우드 서비스      | ![EC2](img/amazonec2.svg), ![RDS](img/amazonrds.svg), ![RedshiftCluster](img/amazonredshift.svg),  ![Lambda](img/awslambda.svg), ☁️ EventBridge,☁️ Glue, ![GCP](img/googlecloud.svg) |
-| 데이터 파이프라인    | ![Apache Airflow](img/apacheairflow.svg)                              |
-| 버전 관리            | ![Git](img/github.svg), ![Git Actions](img/githubactions.svg)                        |
+| 프로그래밍언어       |<img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white">,<img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=JavaScript&logoColor=white"> |
+| 웹 프레임워크        | |
+| 데이터베이스         |<img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=Redis&logoColor=white">  |
+| 클라우드 서비스      |  |
+| 데이터 파이프라인    | |
+| 버전 관리            | |
 
 ## 아키텍쳐
 
