@@ -70,9 +70,13 @@
 
                         <div class="mt-2">
                             
-                            <button onclick="submitForm(); call_we_data(2);" class="btn btn-light btn-sm">선택지역의 옷 추천받기</button>
+                            <button onclick="selectLocationFind()" class="btn btn-light btn-sm">선택지역의 옷 추천받기</button>
                             <button onclick="resetForm()" class="btn btn-light btn-sm" id="deleteSessionBtnLocation">다시찾기</button>
                             <script>
+                                async function selectLocationFind() {
+                                    await submitForm(); 
+                                    await call_we_data(2);
+                                }
                                 // 폼을 초기화하는 함수
                                 function resetForm() {
                                     // 시/도 선택을 초기화
@@ -225,8 +229,11 @@
                                     }
                                 });
                             }
-                            function call_we_data(param) {
+                            async function call_we_data(param) {
                                 const url = `{% url "call_we_data" %}?param=${encodeURIComponent(param)}`;
+                                //  과거세션 끌고오는 오류때문에 앞에 과거세션 처리를 위해 동작시킴
+                                fetch(url)
+
                                 fetch(url)
                                     .then(response => {
                                         console.log("Response received:", response); // 응답 객체 로그

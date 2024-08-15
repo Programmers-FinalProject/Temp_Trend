@@ -9,7 +9,7 @@ from datetime import datetime
 # 기본 인수 설정
 default_args = {
     'owner': 'airflow',
-    'start_date': datetime(2024, 1, 1),
+    'start_date': datetime(2024, 8, 10),
     'catchup' : False,
     'retries': 1,
 }
@@ -31,7 +31,7 @@ AWS_ACCESS_KEY_ID = Variable.get('ACCESS_KEY')
 AWS_SECRET_ACCESS_KEY = Variable.get('SECRET_KEY')
 
 # Redshift 연결 ID
-REDSHIFT_CONN_ID = 'redshift_default'
+REDSHIFT_CONN_ID = 'Redshift_cluster_hori1'
 
 # 테이블 드랍 및 생성 쿼리
 drop_table_sql = f"""
@@ -59,6 +59,7 @@ drop_table = PostgresOperator(
     postgres_conn_id=REDSHIFT_CONN_ID,
     sql=drop_table_sql,
     dag=dag,
+    queue='queue1',
 )
 
 # 테이블 생성 작업 정의
@@ -67,6 +68,7 @@ create_table = PostgresOperator(
     postgres_conn_id=REDSHIFT_CONN_ID,
     sql=create_table_sql,
     dag=dag,
+    queue='queue1',
 )
 
 # S3에서 Redshift로 데이터를 로드하는 작업 정의
@@ -80,6 +82,7 @@ load_to_redshift = S3ToRedshiftOperator(
     aws_conn_id='MyS3Conn',  # AWS 연결 ID, Airflow에서 설정한 ID
     redshift_conn_id=REDSHIFT_CONN_ID,
     dag=dag,
+    queue='queue1',
 )
 
 # 작업 순서 정의

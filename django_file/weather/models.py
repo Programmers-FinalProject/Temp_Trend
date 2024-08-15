@@ -46,16 +46,21 @@ class WeatherStn(models.Model):
         db_table = 'weather_stn'
     
     @staticmethod
-    def getnxny():
-        sql = '''
-            SELECT nx, ny, lon, lat FROM (
-                SELECT location2, location3, location1, nx, ny, lon, lat,
-                ROW_NUMBER() OVER (PARTITION BY location1 ORDER BY location1) AS row_num 
-                FROM raw_data.weather_stn) AS count
-            WHERE row_num = 1 
-            ORDER BY location2 DESC, location3 DESC
+    def getnxny(lon, lat):
+        sql = f'''
+            SELECT
+                location1, nx, ny ,lon, lat
+            from raw_data.weather_stn 
+            WHERE 
+            location1 = (
+                select 
+                    location1 
+                from raw_data.weather_stn 
+                WHERE lon like %s and lat like %s 
+                ORDER BY location2 DESC, location3 DESC LIMIT 1 ) 
+            ORDER BY location2 DESC, location3 DESC LIMIT 1
         '''
-        return WeatherStn.objects.using('redshift').raw(sql)
+        return WeatherStn.objects.using('redshift').raw(sql, [f'{lon}%', f'{lat}%'])
 
     def __str__(self):
         return f"location1 : {self.location1}, location2 : {self.location2}, location3 : {self.location3}, nx : {self.nx}, ny : {self.ny}, lon : {self.lon}, lat : {self.lat},"
