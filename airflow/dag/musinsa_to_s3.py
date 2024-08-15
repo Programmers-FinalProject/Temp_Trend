@@ -27,15 +27,18 @@ def fetch_data():
     data = []
     chrome_options=wd.ChromeOptions()
     chrome_options.add_argument("--headless")
-    """
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-extensions')
-    """
     chrome_options.add_argument('user_agent = Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36')
     driver = wd.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-    item_codes = ['005014', '005004', '005019', '005012', '005018', '005015', '005017',
-                '005016', '005011']
+    item_codes = ['001001', '001004', '001010', '001002', '001011', '001013', '001003', '001006', '001005',
+                '002009', '002004', '002002', '002006', '002023', '002017', '002013', '002014', '002018',
+                '002001', '002019', '002003', '002008', '002020', '002004', '002013', '002021', '002022',
+                '002008', '002012', '002007', '002024', '002025', '002022', '002020', '002021', '002016',
+                '003002', '003008', '003004', '003010', '003011', '003009', '003007', '003005', '100001',
+                '100002', '100003', '100005', '100004', '100006', '103004', '103005', '103003', '103001',
+                '103002']
     now = time.strftime("%Y-%m-%d", time.gmtime())
     for item_code in item_codes:
         driver.get(f"https://www.musinsa.com/categories/item/{item_code}?device=mw")
