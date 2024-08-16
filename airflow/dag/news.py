@@ -97,15 +97,18 @@ with DAG(
     @task(queue='queue1')
     def create_redshift_table():
         redshift_hook = RedshiftSQLHook(redshift_conn_id='my_redshift_conn')
+        drop_table_query = "DROP TABLE IF EXISTS raw_data.news_weather_table;"
         create_table_query = """
         CREATE TABLE IF NOT EXISTS raw_data.news_weather_table (
+            id VARCHAR(2048),
             title VARCHAR(65535),
             description VARCHAR(65535),
-            link VARCHAR(2048),
+            link VARCHAR(65535),
             pubDate VARCHAR(2048),
             image_url VARCHAR(2048)
         );
         """
+        redshift_hook.run(drop_table_query)
         redshift_hook.run(create_table_query)
         print("Redshift table created successfully.")
 

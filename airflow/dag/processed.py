@@ -7,32 +7,40 @@ import numpy as np
 from io import StringIO
 from datetime import datetime, timedelta
 import pytz
-from airflow.sensors.external_task_sensor import ExternalTaskSensor  # ExternalTaskSensor를 임포트
+from airflow.sensors.external_task_sensor import ExternalTaskSensor
 
+def get_execution_date_to_check(dt):
+    # dt는 현재 DAG의 실행 날짜/시간입니다.
+    # 우리는 이전 날의 14:00:00 실행을 확인하려고 합니다.
+    target_dt = (dt - timedelta(days=1)).replace(hour=14, minute=0, second=0, microsecond=0)
+    print(f"Checking for execution date: {target_dt}")
+    return target_dt
 
 default_args = {
     'owner': 'airflow',
-    'start_date': datetime(2024, 8, 15, 14, 30, 0), 
-    'retries': 0,
+    'start_date': datetime(2024, 8, 15, 15, 0, 0, tzinfo=pytz.UTC),  # UTC 기준 15:00
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
 }
 
 with DAG(
     dag_id='s3_data_preprocessing_and_upload',
     default_args=default_args,
-    schedule_interval='@daily',
+    schedule_interval='0 15 * * *',  # 매일 UTC 15:00 (한국 시간 00:00)에 실행
     catchup=False,
 ) as dag:
     
     wait_for_task = ExternalTaskSensor(
-        task_id = 'wait_for_dag', # 완료될 때 까지 기다릴 Task ID
-        external_dag_id = '29cm_data_extract', # 완료될 때 까지 기다릴 Dag ID
-        external_task_id=None,  # 특정 태스크 ID가 아니라 DAG 전체를 모니터링
-        allowed_states = ['success'],
-        mode='reschedule',        # reschedule 모드로 설정
-        timeout=600,              # 10분 동안 조건 충족을 기다림
-        poke_interval = 60, # 60초에 한번씩 완료됐나 체크
-        execution_delta = timedelta(days=2),  # 전날의 실행까지 확인
-        check_existence=True,  # DAG의 존재 여부를 확인
+        task_id='wait_for_dag',
+        external_dag_id='29cm_data_extract',
+        external_task_id=None,
+        allowed_states=['success'],
+        failed_states=['failed', 'skipped'],
+        mode='reschedule',
+        timeout=3600,  # 1시간
+        poke_interval=300,  # 5분
+        execution_date_fn=get_execution_date_to_check,
+        check_existence=True,
         queue='queue1'
     )
 
