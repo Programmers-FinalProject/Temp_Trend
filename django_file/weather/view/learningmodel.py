@@ -200,7 +200,6 @@ def index(request):
     # 최초 시작 시 날씨 데이터 생성 및 매칭
     if current_index == 0:
         weather_data = generate_weather_data(num_samples)
-        global matched_data
         matched_data = pd.concat([weather_data, df.sample(n=num_samples, replace=False).reset_index(drop=True)], axis=1)
 
     # 현재 인덱스의 데이터를 가져오기
@@ -241,7 +240,6 @@ def index(request):
         # 모든 데이터에 대해 선호도를 입력받은 경우
         if current_index >= num_samples:
             # 선호도 입력 완료 시, 학습 데이터 생성 및 초기화
-            global learning_data
             ko = get_korea_time()
             learning_data = pd.DataFrame(matched_data_list)
             file_name = f'learning_data_{ko.strftime("%Y%m%d_%H%M%S")}.csv'
@@ -249,10 +247,15 @@ def index(request):
                 # 초기화
                 current_index = 0
                 matched_data_list.clear()
-                return HttpResponse("선호도 입력이 완료되었습니다. 학습 데이터가 S3에 저장되었습니다.")
-
-        # 다음 데이터로 이동
-        return redirect('index_learn')
+                return JsonResponse({
+                'message': '선호도 입력이 완료되었습니다. 학습 데이터가 S3에 저장되었습니다.',
+            })
+        else:
+            # 다음 데이터로 이동
+            return JsonResponse({
+                'message': '선호도가 저장되었습니다.',
+                'redirect': '/index_learn/'  # 현재 페이지 URL (새로고침)
+            })
     
     
 
@@ -585,40 +588,7 @@ def learn(request):
     # JSON 응답 반환
     return JsonResponse(context)
 
-'''
-import pandas as pd
-import pandas as pd
-import boto3
-from io import StringIO
-from datetime import datetime
-import pytz
 
-# boto3 클라이언트 생성 (자격 증명 자동 사용)
-s3_client = boto3.client('s3', region_name='ap-northeast-2')
-
-seoul_tz = pytz.timezone('Asia/Seoul')
-seoul_now = datetime.now(seoul_tz) #시간
-today = seoul_now.strftime("%Y%m월%d일") #날짜
-
-today = 20240811 #아직 현재 날짜거가 없어서..
-
-bucket_name = 'team-hori-1-bucket'
-file_key = f'crawling/29cm_bestitem_{today}.csv'
-try:
-    # S3에서 객체 가져오기
-    response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-    # 객체의 Body에서 내용을 읽어오기
-    csv_content = response['Body'].read().decode('utf-8')
-
-    # CSV 내용으로부터 DataFrame 생성
-    df = pd.read_csv(StringIO(csv_content))
-    df = df[['category1', 'category2', 'category3', 'gender']]
-    df = df.drop_duplicates(subset=['category1', 'category2', 'category3', 'gender'])
-
-    print("CSV 파일을 성공적으로 읽어왔습니다.")
-    print(df.head())
-except Exception as e:
-    print(f"CSV 파일을 읽는 중 오류가 발생했습니다: {e}")'''
     
     
 import boto3
@@ -668,3 +638,38 @@ def concatenate_csv_files_from_s3(bucket_name, prefix='learning_model/file/'):
     print(f"Combined {len(dataframes)} files into a single DataFrame.")
     
     return combined_df
+
+'''
+import pandas as pd
+import pandas as pd
+import boto3
+from io import StringIO
+from datetime import datetime
+import pytz
+
+# boto3 클라이언트 생성 (자격 증명 자동 사용)
+s3_client = boto3.client('s3', region_name='ap-northeast-2')
+
+seoul_tz = pytz.timezone('Asia/Seoul')
+seoul_now = datetime.now(seoul_tz) #시간
+today = seoul_now.strftime("%Y%m월%d일") #날짜
+
+today = 20240811 #아직 현재 날짜거가 없어서..
+
+bucket_name = 'team-hori-1-bucket'
+file_key = f'crawling/29cm_bestitem_{today}.csv'
+try:
+    # S3에서 객체 가져오기
+    response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+    # 객체의 Body에서 내용을 읽어오기
+    csv_content = response['Body'].read().decode('utf-8')
+
+    # CSV 내용으로부터 DataFrame 생성
+    df = pd.read_csv(StringIO(csv_content))
+    df = df[['category1', 'category2', 'category3', 'gender']]
+    df = df.drop_duplicates(subset=['category1', 'category2', 'category3', 'gender'])
+
+    print("CSV 파일을 성공적으로 읽어왔습니다.")
+    print(df.head())
+except Exception as e:
+    print(f"CSV 파일을 읽는 중 오류가 발생했습니다: {e}")'''
