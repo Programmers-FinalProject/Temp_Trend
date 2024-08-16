@@ -54,6 +54,7 @@ x-airflow-common:
   # build: .
   environment:
     &airflow-common-env
+    TZ: Asia/Seoul
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgreshori!@hori-1-airflow-metadb.ch4xfyi6stod.ap-northeast-2.rds.amazonaws.com:5432/airflow
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgreshori!@hori-1-airflow-metadb.ch4xfyi6stod.ap-northeast-2.rds.amazonaws.com:5432/airflow
@@ -65,6 +66,7 @@ x-airflow-common:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+    AIRFLOW__FLOWER__AUTHENTICATED_API: 'true'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- pandas requests s3fs boto3 selenium webdriver_manager}
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags

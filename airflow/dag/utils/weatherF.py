@@ -147,11 +147,13 @@ def weather_stn_create():
     drop_sql = f"""DROP TABLE IF EXISTS {schema}.weather_stn;"""
     recreate_sql = f"""
 CREATE TABLE IF NOT EXISTS {schema}.weather_stn (
-    stn TEXT PRIMARY KEY,
-    lon TEXT,
-    lat TEXT,
-    stn_ko TEXT,
-    stn_en TEXT
+    location1 TEXT ,
+    location2 TEXT ,
+    location3 TEXT ,
+    nx TEXT ,
+    ny TEXT ,
+    lon TEXT ,
+    lat TEXT 
 );
     """
     sql =[drop_sql,recreate_sql]

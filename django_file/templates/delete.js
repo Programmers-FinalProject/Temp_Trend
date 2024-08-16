@@ -41,11 +41,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function updateUIAfterSessionDeletion(endpoint) {
     if (endpoint === '/delete-session-location/') {
-        // 위치 관련 UI 업데이트
-    } else if (endpoint === '/delete-session-gender/') {
-        // 성별 관련 UI 업데이트
+        const locationSpan = document.getElementById('current-location');
+            if (locationSpan) {
+                locationSpan.textContent = ' 현위치 찾기 버튼을 눌러주세요';
+            }
     }
-    // 공통 UI 업데이트
 }
 
 // CSRF 토큰을 가져오는 함수

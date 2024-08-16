@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Preference</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        form {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+        input[type="submit"] {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin-top: 20px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            flex-wrap: nowrap; /* 요소가 넘치지 않도록 nowrap 설정 */
+            justify-content: flex-start; /* 요소들이 왼쪽부터 시작하도록 설정 */
+            overflow-x: auto; /* 가로 스크롤을 허용 */
+            -webkit-overflow-scrolling: touch; /* 터치 스크롤의 부드러운 작동을 위한 설정 (모바일 장치) */
+        }
+        li {
+            margin: 10px;
+            text-align: center;
+            width: 220px;
+            flex: 0 0 auto; /* 아이템들이 고정 너비로 유지되도록 설정 */
+        }
+        img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+        .product-info {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Weather Preference</h1>
+    <form action="" method="post">
+        {% csrf_token %}
+        <p>진행상황 {{ current_index }}/{{ num_samples }}</p>
+        <p>온도: {{ TMP }}도, 강수 형태: {{ PTY }}</p>
+        <p>카테고리: {{ category1 }} - {{ category2 }}, 성별: {{ gender }}</p>
+
+        <!-- 라디오 버튼으로 선호도 입력 -->
+        <input type="radio" id="option1" name="preference" value="1" required>
+        <label for="option1">1점</label><br>
+        
+        <input type="radio" id="option2" name="preference" value="2">
+        <label for="option2">2점</label><br>
+        
+        <input type="radio" id="option3" name="preference" value="3">
+        <label for="option3">3점</label><br>
+        
+        <input type="radio" id="option4" name="preference" value="4">
+        <label for="option4">4점</label><br>
+        
+        <br>
+        <input type="submit" value="제출">
+    </form>
+
+    <p>Number of products: {{ products|length }}</p>
+    <ul>
+        {% for product in products %}
+        <li>
+            <img src="{{ product.image_link }}" alt="{{ product.product_name }}">
+            <div class="product-info">
+                <p>{{ product.product_name }}</p>
+                <p>{{ product.category }} - {{ product.gender }}</p>
+            </div>
+        </li>
+        {% empty %}
+        <li>No products found for this category and gender.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

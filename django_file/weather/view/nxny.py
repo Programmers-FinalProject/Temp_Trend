@@ -1,5 +1,9 @@
 import math
 import sys
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
 # 공공데이터 포털 api에서 공유해준 좌표 변환기 C 버전을 파이썬버전으로 수정
 # 사용법 code 0 = lon, lat -> nx, ny  : lon, lat, 0, 0, 0, map
 # 사용법 code 1 = nx, ny -> lon, lat  : 0, 0, nx, ny, 1, map
@@ -114,3 +118,26 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+@csrf_exempt
+def submit_location(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            city_code = data.get('cityCode')
+            district = data.get('district')
+            latitude = data.get('lat')
+            longitude = data.get('lon')
+            
+            # 세션에 데이터 저장
+            request.session['selectedCity_code'] = city_code
+            request.session['selectedDistrict'] = district
+            request.session['selectedLatitude'] = latitude
+            request.session['selectedLongitude'] = longitude
+
+            # 보내진 데이터 콘솔에서 확인 가능
+            print(f"Received data: City Code: {city_code}, District: {district}, Latitude: {latitude}, Longitude: {longitude}")
+
+            return JsonResponse({'status': 'success'})
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'})

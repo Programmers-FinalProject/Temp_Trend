@@ -53,13 +53,6 @@ dag = DAG(
     schedule_interval=None,
 )
 
-# 작업 함수 정의
-def stnApi():    
-    stnData = weatherF.weatherApiParser2(weatherF.weatherApi(Variable.get("stnDomain"), stnOption), columns=json.loads(Variable.get("stnColumns")))
-    weatherF.weatherCSVmaker(s3_bucket, f"{s3_csv_path}stnDataCsv.csv",stnData,s3_client)
-    
-    print("STNDATA :  " , stnData)
-
 def weatherCodeTable():
     weatherF.weather_code_create()
 
@@ -87,14 +80,6 @@ def weatherStnDataToRedshift():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
     print(redShiftUtils.sql_selecter("SELECT * FROM raw_data.weather_stn"))
-
-# PythonOperator를 사용하여 작업 정의
-stnApiTask = PythonOperator(
-    task_id='stnApiTask',
-    python_callable=stnApi,
-    dag=dag,
-    queue='queue1'
-)
 
 weatherStnDataToRedshiftTask = PythonOperator(
     task_id='weatherStnDataToRedshiftTask',
@@ -127,6 +112,6 @@ with TaskGroup(group_id='weatherTableSetting', dag=dag) as weatherTableSetting:
     )
 
 # DAG 설정
-weatherTableSetting >> stnApiTask >> weatherStnDataToRedshiftTask
+weatherTableSetting >>  weatherStnDataToRedshiftTask
 
 

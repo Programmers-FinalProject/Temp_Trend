@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import math
 import sys
 # 공공데이터 포털 api에서 공유해준 좌표 변환기 C 버전을 파이썬버전으로 수정

@@ -1,3 +1,4 @@
+# 성별 변환 함수
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -5,18 +6,15 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-import requests
-from bs4 import BeautifulSoup
-import pandas as pd
 from datetime import datetime
 import json
+import requests
+from bs4 import BeautifulSoup
 import boto3
+import logging
 
-from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
 from airflow.models import Variable
 
-# 성별 변환 함수
 def transform_gender(gender):
     if gender == "남성":
         return "men"
@@ -24,8 +22,12 @@ def transform_gender(gender):
         return "women"
     else:
         return "unisex"
+    
+def fetch_product_links(category,):
+    import logging
+    # 로그 설정
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def fetch_product_links(**kwargs):
     # Selenium을 사용하여 상품 링크 수집
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
@@ -33,27 +35,40 @@ def fetch_product_links(**kwargs):
     options.add_argument("--disable-dev-shm-usage")
     
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    logging.info("Driver 정상 동작")
     product_data = []
     etl_time = datetime.now().strftime("%Y-%m-%d")
     
     try:
+        logging.info("웹사이트 접속 중...")
         driver.get("https://www.29cm.co.kr/home/")
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '/html/body/home-root/div/ruler-gnb/div/div[3]/div/ul/li[1]/a')))
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '/html/body/home-root/div/ruler-gnb/div/div[3]/div/ul/li[1]/a')))
         
+        logging.info("Best 버튼 클릭 대기 중...")
         best_button = driver.find_element(By.XPATH, '/html/body/home-root/div/ruler-gnb/div/div[3]/div/ul/li[1]/a')
         best_button.click()
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[1]/div/ul/ul/li[4]/a')))
+        logging.info("Best 버튼 클릭 ...")
         
-        category = {"name": "여성의류", "xpath": '//*[@id="__next"]/div[4]/div[1]/div/ul/ul/li[1]/a'}
+        logging.info("카테고리 로딩 대기 중...")
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[1]/div/ul/ul/li[8]/a')))
+        
+        
+        category = category
+        logging.info("카테고리 클릭 대기 중 ...")
         category_element = driver.find_element(By.XPATH, category["xpath"])
         category_element.click()
-        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[1]/ul/span[2]/label')))
+        logging.info("카테고리 클릭 ...")
+        WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[1]/ul/span[2]/label')))
         
-        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[2]/span[2]/label')))
+        logging.info("베스트 버튼 로딩 대기 중...")
+        WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[2]/span[2]/label')))
         daily_btn = driver.find_element(By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[2]/span[2]/label')
         daily_btn.click()
+        logging.info("베스트 버튼 클릭...")
         
+        logging.info("서브카테고리 목록 수집 중...")
         subcategories = driver.find_elements(By.XPATH, '//*[@id="__next"]/div[4]/div[2]/div[1]/ul/span/label')[1:]
+        logging.info("서브카테고리 수집 완료. 수집된 카테고리 수: %d", len(subcategories))
         
         for subcategory in subcategories:
             subcategory.click()
@@ -107,15 +122,26 @@ def fetch_product_links(**kwargs):
                     "gender": transform_gender(category['name'][:2])
                 })
 
+        if not product_data: # 정확히 데이터를 수집하지 못한 경우
+            raise ValueError('Something went wrong during data collection!!')
+
     except Exception as e:
-        print(f"상품 링크 수집 중 오류: {e}")
+        logging.error(f"Error in fetch_product_links: {e}")
+        raise  # 예외를 다시 발생시켜서 다음 작업이 실행되지 않도록 함
+    
     finally:
         driver.quit()
     
-    return json.dumps(product_data)  # JSON 문자열로 반환
+    return json.dumps(product_data)
 
 def fetch_product_info(product_data):
-    product_data = json.loads(product_data)  # JSON 문자열을 파싱
+    logger = logging.getLogger(__name__)
+    if isinstance(product_data, str):
+        try:
+            product_data = json.loads(product_data)  # JSON 문자열을 파싱
+        except json.JSONDecodeError as e:
+            logger.info(f"JSON 파싱 오류: {e}")
+    
     for product in product_data:
         product_link = product["product_link"]
         try:
@@ -163,10 +189,17 @@ def fetch_product_info(product_data):
         except Exception as e:
             print(f"상품 정보 수집 중 오류: {e}")
             return None
-    return json.dumps(product_data)  # JSON 문자열로 반환
-        
+    return json.dumps(product_data)
+
 def result_save_to_dir(product_data):
-    product_data = json.loads(product_data)  # JSON 문자열을 파싱
+    import pandas as pd 
+    logger = logging.getLogger(__name__)
+    if isinstance(product_data, str):
+        try:
+            product_data = json.loads(product_data)  # JSON 문자열을 파싱
+        except json.JSONDecodeError as e:
+            logger.info(f"JSON 파싱 오류: {e}")
+        
     df = pd.DataFrame(product_data)
     category_name = df['category1'].unique()[0]
     etl_time = datetime.now().strftime("%Y%m%d")
@@ -188,41 +221,3 @@ def result_save_to_dir(product_data):
                              )
     s3_client.upload_file(local_file_path, BUCKET_NAME, f'crawling/{file_name}')
 
-default_args = {
-    'owner': 'airflow',
-    'start_date': datetime(2024, 8, 1),
-    'retries': 1,
-}
-
-dag = DAG(
-    '29cm_female_clothes_data_extract',
-    default_args=default_args,
-    description='29cm Website Data Extract - Female Clothes',
-    schedule_interval='5 14 * * *',  # 매일 UTC 14시 5분에 실행 (한국시간 23시 05분)
-)
-
-with dag:
-    # 태스크 정의
-    fetch_links_task = PythonOperator(
-        task_id='fetch_product_links',
-        python_callable=fetch_product_links,
-        provide_context=True,
-        queue = 'queue1'
-    )
-
-    fetch_info_task = PythonOperator(
-        task_id='fetch_product_info',
-        python_callable=fetch_product_info,
-        op_kwargs={'product_data': "{{ task_instance.xcom_pull(task_ids='fetch_product_links') }}"},
-        queue = 'queue1'
-    )
-
-    save_task = PythonOperator(
-        task_id='result_save_to_dir',
-        python_callable=result_save_to_dir,
-        op_kwargs={'product_data': "{{ task_instance.xcom_pull(task_ids='fetch_product_info') }}"},
-        queue = 'queue1'
-    )
-
-    # 태스크 종속성 설정
-    fetch_links_task >> fetch_info_task >> save_task

@@ -1,15 +1,53 @@
 from django.shortcuts import render
 from datetime import datetime, timedelta
-from weather.models import WeatherData
-from weather.view import nxny
+from weather.models import WeatherData, WeatherStn
+from weather.view import nxny, save_location
 from django.http import JsonResponse
 
-def we_data_test(request):
+
+# 좌표로 기상 검색
+# we_data_setting(get_we_data_xy(y좌표, x좌표)) => json형태 결과값 출력 해당결과를 페이지로 보내주면됨
+
+# 현재 시간으로 기상 검색
+# we_data_setting(get_we_data_now()) => json으로 전체지역의 기상 현황 해당결과를 페이지로 보내주면됨
+
+
+def we_data_usenow(request):
     wedata = get_we_data_now()
-    # test = testdataset() # [{'basedate': '20240729', 'basetime': '0500', 'weather_code': 'TMP', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '26', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'UUU', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '5.5', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'VVV', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '6.6', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'VEC', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '220', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'WSD', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '8.6', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'SKY', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '3', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'PTY', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '0', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'POP', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '20', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'WAV', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '2', 'nx': '34', 'ny': '126'}, {'basedate': '20240729', 'basetime': '0500', 'weather_code': 'PCP', 'fcstdate': '20240729', 'fcsttime': '0600', 'fcstvalue': '강수없음', 'nx': '34', 'ny': '126'}]
     context = { 'we_dataList' : we_data_setting(wedata)}
-    print(wedata)
+    print(context)
     return render(request, 'wedatatest.html', context)
+
+def we_data_usetime(request):
+    wedata = get_we_data_time()
+    context = { 'we_dataList' : we_data_setting(wedata)}
+    return JsonResponse(context)
+
+def we_data_usexy(request):
+    param = request.GET.get('param')
+    if param == '2' :
+        latitude = request.session.get('selectedLatitude', 'No latitude in session')
+        longitude = request.session.get('selectedLongitude', 'No longitude in session')
+        head = request.session.get('selectedDistrict')
+        if head is None :
+            head = "선택 지역의 날씨"
+        else : 
+            head = head+"의 날씨"
+        
+    elif param == '1' :
+        latitude = request.session.get('latitude', 'No latitude in session')
+        longitude = request.session.get('longitude', 'No longitude in session')
+        head = "현 위치의 날씨"
+    else :
+        wedata = get_we_data_xy(60, 127)
+        context = { 'head' : "서울의 날씨", 'we_dataList' : we_data_setting(wedata)}
+        return JsonResponse(context)
+        
+    posXY = nxnySetting(str(longitude), str(latitude))
+    print(posXY['nx'], posXY['ny'])
+    wedata = get_we_data_xy(posXY['nx'], posXY['ny'])
+    context = { 'head' : head ,'we_dataList' : we_data_setting(wedata)}
+    return JsonResponse(context)
 
 # 예보날짜 세팅
 def based_ymdgetter():
@@ -41,20 +79,43 @@ def get_we_data_now():
     ymd = based_ymdgetter()
     pdict = ymd_timegetter()
     Pfcstdate = pdict["Pfcstdate"]
-    Pfcsttime = "0600" # pdict["Pfcsttime"]
-    print(ymd, Pfcstdate, Pfcsttime)
+    Pfcsttime = pdict["Pfcsttime"]
     result = WeatherData.objects.using('redshift').filter(
         basedate=ymd, 
         fcstdate=Pfcstdate, 
         fcsttime=Pfcsttime
-    ).values()
+    ).order_by('nx','ny').values()
     return result
 
-# nx와 ny 값 받아서 Pnx Pny로
-# 세부 지역 - 1군데 예측된값 전부 즉 제일 최신 basedate
-def get_we_data_xy(Pnx, Pny):
+def get_we_data_time(time=None):
     ymd = based_ymdgetter()
-    result = WeatherData.objects.using('redshift').filter(basedate=ymd).filter(nx=Pnx).filter(ny=Pny)
+    pdict = ymd_timegetter()
+    if time is None :
+        Pfcstdate = pdict["Pfcstdate"]
+    else :
+        Pfcstdate = time
+    Pfcsttime = pdict["Pfcsttime"]
+    result = WeatherData.objects.using('redshift').filter(
+        basedate=ymd, 
+        fcstdate=Pfcstdate, 
+        fcsttime=Pfcsttime
+    ).order_by('nx','ny').values()
+    return result
+# y와 x 값 받아서 nx ny로
+# 세부 지역 - 1군데 예측된값 전부 즉 제일 최신 basedate
+def get_we_data_xy(x, y, time=None):
+    ymd = based_ymdgetter()
+    pdict = ymd_timegetter()
+    if time is None :
+        Pfcstdate = pdict["Pfcstdate"]
+    else :
+        Pfcstdate = time
+    result = WeatherData.objects.using('redshift').filter(
+        basedate=ymd,
+        nx=x,
+        ny=y,
+        fcstdate=Pfcstdate, 
+    ).order_by('nx','ny','fcstdate','fcsttime').values()
     return result
 
 
@@ -67,10 +128,7 @@ def we_data_setting(dataList):
             if we_validation(data, checkerDict) : 
                 newdata[data['weather_code']] = data['fcstvalue']
             else :
-                newdata['imgurl'] = weather_imgurl(newdata)
                 new_dataList.append(newdata)
-                nxnypos = nxnySetting(lon=int(data['ny']), lat=int(data['nx']))
-                print(new_dataList)
                 newdata = {}
                 checkerDict['fcstdate'] = data['fcstdate']
                 checkerDict['fcsttime'] = data['fcsttime']
@@ -78,37 +136,41 @@ def we_data_setting(dataList):
                 checkerDict['ny'] = data['ny']
                 newdata['fcstdate'] = data['fcstdate']
                 newdata['fcsttime'] = data['fcsttime']
-                newdata['nx'] = nxnypos['nx']
-                newdata['ny'] = nxnypos['ny']
+                newdata['nx'] = data['nx']
+                newdata['ny'] = data['ny']
+                newdata[data['weather_code']] = data['fcstvalue']
         else :
-            nxnypos = nxnySetting(lon=int(data['ny']), lat=int(data['nx']))
             checkerDict['fcstdate'] = data['fcstdate']
             checkerDict['fcsttime'] = data['fcsttime']
             checkerDict['nx'] = data['nx']
             checkerDict['ny'] = data['ny']
             newdata['fcstdate'] = data['fcstdate']
             newdata['fcsttime'] = data['fcsttime']
-            newdata['nx'] = nxnypos['nx']
-            newdata['ny'] = nxnypos['ny']
-    newdata['imgurl'] = weather_imgurl(newdata)
-    new_dataList.append(newdata)
-    print(new_dataList)
-    return new_dataList
+            newdata['nx'] = data['nx']
+            newdata['ny'] = data['ny']
+            newdata[data['weather_code']] = data['fcstvalue']
+    if newdata:
+        new_dataList.append(newdata)
+    modified_data = list(map(lambda obj: {**obj, 'imgurl': weather_imgurl(obj)}, new_dataList))
+    # print(new_dataList)
+    return modified_data
 
 def we_validation(data, sample):
-    if data['fcstdate'] == sample['fcstdate'] and data['fcsttime'] == sample['fcsttime'] and data['ny'] == data['ny'] and data['nx'] == data['nx'] :
-        print(data['fcstdate'] == sample['fcstdate'], data['fcsttime'] == sample['fcsttime'], data['ny'] == data['ny'], data['nx'] == data['nx'])
+    if data['fcstdate'] == sample['fcstdate'] and data['fcsttime'] == sample['fcsttime'] and data['ny'] == sample['ny'] and data['nx'] == sample['nx'] :
+        # print(data['fcstdate'] == sample['fcstdate'], data['fcsttime'] == sample['fcsttime'], data['ny'] == sample['ny'], data['nx'] == sample['nx'])
         return True
     return False
 
 def weather_imgurl(param):
     path = "img/"
-    imgurl = ""
-    if param['PTY'] == "0":
-        imgurl = path+"sky"+param['SKY']+".png"
-    else :
-        imgurl = path+"pty"+param['PTY']+".png"
-    return imgurl
+    if param :
+        imgurl = ""
+        if param['PTY'] == "0":
+            imgurl = path+"sky"+param['SKY']+".png"
+        else :
+            imgurl = path+"pty"+param['PTY']+".png"
+        return imgurl
+    return
 
 
 def testdataset():
@@ -140,24 +202,12 @@ def testdataset():
 
 
 def nxnySetting(lon, lat):
-    print(lon, lat)
-    lon, lat, x, y = nxny.map_conv(lon, lat, 0.0, 0.0, 0)
-    result = {'lon':str(lon), 'lat':str(lat), 'nx':str(x),'ny':str(y)}
-    print(result)
-    
+    value = WeatherStn.getnxny(lon[:5],lat[:4])[0]
+    result = {
+        'nx' : value.nx,
+        'ny' : value.ny
+    }
     return result
-
-# { 
-#     "date" : "",
-#     "time" : "",
-#     "values" : {
-#         "TMP" : 
-#         }
-#     },
-#     'nx' : '',
-#     'ny' : '',
-# }
-
 
 
 def get_weather_data(request):

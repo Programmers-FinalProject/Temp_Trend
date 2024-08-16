@@ -12,13 +12,6 @@
 </head>
 <body>
     <!-- 오류 메시지를 표시할 요소 -->
-    <div class="error-overlay" id="errorOverlay">
-        <div class="error-message">
-            <p id="errorMessage"></p>
-            <button onclick="closeError()">Close</button>
-        </div>
-    </div>
-    
     <div id="errorOverlay" class="error-overlay">
         <div class="error-message">
             <p id="errorText"></p>
@@ -27,92 +20,541 @@
     </div>
     <div class="container mt-4">
         <div class="location-header">
-            <i class="fas fa-map-marker-alt text-danger"></i><span id="current-location"> 현위치 찾기 버튼을 눌러주세요</span>
+            <style>
+                #loading {
+                    display: none; /* 처음에는 보이지 않게 설정 */
+                    font-size: 10px;
+                    color: rgb(255, 0, 221);
+                }
+            </style>
+            <div id="loading">로딩 중...</div>
+            <i class="fas fa-map-marker-alt text-danger"></i><span id="current-location"> "현위치 날씨로 옷 추천받기"를 눌러주세요 </span>
         </div>
         <div class="main-content">
-            <h1 class="text-center text-white mb-4">Temp_Trend</h1>
-            <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="true">예보</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="pills-news-tab" type="button" onclick="location.href='{% url 'news' %}'">날씨뉴스</button>
-                </li>
-            </ul>
-            <div class="search-bar mb-3">
-                <input type="text" class="form-control" placeholder="원하는 지역을 선택해 주세요">
-                <div class="mt-2">
-                    <button class="btn btn-light btn-sm">저장</button>
-                    <button class="btn btn-light btn-sm" id="deleteSessionBtnLocation">다시찾기</button>
-                    <button class="btn btn-light btn-sm" id="current-location-btn">현위치로 찾기</button>
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col">
-                    <button class="btn btn-light w-100" onclick="showImage('temperature'); change_btn(event)">온도</button>
-                </div>
-                <div class="col">
-                    <button class="btn btn-light w-100" onclick="showImage('precipitation'); change_btn(event)">강수량</button>
-                </div>
-                <div class="col">
-                    <button class="btn btn-light w-100" onclick="showImage('wind'); change_btn(event)">바람</button>
-                </div>
-            </div>
-            <div class="weather-map-container mb-3">
-                <a id="imageLink" href="">
-                    <img id="weatherImage" src="" alt="Weather Map" class="weather-map">
-                </a>
-            </div>
+            <a href="{% url 'index' %}"><h1 class="text-center text-white mb-4 bold-text">Temp_Trend</h1></a>
+            <div class="content-wrapper">
+                <div class="top-content">
+                    <div class="left-content">
+                        <!-- 왼쪽 컨텐츠 (기존 코드) -->
+                        <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="pills-news-tab" type="button" onclick="location.href='{% url 'news' %}'">날씨뉴스</button>
+                            </li>
+                        </ul>
+                        <div class="search-bar mb-3 select-container">
+                            <select id="area1_id" class="form-select mb-2" name="area1" required onchange="select_gu(this);">
+                                <option value="" selected disabled hidden>시/도 선택</option>
+                                <option value="01">서울특별시</option>
+                                <option value="02">부산광역시</option>
+                                <option value="03">인천광역시</option>
+                                <option value="04">대구광역시</option>
+                                <option value="05">대전광역시</option>
+                                <option value="06">광주광역시</option>
+                                <option value="07">울산광역시</option>
+                                <option value="08">세종특별자치시</option>
+                                <option value="09">경기도</option>
+                                <option value="10">충청북도</option>
+                                <option value="11">충청남도</option>
+                                <option value="12">전라남도</option>
+                                <option value="13">경상북도</option>
+                                <option value="14">경상남도</option>
+                                <option value="15">강원특별자치도</option>
+                                <option value="16">전북특별자치도</option>
+                                <option value="17">제주특별자치도</option>
+                            </select>
 
-            <script type="text/javascript">
-                const images = {
-                    precipitation: { src: "{{ im }}", href: "{{ im2 }}" },
-                    temperature: { src: "{{ im3 }}", href: "{{ im4 }}" },
-                    wind: { src: "{{ im5 }}", href: "{{ im6 }}" }
-                };
-            
-                function showImage(weatherType) {
-                    const image = document.getElementById('weatherImage');
-                    const link = document.getElementById('imageLink');
-            
-                    image.src = images[weatherType].src;
-                    image.alt = weatherType + " Image";
-                    link.href = images[weatherType].href;
-                }
-                
-                window.onload = function() {
-                    showImage('temperature');
-                    document.getElementById('b1').classList.add("active");
-                }
-                
-                function change_btn(e) {
-                    var btns = document.querySelectorAll(".button");
-                    btns.forEach(function (btn, i) {
-                        if (e.currentTarget == btn) {
-                            btn.classList.add("active");
-                        } else {
-                            btn.classList.remove("active");
-                        }
-                    });
-                }
-            </script>
-            
-            <div id="initial-buttons" class="row">
-                <div class="col">
-                    <button id="genderMale" class="btn btn-secondary w-100">남자</button>
-                </div>
-                <div class="col">
-                    <button id="genderFemale" class="btn btn-secondary w-100">여자</button>
-                </div>
-                <div class="col">
-                    <button id="genderUnisex" class="btn btn-secondary w-100">unisex</button>
-                </div>
-            </div>
+                            <select id="area2_id" class="form-select mb-2" name="area2" style="display: none;" required>
+                                <option value="" selected disabled hidden>시/군/구 선택</option>
+                            </select>
+                        </div>
 
-            <div id="selected-gender" class="selected">
-                <span id="selected-text"></span>
-                <button class="btn btn-secondary" onclick="resetSelection()" id="deleteSessionBtnGender">다시 선택하기</button>
+                        <div class="mt-2">
+                            <script>
+                                function jj2(){
+                                    const musinsa = document.getElementsByClassName('center-content')[0];
+                                    musinsa.style.display = 'none';
+                                    submitForm();
+                                    setTimeout(function() {
+                                        call_we_data(2);
+                                    }, 500);  // 500ms 후 실행
+                                }
+                                function jj1(){
+                                    const musinsa = document.getElementsByClassName('center-content')[0];
+                                    musinsa.style.display = 'none';
+                                    submitForm();
+                                    setTimeout(function() {
+                                        call_we_data(1);
+                                    }, 500);  // 500ms 후 실행
+                                }
+
+                            </script>
+                            
+                            <button onclick="jj2()" class="btn btn-light btn-sm">선택지역의 옷 추천받기</button>
+                            <button onclick="resetForm()" class="btn btn-light btn-sm" id="deleteSessionBtnLocation">다시찾기</button>
+                            <script>
+                                // 폼을 초기화하는 함수
+                                function resetForm() {
+                                    // 시/도 선택을 초기화
+                                    const area1Select = document.getElementById('area1_id');
+                                    if (area1Select) {
+                                        area1Select.selectedIndex = 0;
+                                    } else {
+                                        console.error('area1_id element not found');
+                                    }
+
+                                    // 시/군/구 선택도 초기화
+                                    const area2Select = document.getElementById('area2_id');
+                                    if (area2Select) {
+                                        area2Select.style.display = 'none';
+                                    } else {
+                                        console.error('area2_id element not found');
+                                    }
+                                }
+                            </script>
+                            <button class="btn btn-light btn-sm" id="current-location-btn" onclick="jj1()">현위치 날씨로 옷 추천받기</button>
+                            <style>
+                                .mt-2 {
+                                    display: flex;
+                                    justify-content: center; /* 수평 중앙 정렬 */
+                                    align-items: center; /* 수직 중앙 정렬 */
+                                    gap: 10px; /* 버튼 간의 간격 */
+                                    margin-top: 20px;
+                                    margin-bottom: 20px;
+                                }
+                                .forecast-box {
+                                    background-color: white;
+                                    border: 1px solid #ddd;
+                                    padding: 10px;
+                                    margin-bottom: 20px;
+                                    text-align: center;
+                                    font-size: 18px;
+                                    font-weight: bold;
+                                }
+                            </style>
+                        </div>
+
+                        <div class="we-data-box">
+                            <h3>{{ data.head }}</h3>
+                            <ul class="clear we-data-ul">
+                                {% for we_data in we_dataList %}
+                                <li class="we-data-list" onclick="sendweData(this)">
+                                    <input type="hidden" class="we-data" data-fcsttime="${item.fcsttime}" data-tmp="${item.TMP}" data-pty="${item.PTY}">
+                                    <ul>
+                                        <li class="we-list we-time">{{ we_data.fcsttime|slice:":2"|default:"-" }}시</li>
+                                        <li class="we-list we-img">
+                                            <img src="{% static we_data.imgurl|default:'img/sky3.png' %}" alt="날씨 이미지">
+                                        </li>
+                                        <li class="we-list we-tmp">{{ we_data.TMP|default:"-"}}°C</li>
+                                        <li class="we-list we-pop">{{ we_data.POP|default:"-" }}%</li>
+                                        <li class="we-list we-ras">{{ we_data.PCP|default:"-" }}</li>
+                                        <li class="we-list we-wind">{{ we_data.WSD|default:"-" }}</li>
+                                        <li class="we-list we-atp">{{ we_data.REH|default:"-" }}</li>
+                                    </ul>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                
+                        
+
+                        <script>
+                            // 시/도에 따른 시/군/구 목록을 정의합니다.
+                            const districtData = {
+                                '01': ['강남구', '강동구', '강북구', '강서구'],
+                                '02': ['해운대구', '수영구', '사하구', '부산진구'],
+                                '03': ['중구', '남동구', '연수구', '부평구'],
+                                '04': ['중구', '동구', '서구', '달서구'],
+                                '05': ['유성구', '서구', '중구', '대덕구'],
+                                '06': ['동구', '서구', '남구', '북구'],
+                                '07': ['중구', '남구', '동구', '북구'],
+                                '08': ['세종시'],
+                                '09': ['수원시', '고양시', '성남시', '용인시'],
+                                '10': ['청주시', '충주시', '제천시'],
+                                '11': ['천안시', '공주시', '보령시'],
+                                '12': ['목포시', '여수시', '순천시'],
+                                '13': ['포항시', '경주시', '김천시'],
+                                '14': ['창원시', '진주시', '통영시'],
+                                '15': ['춘천시', '원주시', '강릉시'],
+                                '16': ['전주시', '군산시', '익산시'],
+                                '17': ['제주시', '서귀포시']
+                            };
+
+                            function select_gu(area1) {
+                                const area2Select = document.getElementById('area2_id');
+                                const selectedArea1 = area1.value;
+
+                                // area2의 기존 옵션을 초기화
+                                area2Select.innerHTML = '<option value="">시/군/구 선택</option>';
+
+                                if (selectedArea1 && districtData[selectedArea1]) {
+                                    // 선택된 시/도에 맞는 시/군/구 추가
+                                    districtData[selectedArea1].forEach(district => {
+                                        const option = document.createElement('option');
+                                        option.value = district;
+                                        option.textContent = district;
+                                        area2Select.appendChild(option);
+                                    });
+
+                                    // 시/군/구 선택 박스를 표시
+                                    area2Select.style.display = 'inline-block';
+                                } else {
+                                    // 선택된 시/도가 없으면 시/군/구 선택 박스를 숨기기
+                                    area2Select.style.display = 'none';
+                                }
+                            }
+                            function changeButtonColor(button) {
+                                // 모든 버튼에서 active 클래스를 제거
+                                var buttons = document.querySelectorAll('.btn');
+                                buttons.forEach(function(btn) {
+                                    btn.classList.remove('active');
+                                });
+
+                                // 클릭된 버튼에 active 클래스 추가
+                                button.classList.add('active');
+                            }
+                        </script>
+                        <div id="initial-buttons" class="row">
+                            <div class="col">
+                                <button id="genderMale" class="btn btn-secondary w-100" onclick="fetchProducts('m')" value="m">남자</button>
+                            </div>
+                            <div class="col">
+                                <button id="genderFemale" class="btn btn-secondary w-100" onclick="fetchProducts('w')" value="w">여자</button>
+                            </div>
+                            <div class="col">
+                                <button id="genderUnisex" class="btn btn-secondary w-100" onclick="fetchProducts('unisex')" value="unisex">unisex</button>
+                            </div>
+                        </div> 
+
+            
+                        <div id="selected-gender" class="selected">
+                            <span id="selected-text"></span>
+                            <button class="btn btn-secondary" onclick="resetSelection()" id="deleteSessionBtnGender">다시 선택하기</button>
+                        </div>
+                    </div>
+
+
+                    <div class="right-content">
+                        {% include 'test.html' %}
+                    
+                        <script>
+                            
+                            window.onload = function() {
+                                call_we_data(0);
+                                // sessionStorage에서 플래그 확인
+                            }
+                            function hh() {
+                                //fetch('/api/session-address/')
+                                //.then(response => response.json())
+                                //.then(data => {
+                                //    console.log("Session data:", data);
+                                //    if (data.selectedGender) {
+                                //        displaySelectedGender(data.selectedGender);
+                                //    }
+
+                                //})
+                                setTimeout(function() {
+                                    processWeatherData();
+                                }, 500);  // 500ms 후 실행
+
+                            }
+                            function getCurrentKSTHour() {
+                                const now = new Date();
+                                const utcHour = now.getUTCHours();
+                                const kstHour = (utcHour + 9) % 24;
+                                return kstHour.toString().padStart(2, '0') + '00';
+                            }
+
+                            // 데이터에서 시간을 추출하는 함수
+                            function extractHourFromFcsttime(fcsttime) {
+                                return parseInt(fcsttime.substring(0, 2), 10);
+                            }
+
+                            // 주어진 we_dataList를 처리하는 함수
+                            function processWeatherData() {
+                                const currentHour = getCurrentKSTHour();
+                                console.log("Current hour:", currentHour);
+                                
+                                const dataListItems = document.querySelectorAll('li.we-data-list');
+                                console.log("Number of weather data items:", dataListItems.length);
+
+                                dataListItems.forEach((listItem, index) => {
+                                    const hiddenInput = listItem.querySelector('input.we-data');
+                                    if (!hiddenInput) {
+                                        console.error(`Hidden input not found in item ${index}`);
+                                        return;
+                                    }
+
+                                    const fcsttime = hiddenInput.getAttribute('data-fcsttime');
+                                    const tmp = hiddenInput.getAttribute('data-tmp');
+                                    const pty = hiddenInput.getAttribute('data-pty');
+
+                                    console.log(`Item ${index} - fcsttime: ${fcsttime}, tmp: ${tmp}, pty: ${pty}`);
+
+                                    if (fcsttime) {
+                                        const itemHour = extractHourFromFcsttime(fcsttime);
+                                        
+                                        if (fcsttime === currentHour) {
+                                            console.log("일치하는 시간 데이터 찾음:", fcsttime);
+                                            sendweData(hiddenInput);
+                                        }
+                                    } else {
+                                        console.error(`Missing data-fcsttime for item ${index}`);
+                                    }
+                                });
+                            }
+                            
+
+                            function call_we_data(param) {
+                                const url = `{% url "call_we_data" %}?param=${encodeURIComponent(param)}`;
+                                fetch(url)
+                                    .then(response => {
+                                        console.log("Response received:", response); // 응답 객체 로그
+                                        return response.json();
+                                    })
+                                    .then(data => {
+                                        console.log(data);  // 콘솔에서 데이터 확인
+                                        updateWeatherData(data)
+                                        // document.getElementById('data-container').textContent = JSON.stringify(data, null, 2);
+                                    })
+                                    .catch(error => console.error('Error fetching data:', error));
+                            };
+
+                            function updateWeatherData(data) {
+                                const container = document.querySelector('.we-data-box');
+                                container.innerHTML = ''; // 기존 데이터를 지우고 새 데이터를 추가합니다.
+                                console.log("Updating weather data..."); // 디버깅 로그 추가
+                                console.log("테스트", data['we_dataList'] && data['we_dataList'].length > 0);
+
+                                let html = '<h3>' + data['head'] + '</h3>';
+
+                                if (data['we_dataList'] && data['we_dataList'].length > 0) {
+                                    html += '<ul class="clear we-data-ul">';
+                                    data['we_dataList'].forEach(item => {
+                                        html += `
+                                            <li class="we-data-list">
+                                                <input type="hidden" class="we-data" data-fcsttime="${item.fcsttime}" data-tmp="${item.TMP}" data-pty="${item.PTY}">
+                                                <ul>
+                                                    <li class="we-list we-time">${item.fcsttime.slice(0, 2)}시</li>
+                                                    <li class="we-list we-img">
+                                                        <img src="${item.imgurl ? '/static/' + item.imgurl : '/static/img/sky3.png'}" alt="날씨 이미지" class="weather-icon">
+                                                    </li>
+                                                    <li class="we-list we-tmp">${item.TMP || '-'}°C</li>
+                                                    <li class="we-list we-pop">강수 확률 : ${item.POP || '-'}%</li>
+                                                    <li class="we-list we-ras">${item.PCP || '-'}</li>
+                                                    <li class="we-list we-wind">풍속 : ${item.WSD || '-'}m/s</li>
+                                                    <li class="we-list we-atp">습도 : ${item.REH || '-'}%</li>
+                                                </ul>
+                                            </li>
+                                        `;
+                                    });
+                                    html += '</ul>';
+                                } else {
+                                    html += '<p>No data available</p>';
+                                }
+
+                                // 최종 HTML을 container에 추가
+                                container.innerHTML = html;
+                            }
+
+                            function sendweData(dataTag) {
+                                const data = {
+                                    'weather_info': {
+                                        'forecast_time': dataTag.getAttribute('data-fcsttime').slice(0, 2) + ":" + dataTag.getAttribute('data-fcsttime').slice(2, 4),
+                                        'TMP': parseInt(dataTag.getAttribute('data-tmp'), 10),
+                                        'PTY': parseInt(dataTag.getAttribute('data-pty'), 10),
+                                    }
+                                };
+                                console.log('Sending data:', data);
+
+                                // CSRF 토큰 가져오기
+                                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                                fetch('/api/session-address/', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRFToken': csrftoken
+                                    },
+                                    body: JSON.stringify(data)
+                                })
+                                .then(response => {
+                                    if (!response.ok) {
+                                        return response.text().then(text => {
+                                            throw new Error(`Server error: ${response.status} ${text}`);
+                                        });
+                                    }
+                                    return response.json();
+                                })
+                                .then(responseData => {
+                                    console.log('Success:', responseData);
+                                    // if (responseData.message) {
+                                    //     alert(responseData.message);
+                                    // } else {
+                                    //     alert('Data has been successfully sent and saved.');
+                                    // }
+                                    // 여기에 성공 후 추가 작업을 수행할 수 있습니다.
+                                    // 예: updateUIWithWeatherData(responseData);
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    alert(`Failed to send data: ${error.message}`);
+                                    // 여기에 오류 발생 시 수행할 추가 작업을 넣을 수 있습니다.
+                                    // 예: showErrorMessage(error.message);
+                                });
+                            }
+
+                        </script>
+                    </div>
+                </div>  
             </div>
+        <div class="center-content">
+            <div id="musinsaContent"></div>
+            <style>
+                #loading-spinner {
+                    display: none; /* 처음에는 보이지 않게 설정 */
+                    font-size: 10px;
+                    color: rgb(255, 0, 221);
+                }
+            </style>
+            <div id="loading-spinner">로딩 중...</div>
+            
+        </div>
+        
+
+        <!-- {% if products %}
+        <div class="center-content" id="musinsaContent">
+            <div class="musinsa_categories">
+                <div class="musinsa_category">
+                    <h3>상의</h3>
+                    <div class="musinsa_list">
+                        <ul>
+                            {% for product in products.상의 %}
+                                <li>
+                                    <a href="{{ product.product_link }}">
+                                        <img src="{{ product.image_link }}" alt="{{ product.product_name }}">
+                                    </a>
+                                    <div class="product-info">
+                                        <p>{{ product.rank }} : {{ product.product_name }}</p>
+                                        <p>{{ product.gender }}</p>
+                                        <p>{{ product.price }}</p>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="musinsa_category">
+                    <h3>하의</h3>
+                    <div class="musinsa_list">
+                        <ul>
+                            {% for product in products.하의 %}
+                                <li>
+                                    <a href="{{ product.product_link }}">
+                                        <img src="{{ product.image_link }}" alt="{{ product.product_name }}">
+                                    </a>
+                                    <div class="product-info">
+                                        <p>{{ product.rank }} : {{ product.product_name }}</p>
+                                        <p>{{ product.gender }}</p>
+                                        <p>{{ product.price }}</p>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="musinsa_category">
+                    <h3>신발</h3>
+                    <div class="musinsa_list">
+                        <ul>
+                            {% for product in products.신발 %}
+                                <li>
+                                    <a href="{{ product.product_link }}">
+                                        <img src="{{ product.image_link }}" alt="{{ product.product_name }}">
+                                    </a>
+                                    <div class="product-info">
+                                        <p>{{ product.rank }} : {{ product.product_name }}</p>
+                                        <p>{{ product.gender }}</p>
+                                        <p>{{ product.price }}</p>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="musinsa_category">
+                    <h3>아이템</h3>
+                    <div class="musinsa_list">
+                        <ul>
+                            {% for product in products.아이템 %}
+                                <li>
+                                    <a href="{{ product.product_link }}">
+                                        <img src="{{ product.image_link }}" alt="{{ product.product_name }}">
+                                    </a>
+                                    <div class="product-info">
+                                        <p>{{ product.rank }} : {{ product.product_name }}</p>
+                                        <p>{{ product.gender }}</p>
+                                        <p>{{ product.price }}</p>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <style>
+            .musinsa_categories {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                gap: 20px;
+            }
+            .musinsa_category {
+                flex: 1 1 calc(50% - 10px);
+                min-width: 300px;
+                background-color: #f8f9fa;
+                border-radius: 10px;
+                padding: 15px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+            .musinsa_category h3 {
+                text-align: center;
+                margin-bottom: 15px;
+                color: #333;
+            }
+            .musinsa_list ul {
+                list-style-type: none;
+                padding: 0;
+                display: flex;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                gap: 15px;
+            }
+            .musinsa_list li {
+                flex: 0 0 auto;
+                width: 200px;
+                background-color: white;
+                border-radius: 8px;
+                padding: 10px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+            .musinsa_list img {
+                width: 100%;
+                height: 200px;
+                object-fit: cover;
+                border-radius: 5px;
+                margin-bottom: 10px;
+            }
+            .musinsa_list .product-info {
+                font-size: 14px;
+            }
+            .musinsa_list .product-info p {
+                margin: 5px 0;
+            }
+            </style>
+        </div>
+        {% endif %} -->
+    
         </div>
     </div>
     <script src="{% static 'err.js' %}"></script>

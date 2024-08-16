@@ -15,68 +15,28 @@
         }
         ul {list-style-type: none;}
         li {list-style-type: none;}
-        .we-data-box{padding: 20px; margin: 0 auto;}
-        .we-data-list{float: left; padding: 0px; margin: 0;}
+        .we-data-box{
+            width: 80%;
+            margin: 0 auto;
+            overflow-x: auto;
+        }
+        .we-data-ul {width: max-content;}
+        .we-data-list{float: left; padding: 0px; margin: 0; display: flex; flex-wrap: wrap; white-space:nowrap;}
         .we-list {margin: 0 auto; text-align: center; border-left: 1px dotted; border-right: 1px dotted;}
         .we-atp, .we-tmp, .we-ras, .we-wind{border-bottom: 1px #cccccc dotted;}
-        .we-img>img { height: 30px;}
-        
-        
+        .we-img>img { height: 30px;} 
     </style>
 </head>
 <body>
-    <div class="we-data-box ">
-        <ul class="clear">
-            <li class="we-data-list">
-                <ul >
-                    <li class="we-time">시각</li>
-                    <li class="we-type">날씨</li>
-                    <li class="we-temp">기온</li>
-                    <li class="we-per">강수확률</li>
-                    <li class="we-ras">강수량</li>
-                    <li class="we-wind">풍속</li>
-                    <li class="we-atp">습도</li>
-                </ul>
-            </li>
-            <li class="we-data-list">
-                <ul>
-                    <li class="we-list we-time">06시</li>
-                    <li class="we-list we-type">img</li>
-                    <li class="we-list we-temp">26°C</li>
-                    <li class="we-list we-per">70%</li>
-                    <li class="we-list we-ras">3mm</li>
-                    <li class="we-list we-wind">3</li>
-                    <li class="we-list we-atp">80%</li>
-                </ul>
-            </li>
-            <li class="we-data-list">
-                <ul>
-                    <li class="we-list we-time">06시</li>
-                    <li class="we-list we-type">img</li>
-                    <li class="we-list we-temp">26°C</li>
-                    <li class="we-list we-per">70%</li>
-                    <li class="we-list we-ras">3mm</li>
-                    <li class="we-list we-wind">3</li>
-                    <li class="we-list we-atp">80%</li>
-                </ul>
-            </li>
-            <li class="we-data-list">
-                <ul>
-                    <li class="we-list we-time">06시</li>
-                    <li class="we-list we-type">img</li>
-                    <li class="we-list we-temp">26°C</li>
-                    <li class="we-list we-per">70%</li>
-                    <li class="we-list we-ras">3mm</li>
-                    <li class="we-list we-wind">3</li>
-                    <li class="we-list we-atp">80%</li>
-                </ul>
-            </li>
+    {% if we_dataList %}
+    <div class="we-data-box">
+        <ul class="clear we-data-ul">
             {% for we_data in we_dataList %}
             <li class="we-data-list">
                 <ul>
                     <li class="we-list we-time">{{ we_data.fcsttime|slice:":2"|default:"-" }}시</li>
                     <li class="we-list we-img">
-                        <img src="{% static we_data.imgurl|default:'default-image.png' %}" alt="날씨 이미지">
+                        <img src="{% static we_data.imgurl|default:'img/sky3.png' %}" alt="날씨 이미지">
                     </li>
                     <li class="we-list we-tmp">{{ we_data.TMP|default:"-"}}°C</li>
                     <li class="we-list we-pop">{{ we_data.POP|default:"-" }}%</li>
@@ -87,9 +47,8 @@
             </li>
             {% endfor %}
         </ul>
-        {{we_dataList}}
-        
     </div>
+    {% endif %}
 </body>
 </html>
 

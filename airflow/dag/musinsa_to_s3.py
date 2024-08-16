@@ -14,7 +14,8 @@ from airflow.models import Variable
 import pandas as pd
 import boto3
 from datetime import datetime
-import io
+from io import StringIO
+from datetime import timedelta
 
 # S3 버킷 및 파일 설정
 FILE_KEY = 'musinsa.csv'
@@ -25,24 +26,26 @@ AWS_SECRET_ACCESS_KEY = Variable.get('SECRET_KEY')
 def fetch_data():
     data = []
     chrome_options=wd.ChromeOptions()
+    chrome_options.add_argument("--headless")
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-extensions')
     chrome_options.add_argument('user_agent = Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36')
     driver = wd.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-    item_codes = ['001001', '001002', '001003', '001004', '001005', '001006', '001010', '001013', '001011',
-                '002003', '002002', '002018', '002009', '002006', '002007', '002012', '002001', '002017',
-                '002016', '002019', '002014', '002024', '002020', '002004', '002013', '002021', '002022',
-                '002008', '002023', '002025', '003002', '003004', '003009', '003007', '003011', '003008',
-                '003005', '003010', '020008', '020007', '020006', '022001', '022002', '022003', '018002',
-                '018003', '018001', '005014', '005004', '005019', '005012', '005018', '005015', '005017',
-                '005016', '005011']
+    item_codes = ['001001', '001004', '001010', '001002', '001011', '001013', '001003', '001006', '001005',
+                '002009', '002004', '002002', '002006', '002023', '002017', '002013', '002014', '002018',
+                '002001', '002019', '002003', '002008', '002020', '002004', '002013', '002021', '002022',
+                '002008', '002012', '002007', '002024', '002025', '002022', '002020', '002021', '002016',
+                '003002', '003008', '003004', '003010', '003011', '003009', '003007', '003005', '100001',
+                '100002', '100003', '100005', '100004', '100006', '103004', '103005', '103003', '103001',
+                '103002']
     now = time.strftime("%Y-%m-%d", time.gmtime())
     for item_code in item_codes:
         driver.get(f"https://www.musinsa.com/categories/item/{item_code}?device=mw")
         driver.implicitly_wait(10)
         for i in range(1, 4):
             for j in range(1, 4):
+                driver.implicitly_wait(10)
                 rank = (i - 1) * 3 + j
                 item = driver.find_element(By.XPATH, f'/html/body/div[1]/div/main/div/section[3]/div[1]/div/div[{i}]/div[{j}]/div[2]/a[2]').text
                 link = driver.find_element(By.XPATH, f'/html/body/div[1]/div/main/div/section[3]/div[1]/div/div[{i}]/div[{j}]/div[2]/a[2]').get_attribute("href")
@@ -99,14 +102,15 @@ def upload_to_s3(**kwargs):
 
 default_args = {
     'owner': 'airflow',
-    'start_date': datetime(2024, 1, 1),
+    'start_date': datetime(2024, 8, 10),
     'catchup' : False,
+    'retries': 1,
 }
 
 dag = DAG(
     dag_id ='musinsa_crawl_and_upload_to_s3',
     default_args=default_args,
-    schedule_interval='@daily',
+    schedule_interval='00 17 * * *',
     max_active_runs=1,
 )
 
@@ -115,6 +119,7 @@ fetch_data_task = PythonOperator(
     python_callable=fetch_data,
     provide_context=True,
     dag=dag,
+    queue='queue1',
 )
 
 data_to_csv_task = PythonOperator(
@@ -122,6 +127,7 @@ data_to_csv_task = PythonOperator(
     python_callable=data_to_csv,
     provide_context=True,
     dag=dag,
+    queue='queue1',
 )
 
 upload_to_s3_task = PythonOperator(
@@ -129,6 +135,7 @@ upload_to_s3_task = PythonOperator(
     python_callable=upload_to_s3,
     provide_context=True,
     dag=dag,
+    queue='queue1',
 )
 
 fetch_data_task >> data_to_csv_task >> upload_to_s3_task
