@@ -210,7 +210,7 @@ const locationData = {
 
 
 
-// 폼 제출 함수
+// 선택지역 폼 제출 함수
 async function submitForm() {
     const area1Select = document.getElementById('area1_id');
     const area2Select = document.getElementById('area2_id');
@@ -236,9 +236,9 @@ async function submitForm() {
         //데이터post 확인용. 배포시 없앨 예정
         .then(data => {
             if (data.status === 'success') {
-                alert('성별을 선택해 주세요');
+                alert('지역 입력 완료. 성별을 선택하면 추천이 시작됩니다');
             } else {
-                alert('데이터 전송에 실패했습니다.');
+                alert('지역 입력에 실패했습니다.');
             }
         })
         .catch(error => console.error('Error:', error));

@@ -27,11 +27,11 @@ with DAG(
         task_id = 'wait_for_dag', # 완료될 때 까지 기다릴 Task ID
         external_dag_id = '29cm_data_extract', # 완료될 때 까지 기다릴 Dag ID
         external_task_id=None,  # 특정 태스크 ID가 아니라 DAG 전체를 모니터링
-        allowed_states = ['success'], # 완료될 때 까지 기다림
+        allowed_states = ['success', 'skipped'],
         mode='reschedule',        # reschedule 모드로 설정
         timeout=600,              # 10분 동안 조건 충족을 기다림
         poke_interval = 60, # 60초에 한번씩 완료됐나 체크
-        execution_delta =  timedelta(0),  # 같은 날 내에서 실행된 상태를 확인
+        execution_delta = timedelta(days=2),  # 전날의 실행까지 확인
         check_existence=True,  # DAG의 존재 여부를 확인
         queue='queue1'
     )

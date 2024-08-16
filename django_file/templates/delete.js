@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 alert(successMessage);
                 updateUIAfterSessionDeletion(endpoint);
+                window.location.reload();
             } else {
                 alert('세션 삭제에 실패했습니다.');
             }
