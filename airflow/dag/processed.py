@@ -9,9 +9,10 @@ from datetime import datetime, timedelta
 from airflow.sensors.external_task_sensor import ExternalTaskSensor
 
 def get_execution_date_to_check(dt):
-    # dt는 현재 DAG의 실행 날짜/시간입니다.
-    # 우리는 이전 날의 14:00:00 실행을 확인하려고 합니다.
+    # dt = 현재 DAG의 실행 날짜/시간.(airflow가 전달하는 값.)
+    # 이전 날의 14:00:00 실행을 확인하려고 함. (시험용)
     target_dt = (dt - timedelta(days=1)).replace(hour=14, minute=0, second=0, microsecond=0)
+    # target_dt = dt.replace(hour=14, minute=0, second=0, microsecond=0) #배포용
     print(f"Checking for execution date: {target_dt}")
     return target_dt
 
@@ -43,7 +44,9 @@ with DAG(
 
     @task(queue='queue1')
     def preprocess_data():
-        today = datetime.now().strftime("%Y%m%d")
+        #today = datetime.now().strftime("%Y%m%d") #배포용
+        today = datetime.now() - timedelta(days=1) #시험용
+        today = today.strftime("%Y%m%d")
 
         bucket_name = 'team-hori-1-bucket'
         file_key = f'crawling/29cm_bestitem_{today}.csv'
@@ -126,7 +129,9 @@ with DAG(
     # Task 실행
     data = preprocess_data()
 
-    today = datetime.now().strftime("%Y%m%d")
+    #today = datetime.now().strftime("%Y%m%d") #배포용
+    today = datetime.now() - timedelta(days=1) #시험용
+    today = today.strftime("%Y%m%d")
 
     upload_df_1 = upload_df_to_s3(data,"df2", f'model/file29/df2_{today}.csv')
     upload_df_2 = upload_df_to_s3(data,"df_full", f'model/full29_processed/df_full_{today}.csv')
