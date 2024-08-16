@@ -41,7 +41,7 @@ default_args = {
     'retries': 0,
 }
 
-@dag(default_args=default_args, schedule_interval='0 * * * *', catchup=False, dag_id='upload_dataframe_direct_to_s3')
+@dag(default_args=default_args, schedule_interval='0 * * * *', catchup=False, dag_id='upload_dataframe_direct_to_s3',queue='queue1')
 def upload_dag():
     
     @task
