@@ -1,12 +1,10 @@
 from airflow import DAG
 from airflow.decorators import task
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-from airflow.utils.dates import days_ago
 import pandas as pd
 import numpy as np
 from io import StringIO
 from datetime import datetime, timedelta
-import pytz
 from airflow.sensors.external_task_sensor import ExternalTaskSensor
 
 def get_execution_date_to_check(dt):
@@ -44,9 +42,7 @@ with DAG(
 
     @task(queue='queue1')
     def preprocess_data():
-        seoul_tz = pytz.timezone('Asia/Seoul')
-        seoul_now = datetime.now(seoul_tz) - timedelta(days=1)
-        today = seoul_now.strftime("%Y%m%d")
+        today = datetime.now().strftime("%Y%m%d")
 
         bucket_name = 'team-hori-1-bucket'
         file_key = f'crawling/29cm_bestitem_{today}.csv'
@@ -129,9 +125,7 @@ with DAG(
     # Task 실행
     data = preprocess_data()
 
-    seoul_tz = pytz.timezone('Asia/Seoul')
-    seoul_now = datetime.now(seoul_tz)
-    today = seoul_now.strftime("%Y%m%d")
+    today = datetime.now().strftime("%Y%m%d")
 
     upload_df_1 = upload_df_to_s3(data,"df2", f'model/file29/df2_{today}.csv')
     upload_df_2 = upload_df_to_s3(data,"df_full", f'model/full29_processed/df_full_{today}.csv')
