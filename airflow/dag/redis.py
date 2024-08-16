@@ -47,10 +47,9 @@ with DAG(
     default_args=default_args,
     schedule_interval='0 * * * *',
     catchup=False,
-    queue='queue1'
 ) as dag :
     
-    @task
+    @task(queue='queue1')
     def fetch_and_store_news():
         # Airflow 환경변수에서 값 가져오기
         client_id = Variable.get("naver-client-id")
@@ -95,7 +94,7 @@ with DAG(
             return df
         else:
             raise ValueError("Failed to fetch news data from API")
-    @task
+    @task(queue='queue1')
     def create_redshift_table():
         redshift_hook = RedshiftSQLHook(redshift_conn_id='my_redshift_conn')
         create_table_query = """
@@ -110,7 +109,7 @@ with DAG(
         redshift_hook.run(create_table_query)
         print("Redshift table created successfully.")
 
-    @task
+    @task(queue='queue1')
     def s3_upload(df):
         if df is not None and not df.empty:
             csv_buffer = StringIO()
@@ -150,6 +149,7 @@ with DAG(
         copy_options=['csv', 'IGNOREHEADER 1'],
         aws_conn_id="my_amazon_conn",
         redshift_conn_id="my_redshift_conn",
+        queue='queue1',
         dag = dag
     )
     create_table >> news_df >> s3_key >> s3_to_redshift

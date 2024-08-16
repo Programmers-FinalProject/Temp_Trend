@@ -21,7 +21,6 @@ with DAG(
     default_args=default_args,
     schedule_interval='@daily',
     catchup=False,
-    queue='queue1'
 ) as dag:
     
     wait_for_task = ExternalTaskSensor(
@@ -35,7 +34,7 @@ with DAG(
         queue='queue1'
     )
 
-    @task
+    @task(queue='queue1')
     def preprocess_data():
         seoul_tz = pytz.timezone('Asia/Seoul')
         seoul_now = datetime.now(seoul_tz) - timedelta(days=1)
@@ -110,7 +109,7 @@ with DAG(
         except Exception as e:
             raise ValueError(f"CSV 파일을 읽는 중 오류가 발생했습니다: {e}")
 
-    @task
+    @task(queue='queue1')
     def upload_df_to_s3(data,key,s3_key):
         csv_buffer = StringIO()
         df = data[key]
