@@ -30,7 +30,8 @@ with DAG(
         mode='reschedule',        # reschedule 모드로 설정
         timeout=600,              # 10분 동안 조건 충족을 기다림
         poke_interval = 60, # 60초에 한번씩 완료됐나 체크
-        execution_delta =  timedelta(minutes=30), # 동일한 시간에 스케줄링을 해야하는데 시간차이가 너무 날 경우 이를 통해 맞춰줄 수 있음. 
+        execution_delta =  timedelta(0),  # 같은 날 내에서 실행된 상태를 확인
+        check_existence=True,  # DAG의 존재 여부를 확인
         queue='queue1'
     )
 

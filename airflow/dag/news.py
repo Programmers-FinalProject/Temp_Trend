@@ -143,7 +143,7 @@ with DAG(
     s3_to_redshift = S3ToRedshiftOperator(
         task_id="s3_to_redshift",
         s3_bucket="team-hori-1-bucket",
-        s3_key=s3_key
+        s3_key=s3_key,
         schema="raw_data",
         table="news_weather_table",
         copy_options=['csv', 'IGNOREHEADER 1'],
@@ -152,4 +152,5 @@ with DAG(
         queue='queue1',
         dag = dag
     )
+    
     create_table >> news_df >> s3_key >> s3_to_redshift
