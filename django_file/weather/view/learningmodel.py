@@ -194,7 +194,7 @@ current_index = 0
 BATCH_SIZE = 10  
 
 def index(request):
-    global current_index, matched_data_list, BATCH_SIZE
+    global current_index, matched_data_list, BATCH_SIZE,matched_data,learning_data
     num_samples = len(df)
 
     # 최초 시작 시 날씨 데이터 생성 및 매칭
@@ -254,7 +254,7 @@ def index(request):
             # 다음 데이터로 이동
             return JsonResponse({
                 'message': '선호도가 저장되었습니다.',
-                'redirect': '/index_learn/'  # 현재 페이지 URL (새로고침)
+                'redirect': '/learning'  # 현재 페이지 URL (새로고침)
             })
     
     
