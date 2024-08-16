@@ -51,7 +51,7 @@ def classify_weather(nx, ny, fcstdate):
     print(latest_basedate)
 
     # 최신 basedate로 데이터 필터링
-    current_hour_str = f"{current_hour:02}00"
+    current_hour_str = f"{current_hour}00".lstrip('0')
     weather_data = WeatherData.objects.filter(
         basedate=latest_basedate,
         fcstdate=fcstdate,

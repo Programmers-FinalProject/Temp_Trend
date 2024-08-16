@@ -33,9 +33,7 @@ with DAG(
     wait_for_task = ExternalTaskSensor(
         task_id='wait_for_dag',
         external_dag_id='29cm_data_extract',
-        external_task_id=None,
         allowed_states=['success'],
-        failed_states=['failed', 'skipped'],
         mode='reschedule',
         timeout=3600,  # 1시간
         poke_interval=300,  # 5분
