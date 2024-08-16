@@ -44,8 +44,8 @@ with DAG(
 
     @task(queue='queue1')
     def preprocess_data():
-        #today = datetime.now().strftime("%Y%m%d") #배포용
-        today = datetime.now() - timedelta(days=1) #시험용
+        today = datetime.now().strftime("%Y%m%d") #배포용
+        #today = datetime.now() - timedelta(days=1) #시험용
         today = today.strftime("%Y%m%d")
 
         bucket_name = 'team-hori-1-bucket'
@@ -129,8 +129,8 @@ with DAG(
     # Task 실행
     data = preprocess_data()
 
-    #today = datetime.now().strftime("%Y%m%d") #배포용
-    today = datetime.now() - timedelta(days=1) #시험용
+    today = datetime.now().strftime("%Y%m%d") #배포용
+    #today = datetime.now() - timedelta(days=1) #시험용
     today = today.strftime("%Y%m%d")
 
     upload_df_1 = upload_df_to_s3(data,"df2", f'model/file29/df2_{today}.csv')
