@@ -51,6 +51,7 @@ def fetch_data():
                 link = driver.find_element(By.XPATH, f'/html/body/div[1]/div/main/div/section[3]/div[1]/div/div[{i}]/div[{j}]/div[2]/a[2]').get_attribute("href")
                 img = driver.find_element(By.XPATH, f'/html/body/div[1]/div/main/div/section[3]/div[1]/div/div[{i}]/div[{j}]/div[1]/figure/div/img').get_attribute("src")
                 price = driver.find_element(By.XPATH, f'/html/body/div[1]/div/main/div/section[3]/div[1]/div/div[{i}]/div[{j}]/div[2]/div/div[1]/div/div/div/span').text
+                price = price.replace(",", "").replace("원", "").strip()
                 category = driver.find_element(By.CLASS_NAME, 'category__sc-lccsha-1.BVycB').text
                 item_element = driver.find_element(By.XPATH, f'/html/body/div[1]/div/main/div/section[3]/div[1]/div/div[{i}]/div[{j}]/div[2]/a[2]')
                 item_element.send_keys(Keys.ENTER)
