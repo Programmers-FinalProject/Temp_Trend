@@ -225,52 +225,32 @@ def index(request):
             if save_to_s3(batch_data, file_name):
                 print(f"Batch of {BATCH_SIZE} samples saved to S3")
                 matched_data_list.clear()  # 저장한 데이터 클리어
+                # 모든 데이터에 대해 선호도를 입력받은 경우
+                if current_index >= num_samples:
+                    # 남은 데이터가 있다면 마지막으로 저장
+                    if matched_data_list:
+                        ko = get_korea_time()
+                        final_batch = pd.DataFrame(matched_data_list)
+                        file_name = f'learning_data_final_{ko.strftime("%Y%m%d_%H%M%S")}.csv'
+                        save_to_s3(final_batch, file_name)
+                        # 선호도 입력 완료 시, 학습 데이터 생성
+                        # & 초기화
+                        current_index = 0
+                        matched_data_list.clear()
+                        return JsonResponse({
+                        'message': '선호도 입력이 완료되었습니다. 학습 데이터가 S3에 저장되었습니다.',
+                    })
+                else:
+                    # 다음 데이터로 이동
+                    return JsonResponse({
+                        'message': '선호도가 저장되었습니다.',
+                        'redirect': '/learning'  # 현재 페이지 URL (새로고침)
+                    })
+                
             else:
                 print("Failed to save batch to S3")
 
-        # 모든 데이터에 대해 선호도를 입력받은 경우
-        if current_index >= num_samples:
-            # 남은 데이터가 있다면 마지막으로 저장
-            if matched_data_list:
-                ko = get_korea_time()
-                final_batch = pd.DataFrame(matched_data_list)
-                file_name = f'learning_data_final_{ko.strftime("%Y%m%d_%H%M%S")}.csv'
-                save_to_s3(final_batch, file_name)
 
-        # 모든 데이터에 대해 선호도를 입력받은 경우
-        if current_index >= num_samples:
-            # 선호도 입력 완료 시, 학습 데이터 생성 및 초기화
-            ko = get_korea_time()
-            learning_data = pd.DataFrame(matched_data_list)
-            file_name = f'learning_data_{ko.strftime("%Y%m%d_%H%M%S")}.csv'
-            if save_to_s3(learning_data, file_name):
-                # 초기화
-                current_index = 0
-                matched_data_list.clear()
-                return JsonResponse({
-                'message': '선호도 입력이 완료되었습니다. 학습 데이터가 S3에 저장되었습니다.',
-            })
-        else:
-            # 다음 데이터로 이동
-            return JsonResponse({
-                'message': '선호도가 저장되었습니다.',
-                'redirect': '/learning'  # 현재 페이지 URL (새로고침)
-            })
-    
-    
-
-    context = {
-        'products': filtered_df2.to_dict(orient='records'),
-        'current_index' : current_index,
-        'num_samples' : num_samples,
-        'TMP': current_data['TMP'],
-        'PTY': get_pty_description(current_data['PTY']),
-        'category1': current_data['category1'],
-        'category2': current_data['category2'],
-        'gender': current_data['gender'],
-    } 
-
-    return render(request, 'learning.html', context)
 
 def get_pty_description(pty_code):
     pty_descriptions = {
