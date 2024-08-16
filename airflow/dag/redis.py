@@ -1,4 +1,4 @@
-from airflow.decorators import dag, task
+from airflow.decorators import task
 from airflow.models import Variable
 from airflow.utils.dates import days_ago
 import requests
@@ -13,6 +13,7 @@ import pytz
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.amazon.aws.hooks.redshift_sql import RedshiftSQLHook
 from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOperator
+from airflow import DAG
 
 def decode_html_entities(text):
     return html.unescape(text)
@@ -41,8 +42,13 @@ default_args = {
     'retries': 0,
 }
 
-@dag(default_args=default_args, schedule_interval='0 * * * *', catchup=False, dag_id='upload_dataframe_direct_to_s3',queue='queue1')
-def upload_dag():
+with DAG(
+    dag_id='news_S3_REDSHIFT',
+    default_args=default_args,
+    schedule_interval='0 * * * *',
+    catchup=False,
+    queue='queue1'
+) as dag :
     
     @task
     def fetch_and_store_news():
@@ -131,27 +137,19 @@ def upload_dag():
         else:
             raise ValueError("Dataframe is empty or None")
 
-    
-    @task
-    def s3_to_redshift_append(s3_key):
-        s3_to_redshift = S3ToRedshiftOperator(
-            task_id="s3_to_redshift",
-            s3_bucket="team-hori-1-bucket",
-            s3_key=s3_key,
-            schema="raw_data",
-            table="news_weather_table",
-            copy_options=['csv', 'IGNOREHEADER 1'],
-            aws_conn_id="my_amazon_conn",
-            redshift_conn_id="my_redshift_conn"
-        )
-
-    # Task 인스턴스 생성 및 연결
     create_table = create_redshift_table()
     news_df = fetch_and_store_news()
     s3_key = s3_upload(news_df)
-    s3_to_redshift_task = s3_to_redshift_append(s3_key)
-
-    create_table >> news_df >> s3_key >> s3_to_redshift_task
-
-# DAG 인스턴스 생성
-dag_instance = upload_dag()
+    
+    s3_to_redshift = S3ToRedshiftOperator(
+        task_id="s3_to_redshift",
+        s3_bucket="team-hori-1-bucket",
+        s3_key=s3_key.output,
+        schema="raw_data",
+        table="news_weather_table",
+        copy_options=['csv', 'IGNOREHEADER 1'],
+        aws_conn_id="my_amazon_conn",
+        redshift_conn_id="my_redshift_conn",
+        dag = dag
+    )
+    create_table >> news_df >> s3_key >> s3_to_redshift

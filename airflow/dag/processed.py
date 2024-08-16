@@ -13,7 +13,7 @@ from airflow.sensors.external_task_sensor import ExternalTaskSensor  # ExternalT
 default_args = {
     'owner': 'airflow',
     'start_date': datetime(2024, 8, 15, 14, 30, 0), 
-    'retries': 1,
+    'retries': 0,
 }
 
 with DAG(
@@ -21,6 +21,7 @@ with DAG(
     default_args=default_args,
     schedule_interval='@daily',
     catchup=False,
+    queue='queue1'
 ) as dag:
     
     wait_for_task = ExternalTaskSensor(
@@ -129,6 +130,3 @@ with DAG(
     upload_df_2 = upload_df_to_s3(data,"df_full", f'model/full29_processed/df_full_{today}.csv')
     
     wait_for_task >> data >> [upload_df_1, upload_df_2]
-
-dag_instance = dag
-
