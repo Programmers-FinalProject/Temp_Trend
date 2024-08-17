@@ -10,15 +10,14 @@ from airflow.sensors.external_task_sensor import ExternalTaskSensor
 
 def get_execution_date_to_check(dt):
     # dt = 현재 DAG의 실행 날짜/시간.(airflow가 전달하는 값.)
-    # 이전 날의 14:00:00 실행을 확인하려고 함. (시험용)
-    #target_dt = (dt - timedelta(days=2)).replace(hour=14, minute=0, second=0, microsecond=0)
-    target_dt = dt.replace(hour=14, minute=0, second=0, microsecond=0) #배포용
+    #이전 날의 14:00:00 실행을 확인하려고 함.
+    target_dt = (dt - timedelta(days=1)).replace(hour=14, minute=0, second=0, microsecond=0)
     print(f"Checking for execution date: {target_dt}")
     return target_dt
 
 default_args = {
     'owner': 'airflow',
-    'start_date': datetime(2024, 8, 15, 14, 50, 0, tzinfo=pytz.UTC),  # UTC 기준 14:50
+    'start_date': datetime(2024, 8, 15, 00, 00, 0),  # UTC 기준 15:00
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
 }
@@ -26,7 +25,7 @@ default_args = {
 with DAG(
     dag_id='s3_data_preprocessing_and_upload',
     default_args=default_args,
-    schedule_interval='50 14 * * *',  # 매일 UTC 14:50 (한국 시간 11:50)에 실행
+    schedule_interval='00 15 * * *',  # 매일 UTC 1500 (한국 시간 00:00)에 실행
     catchup=False,
 ) as dag:
     
@@ -44,8 +43,7 @@ with DAG(
 
     @task(queue='queue1')
     def preprocess_data():
-        today = datetime.now().strftime("%Y%m%d") #배포용
-        #today = datetime.now() - timedelta(days=1) #시험용
+        today = datetime.now() - timedelta(days=1)
         today = today.strftime("%Y%m%d")
         print(today)
 
@@ -102,17 +100,21 @@ with DAG(
             df['category2'] = df['category2'] + df['category3'].apply(lambda x: f"/{x}" if pd.notna(x) else "")
             df['category2'] = df['category2'].fillna(df['category1'])
             df['gender'] = df['gender'].replace({'men': 'm', 'women': 'w'})
+            
+            duplicated_product_names = df[df.duplicated(subset='product_name', keep=False)]['product_name']
+            df.loc[df['product_name'].isin(duplicated_product_names), 'gender'] = 'unisex'
+            df = df.drop_duplicates(subset='product_name', keep='first')
+
 
             # df2: 필요한 열만 선택
             df2 = df[['category1', 'category2', 'gender']].drop_duplicates(subset=['category1', 'category2', 'gender']).reset_index(drop=True)
 
             # df: 모든 열이 포함된 데이터프레임에서 category1, category3을 제외한 나머지 열 선택
             df_full = df.drop(columns=['category1', 'category3'])
+            
 
             # df_full에서 category2 열의 이름을 category로 변경
             df_full = df_full.rename(columns={'category2': 'category'})
-
-            today = today.strftime("%Y%m%d")
             
             df2_csv_buffer = StringIO()
             df2.to_csv(df2_csv_buffer, index=False)
