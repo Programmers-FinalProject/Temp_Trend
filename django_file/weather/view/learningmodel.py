@@ -550,7 +550,7 @@ def recommend_categories(weather_info, product_df, target_gender, pipeline, enco
         # 학습되지 않은 카테고리 처리
         for i, row in combined_df.iterrows():
             if (row['category1'], row['category2'], row['gender']) not in known_categories.values:
-                print("학습되지 않은 카테고리":row['category1'], row['category2'], row['gender'])
+                print("학습되지 않은 카테고리:",row['category1'], row['category2'], row['gender'])
                 most_similar_category1, most_similar_category2, most_similar_gender = find_most_similar_category(
                     (row['category1'], row['category2']), row['gender'], known_categories
                 )
