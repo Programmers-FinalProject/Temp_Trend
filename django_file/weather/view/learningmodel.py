@@ -112,6 +112,25 @@ d = categories_and_genders = musinsaData.objects.using('redshift').values_list('
 df = pd.DataFrame(d, columns=['category', 'gender'])
 # 모든 필드를 포함한 DataFrame 생성
 df2 = pd.DataFrame(data.values_list(), columns=[field.name for field in musinsaData._meta.fields])
+# 중복된 항목 제거
+df2.drop_duplicates(subset=['product_name','category','gender'], keep='first', inplace=True)
+#모든 필드 합칠것 df2 = 무신사 모든 필드, s3_df = 29cm 모든 필드 => df2
+# S3 클라이언트 생성
+s3 = boto3.client('s3')
+bucket_name = 'team-hori-1-bucket'
+prefix = 'model/full29_processed/df_full_'  # 파일 경로의 공통 부분
+# S3 버킷에서 지정된 prefix로 시작하는 파일 리스트 가져오기
+response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+# 파일 리스트 중에서 가장 최근 파일 찾기
+files = [content['Key'] for content in response.get('Contents', [])]
+recent_file_key = max(files, key=lambda x: x.split('_')[-1].split('.')[0])
+# 가장 최근 파일 읽기
+response = s3.get_object(Bucket=bucket_name, Key=recent_file_key)
+content = response['Body'].read().decode('utf-8')
+# DataFrame으로 변환
+s3_df = pd.read_csv(StringIO(content))
+# 기존 df와 s3_df 병합
+df2 = pd.concat([df2, s3_df], ignore_index=True)
 
 # DataFrame에서 'category'와 'gender' 열이 있는지 확인
 if 'category' in df.columns and 'gender' in df.columns:
@@ -155,8 +174,29 @@ categorized_list = [[classify_category(category), category, gender] for category
 
 # 결과 출력
 df = pd.DataFrame(categorized_list, columns=['category1', 'category2', 'gender'])
-print(df)
 
+# 중복된 항목 제거
+df.drop_duplicates(subset=['category1', 'category2'], keep='first', inplace=True)
+
+
+# df = 무신사 카테고리 정리 s3_df = 29cm 카테고리 정리 합칠 것. => df 하나로
+# S3 클라이언트 생성
+s3 = boto3.client('s3')
+bucket_name = 'team-hori-1-bucket'
+prefix = 'model/file29/df2_'  # 파일 경로의 공통 부분
+# S3 버킷에서 지정된 prefix로 시작하는 파일 리스트 가져오기
+response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+# 파일 리스트 중에서 가장 최근 파일 찾기
+files = [content['Key'] for content in response.get('Contents', [])]
+recent_file_key = max(files, key=lambda x: x.split('_')[-1].split('.')[0])
+# 가장 최근 파일 읽기
+response = s3.get_object(Bucket=bucket_name, Key=recent_file_key)
+content = response['Body'].read().decode('utf-8')
+# DataFrame으로 변환
+s3_df = pd.read_csv(StringIO(content))
+# 기존 df와 s3_df 병합
+df = pd.concat([df, s3_df], ignore_index=True)
+print(df)
 
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
@@ -194,7 +234,7 @@ current_index = 0
 BATCH_SIZE = 10  
 
 def index(request):
-    global current_index, matched_data_list, BATCH_SIZE,matched_data,learning_data
+    global current_index, matched_data_list, BATCH_SIZE, matched_data
     num_samples = len(df)
 
     # 최초 시작 시 날씨 데이터 생성 및 매칭
@@ -212,12 +252,11 @@ def index(request):
         # 모든 데이터를 처리했을 경우
         return HttpResponse("모든 데이터의 선호도 입력이 완료되었습니다.")
 
-    # 사용자 선호도 받기
     if request.method == 'POST':
         preference = int(request.POST.get('preference'))
         matched_data_list.append({**current_data.to_dict(), 'preference': preference})
         current_index += 1
-        # 10개의 데이터가 모이면 S3에 저장
+
         if len(matched_data_list) >= BATCH_SIZE:
             ko = get_korea_time()
             batch_data = pd.DataFrame(matched_data_list)
@@ -226,7 +265,7 @@ def index(request):
                 print(f"Batch of {BATCH_SIZE} samples saved to S3")
                 matched_data_list.clear()  # 저장한 데이터 클리어
                 # 모든 데이터에 대해 선호도를 입력받은 경우
-                if current_index >= num_samples:
+                if current_index > num_samples:
                     # 남은 데이터가 있다면 마지막으로 저장
                     if matched_data_list:
                         ko = get_korea_time()
@@ -246,10 +285,27 @@ def index(request):
                         'message': '선호도가 저장되었습니다.',
                         'redirect': '/learning'  # 현재 페이지 URL (새로고침)
                     })
-                
+
             else:
                 print("Failed to save batch to S3")
+        else:
+            # 다음 데이터로 이동
+            return JsonResponse({
+                'message': '선호도가 저장되었습니다.',
+                'redirect': '/learning'  # 현재 페이지 URL (새로고침)
+            })
+    context = {
+        'products': filtered_df2.to_dict(orient='records'),
+        'current_index' : current_index,
+        'num_samples' : num_samples,
+        'TMP': current_data['TMP'],
+        'PTY': get_pty_description(current_data['PTY']),
+        'category1': current_data['category1'],
+        'category2': current_data['category2'],
+        'gender': current_data['gender'],
+    } 
 
+    return render(request, 'learning.html', context)
 
 
 def get_pty_description(pty_code):
