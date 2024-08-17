@@ -153,4 +153,4 @@ with DAG(
         dag = dag
     )
     
-    create_table >> s3_key >> s3_to_redshift
+    s3_key >> create_table >> s3_to_redshift
