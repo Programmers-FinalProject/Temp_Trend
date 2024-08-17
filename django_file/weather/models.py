@@ -84,7 +84,7 @@ class musinsaData(models.Model):
 
     def __str__(self):
         return f"상품명 : {self.product_name} | 상품링크 : {self.product_link} | 이미지링크 : {self.image_link} | 순위 : {self.rank} | 카테고리 : {self.category} | 가격 : {self.price} | 성별 : {self.gender}"
- 
+
 class weatherCategorizeData(models.Model):
     id = models.AutoField(primary_key=True)
     weather_info = models.TextField()
@@ -97,3 +97,18 @@ class weatherCategorizeData(models.Model):
 
     def __str__(self):
         return f"id : {self.id} | 날씨정보 : {self.weather_info} | 카테고리 : {self.category}"
+    
+    
+class News(models.Model):
+    id = models.CharField(max_length=255, primary_key=True)
+    title = models.CharField(max_length=65535)
+    description = models.CharField(max_length=65535)
+    link = models.CharField(max_length=65535)
+    pubDate = models.CharField(max_length=255)
+    image_url = models.CharField(max_length=65535)
+    class Meta:
+        app_label = 'weather'
+        db_table = 'news_weather_table'
+        managed = False  
+    def __str__(self):
+        return f"{self.id} | {self.pubDate} | {self.title}"

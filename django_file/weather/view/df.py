@@ -55,7 +55,7 @@ def classify_weather(nx, ny, fcstdate):
     weather_data = WeatherData.objects.filter(
         basedate=latest_basedate,
         fcstdate=fcstdate,
-        fcstime=current_hour_str,
+        fcsttime=current_hour_str,
         nx=nx,
         ny=ny
     ).order_by('nx','ny','basedate', 'weather_code').values()

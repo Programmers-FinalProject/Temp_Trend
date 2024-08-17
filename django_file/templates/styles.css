@@ -164,8 +164,9 @@ html, body {
 li::marker {
     content: none;  /* 마커를 제거합니다 */
 }
-
-
+.selectimg {
+    border: dashed #000;
+}
 /* .musinsa_list ul {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

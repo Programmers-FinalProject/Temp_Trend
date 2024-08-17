@@ -1,6 +1,6 @@
 # weather/urls.py
 from django.urls import path
-from weather.view.redis import fetch_and_store_news, display_news, news_view
+from weather.view.news import display_news, news_view
 from weather.view.index import weather_view,musinsajjj
 from weather.view import weather_views
 from weather.view.musinsa_views import musinsa_list
@@ -17,8 +17,7 @@ urlpatterns = [
     path('', weather_view, name='index'),
     path('musinsajjj/',musinsajjj,name='musinsajjj'),
     # 뉴스페이지
-    path('news/', news_view, name='news'), 
-    path('fetch-news/', fetch_and_store_news, name='fetch_news'),
+    path('news/', news_view, name='news'),
     path('display-news/', display_news, name='display_news'),
     # 위치 저장, 위치 정보 보여주기 endpoint
     path('save_location/', save_location, name='save_location'),
@@ -26,8 +25,7 @@ urlpatterns = [
     path('location_name/', location_name, name='location_name'),
     path('api/session-address/', session_data_api, name='get_session_address'), #이 사이트 들어가면 세션 확인가능
     #위치, 성별 세션 삭제
-    path('delete-session-location/', session_delete, {'key': 'location'}, name='delete-session-location'),
-    path('delete-session-gender/', session_delete, {'key': 'gender'}, name='delete-session-gender'),
+    path('delete-session/', session_delete, name='delete-session-location'),
     #선택위치 전송
     path('submit_location/', submit_location, name='submit_location'),
     #전국지도

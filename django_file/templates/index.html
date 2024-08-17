@@ -81,9 +81,7 @@
                                 function jj1(){
                                     const musinsa = document.getElementsByClassName('center-content')[0];
                                     musinsa.style.display = 'none';
-                                    setTimeout(function() {
-                                        call_we_data(1);
-                                    }, 500);  // 500ms 후 실행
+                                    call_we_data(1);
                                 }
 
                             </script>
@@ -133,30 +131,17 @@
                         </div>
 
                         <div class="we-data-box">
-                            <h3>{{ data.head }}</h3>
-                            <ul class="clear we-data-ul">
-                                {% for we_data in we_dataList %}
-                                <li class="we-data-list" onclick="sendweData(this)">
-                                    <input type="hidden" class="we-data" data-fcsttime="${item.fcsttime}" data-tmp="${item.TMP}" data-pty="${item.PTY}">
-                                    <ul>
-                                        <li class="we-list we-time">{{ we_data.fcsttime|slice:":2"|default:"-" }}시</li>
-                                        <li class="we-list we-img">
-                                            <img src="{% static we_data.imgurl|default:'img/sky3.png' %}" alt="날씨 이미지">
-                                        </li>
-                                        <li class="we-list we-tmp">{{ we_data.TMP|default:"-"}}°C</li>
-                                        <li class="we-list we-pop">{{ we_data.POP|default:"-" }}%</li>
-                                        <li class="we-list we-ras">{{ we_data.PCP|default:"-" }}</li>
-                                        <li class="we-list we-wind">{{ we_data.WSD|default:"-" }}</li>
-                                        <li class="we-list we-atp">{{ we_data.REH|default:"-" }}</li>
-                                    </ul>
-                                </li>
-                                {% endfor %}
-                            </ul>
+                            <h3></h3>
+                            <p></p>
+                            <p></p>
+                            <ul class="clear we-data-ul"> </ul>
                         </div>
                 
                         
 
                         <script>
+                            
+                            
                             // 시/도에 따른 시/군/구 목록을 정의합니다.
                             const districtData = {
                                 '01': ['강남구', '강동구', '강북구', '강서구'],
@@ -201,16 +186,7 @@
                                     area2Select.style.display = 'none';
                                 }
                             }
-                            function changeButtonColor(button) {
-                                // 모든 버튼에서 active 클래스를 제거
-                                var buttons = document.querySelectorAll('.btn');
-                                buttons.forEach(function(btn) {
-                                    btn.classList.remove('active');
-                                });
 
-                                // 클릭된 버튼에 active 클래스 추가
-                                button.classList.add('active');
-                            }
                         </script>
                         <div id="initial-buttons" class="row">
                             <div class="col">
@@ -277,7 +253,7 @@
                                 console.log("Number of weather data items:", dataListItems.length);
 
                                 dataListItems.forEach((listItem, index) => {
-                                    const hiddenInput = listItem.querySelector('input.we-data');
+                                    const hiddenInput = listItem.querySelector('li.we-img');
                                     if (!hiddenInput) {
                                         console.error(`Hidden input not found in item ${index}`);
                                         return;
@@ -316,7 +292,7 @@
                                         // document.getElementById('data-container').textContent = JSON.stringify(data, null, 2);
                                     })
                                     .catch(error => console.error('Error fetching data:', error));
-                            };
+                            }
 
                             function updateWeatherData(data) {
                                 const container = document.querySelector('.we-data-box');
@@ -325,16 +301,17 @@
                                 console.log("테스트", data['we_dataList'] && data['we_dataList'].length > 0);
 
                                 let html = '<h3>' + data['head'] + '</h3>';
-
                                 if (data['we_dataList'] && data['we_dataList'].length > 0) {
+                                    html += '<p> 시간대 선택을 하지 않으면 현 시간의 날씨를 기준으로 옷을 추천합니다. </p>';
+                                    html += '<p> 원하는 시간대의 날씨 아이콘을 클릭해주세요 </p>';
                                     html += '<ul class="clear we-data-ul">';
                                     data['we_dataList'].forEach(item => {
                                         html += `
                                             <li class="we-data-list">
-                                                <input type="hidden" class="we-data" data-fcsttime="${item.fcsttime}" data-tmp="${item.TMP}" data-pty="${item.PTY}">
-                                                <ul>
+                                                
+                                                <ul class ="">
                                                     <li class="we-list we-time">${item.fcsttime.slice(0, 2)}시</li>
-                                                    <li class="we-list we-img">
+                                                    <li class="we-list we-img" onclick="sendweData(this); clickableimage(this);" data-fcsttime="${item.fcsttime}" data-tmp="${item.TMP}" data-pty="${item.PTY}">
                                                         <img src="${item.imgurl ? '/static/' + item.imgurl : '/static/img/sky3.png'}" alt="날씨 이미지" class="weather-icon">
                                                     </li>
                                                     <li class="we-list we-tmp">${item.TMP || '-'}°C</li>
@@ -356,9 +333,10 @@
                             }
 
                             function sendweData(dataTag) {
+            
                                 const data = {
                                     'weather_info': {
-                                        'forecast_time': dataTag.getAttribute('data-fcsttime').slice(0, 2) + ":" + dataTag.getAttribute('data-fcsttime').slice(2, 4),
+                                        'forecast_time': dataTag.getAttribute('data-fcsttime'),
                                         'TMP': parseInt(dataTag.getAttribute('data-tmp'), 10),
                                         'PTY': parseInt(dataTag.getAttribute('data-pty'), 10),
                                     }
@@ -400,6 +378,12 @@
                                     // 여기에 오류 발생 시 수행할 추가 작업을 넣을 수 있습니다.
                                     // 예: showErrorMessage(error.message);
                                 });
+                            }
+
+                            function clickableimage(dataTag) {
+                                const images = document.querySelectorAll('.we-img');
+                                images.forEach(img => img.parentElement.classList.remove('selectimg'));
+                                dataTag.parentElement.classList.add('selectimg');
                             }
 
                         </script>

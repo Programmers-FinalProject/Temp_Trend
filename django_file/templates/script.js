@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 // latitude가 숫자일 경우에만 업데이트
                                 if (data.address !== 'No address in session') {
                                     currentLocationElement.textContent = `현위치: ${data.address}`;
+                                    jj1();
                                 }
                             }
                         })

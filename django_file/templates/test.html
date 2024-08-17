@@ -72,12 +72,14 @@
         }
 
         .card_nation .weekly_list .item.on .day {
-            font-weight: 700
+            font-weight: 700;
+            display : c
         }
 
         .card_nation .weekly_list .item.on .date {
             border-bottom: 2px solid #53b0f9;
-            font-weight: 500
+            font-weight: 500;
+            text-align: center;
         }
 
         .card_nation .weekly_list .button {
@@ -325,7 +327,7 @@
             background-position: 0 0;
             background-repeat: no-repeat
         }
-    
+        
         .ico_wt2 {
             background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
             background-position: 50% 40%;
@@ -338,7 +340,7 @@
             background-repeat: no-repeat
         }
 
-        .ico_wt4 {
+        .ico_wt4 { 
             background-image: url(https://ssl.pstatic.net/static/weather/image/sp_icon_weather_346e83fd.png);
             background-position: 50% 100%;
             background-repeat: no-repeat
@@ -625,15 +627,16 @@
                     const dateSpan = button.querySelector('.date');
 
                     // 요일 설정
-                    daySpan.textContent = days[date.getDay()];
+                    daySpan.textContent = "오늘은 " + days[date.getDay()] + "요일";
 
                     // 날짜 설정
-                    if (i === 0) {
+                    if (i === 5) {
                         dateSpan.textContent = '오늘';
                     } else {
-                        const month = date.getMonth() + 1;
+                        const year = date.getFullYear();
+                        const month = date.getMonth() +1;
                         const day = String(date.getDate()).padStart(2, '0');
-                        dateSpan.textContent = `${month}.${day}`;
+                        dateSpan.textContent = `${year}.${month}.${day}`;
                     }
 
                     // data-date 속성 설정
@@ -670,12 +673,12 @@
         </script>
         <div id="dateTabs" class="weekly_list" role="tablist">
             <li class="item on">
-                <button type="button" class="btn btn-light w-75" >
+                <button type="button" class="btn btn-light w-75" style="text-align: center;">
                     <span class="day"></span>
-                    <span class="date">오늘</span>
+                    <span class="date" style="display: inline-block;">오늘</span>
                 </button>
             </li>
-            
+<!--             
             <li class="item ">
                 <button type="button" class="btn btn-light w-75">
                     <span class="day"></span>
@@ -688,7 +691,7 @@
                     <span class="day"></span>
                     <span class="date"></span>
                 </button>
-            </li>    
+            </li>     -->
         </div>
         <div class="map_wrap" role="tabpanel" id="mapPanel">
             <div class="time_area">

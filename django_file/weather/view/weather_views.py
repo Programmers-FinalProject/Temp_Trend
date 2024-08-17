@@ -202,6 +202,8 @@ def testdataset():
 
 
 def nxnySetting(lon, lat):
+    print(lon[:5])
+    print(lat[:4])
     value = WeatherStn.getnxny(lon[:5],lat[:4])[0]
     result = {
         'nx' : value.nx,

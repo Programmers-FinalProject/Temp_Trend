@@ -53,9 +53,14 @@ async function selectGender(gender) {
         alert("성별 저장 중 오류가 발생했습니다. 다시 시도해 주세요.");
     }
 }
+
+
+
+
 async function fetchProducts(gender) {
     const loadingElement1 = document.getElementById('loading-spinner'); 
     const musinsa = document.getElementsByClassName('center-content')[0];
+    const selectedElement = document.querySelector('.selectimg');
     let content = `
         <div class="musinsa_categories">
         </div>`;
@@ -68,10 +73,13 @@ async function fetchProducts(gender) {
         await selectGender(gender);
         console.log("젠더선택")
 
-        // processWeatherData가 비동기 함수라 await로 처리
-        await processWeatherData();
-        console.log("날씨저장")
-
+        if (!selectedElement) {
+            // 날씨 정보가 선택되지 않은 경우에만 processWeatherData 실행
+            await processWeatherData();
+            console.log("날씨저장");
+        } else {
+            console.log("날씨 이미 선택됨");
+        }
         // 첫 번째 fetch 요청
         let response = await fetch('/learn/');
         console.log("Server response status (learn):", response.status);

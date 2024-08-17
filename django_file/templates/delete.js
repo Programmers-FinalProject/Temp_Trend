@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
+            if (data) {
                 alert(successMessage);
                 updateUIAfterSessionDeletion(endpoint);
                 window.location.reload();
@@ -31,17 +31,16 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (error instanceof SyntaxError) {
                 alert('서버 응답을 처리하는 중 오류가 발생했습니다.');
             } else {
-                alert(`세션 삭제 중 오류가 발생했습니다: ${error.message}`);
+                alert(`세션 삭제 중 오류가 발생했습니다: ${error}`);
             }
         });
     }
 
-    setupSessionDeleteButton('deleteSessionBtnLocation', '/delete-session-location/', '지역 삭제 성공');
-    setupSessionDeleteButton('deleteSessionBtnGender', '/delete-session-gender/', '성별 삭제 성공');
+    setupSessionDeleteButton('deleteSessionBtnLocation', '/delete-session/', '삭제 성공');
 });
 
 function updateUIAfterSessionDeletion(endpoint) {
-    if (endpoint === '/delete-session-location/') {
+    if (endpoint === '/delete-session/') {
         const locationSpan = document.getElementById('current-location');
             if (locationSpan) {
                 locationSpan.textContent = ' 현위치 찾기 버튼을 눌러주세요';

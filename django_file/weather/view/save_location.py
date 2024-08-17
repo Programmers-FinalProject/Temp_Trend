@@ -141,8 +141,9 @@ def session_data_api(request):
         try:
             data = json.loads(request.body)
             weather_info = data.get('weather_info', {})
+            print(weather_info)
             request.session['weather_info'] = weather_info
-            return JsonResponse({"message": "Weather info saved successfully"})
+            return JsonResponse({"message": "Weather info saved successfully","weather_info":weather_info})
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON data"}, status=400)
     weather_info = request.session.get('weather_info', 'No weather info in session')
@@ -165,23 +166,37 @@ def session_data_api(request):
 
 @require_POST
 @csrf_exempt
-def session_delete(request, key=None):
-    try:
-        if key == 'location':
-            del request.session['address']
-            del request.session['latitude']
-            del request.session['longitude']
-            del request.session['selectedCity_code']
-            del request.session['selectedDistrict']
-            del request.session['selectedLatitude']
-            del request.session['selectedLongitude']
-        elif key == 'gender':
-            del request.session['selectedGender']
-        else:
-            return JsonResponse({'success': False, 'error': 'Invalid session type'})
-        return JsonResponse({'success': True})
-    except KeyError:
-        return JsonResponse({'success': False, 'error': 'Session key not found'})
-    except Exception as e:
-        print(f"Error deleting session: {e}")
-        return JsonResponse({'success': False, 'error': 'Unknown error occurred'})
+def session_delete(request):
+    # 'address' 키가 존재하면 삭제
+    if 'address' in request.session:
+        del request.session['address']
+
+    # 'latitude' 키가 존재하면 삭제
+    if 'latitude' in request.session:
+        del request.session['latitude']
+
+    # 'longitude' 키가 존재하면 삭제
+    if 'longitude' in request.session:
+        del request.session['longitude']
+
+    # 'selectedCity_code' 키가 존재하면 삭제
+    if 'selectedCity_code' in request.session:
+        del request.session['selectedCity_code']
+
+    # 'selectedDistrict' 키가 존재하면 삭제
+    if 'selectedDistrict' in request.session:
+        del request.session['selectedDistrict']
+
+    # 'selectedLatitude' 키가 존재하면 삭제
+    if 'selectedLatitude' in request.session:
+        del request.session['selectedLatitude']
+
+    # 'selectedLongitude' 키가 존재하면 삭제
+    if 'selectedLongitude' in request.session:
+        del request.session['selectedLongitude']
+
+    # 'selectedGender' 키가 존재하면 삭제
+    if 'selectedGender' in request.session:
+        del request.session['selectedGender']
+        
+    return JsonResponse({'success': True})
