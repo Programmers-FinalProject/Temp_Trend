@@ -11,7 +11,7 @@ from airflow.sensors.external_task_sensor import ExternalTaskSensor
 def get_execution_date_to_check(dt):
     # dt = 현재 DAG의 실행 날짜/시간.(airflow가 전달하는 값.)
     # 이전 날의 14:00:00 실행을 확인하려고 함. (시험용)
-    target_dt = (dt - timedelta(days=1)).replace(hour=14, minute=0, second=0, microsecond=0)
+    target_dt = (dt - timedelta(days=2)).replace(hour=14, minute=0, second=0, microsecond=0)
     # target_dt = dt.replace(hour=14, minute=0, second=0, microsecond=0) #배포용
     print(f"Checking for execution date: {target_dt}")
     return target_dt
@@ -44,9 +44,10 @@ with DAG(
 
     @task(queue='queue1')
     def preprocess_data():
-        today = datetime.now().strftime("%Y%m%d") #배포용
-        #today = datetime.now() - timedelta(days=1) #시험용
+        #today = datetime.now().strftime("%Y%m%d") #배포용
+        today = datetime.now() - timedelta(days=1) #시험용
         today = today.strftime("%Y%m%d")
+        print(today)
 
         bucket_name = 'team-hori-1-bucket'
         file_key = f'crawling/29cm_bestitem_{today}.csv'
@@ -110,30 +111,24 @@ with DAG(
 
             # df_full에서 category2 열의 이름을 category로 변경
             df_full = df_full.rename(columns={'category2': 'category'})
-
-
-            return {"df2": df2, "df_full": df_full}
-
+            
+            #today = datetime.now().strftime("%Y%m%d") #배포용
+            today = datetime.now() - timedelta(days=1) #시험용
+            today = today.strftime("%Y%m%d")
+            
+            df2_csv_buffer = StringIO()
+            df2.to_csv(df2_csv_buffer, index=False)
+            df_full_csv_buffer = StringIO()
+            df_full.to_csv(df_full_csv_buffer, index=False)
+            s3_hook = S3Hook(aws_conn_id='my_amazon_conn')
+            s3_hook.load_string(df2_csv_buffer.getvalue(), key= f'model/file29/df2_{today}.csv', bucket_name='team-hori-1-bucket', replace=True)
+            s3_hook.load_string(df_full_csv_buffer.getvalue(), key= f'model/full29_processed/df_full_{today}.csv', bucket_name='team-hori-1-bucket', replace=True)
+            
+            return "성공"
         except Exception as e:
-            raise ValueError(f"CSV 파일을 읽는 중 오류가 발생했습니다: {e}")
-
-    @task(queue='queue1')
-    def upload_df_to_s3(data,key,s3_key):
-        csv_buffer = StringIO()
-        df = data[key]
-        df.to_csv(csv_buffer, index=False)
-
-        s3_hook = S3Hook(aws_conn_id='my_amazon_conn')
-        s3_hook.load_string(csv_buffer.getvalue(), key=s3_key, bucket_name='team-hori-1-bucket', replace=True)
-
-    # Task 실행
-    data = preprocess_data()
-
-    today = datetime.now().strftime("%Y%m%d") #배포용
-    #today = datetime.now() - timedelta(days=1) #시험용
-    today = today.strftime("%Y%m%d")
-
-    upload_df_1 = upload_df_to_s3(data,"df2", f'model/file29/df2_{today}.csv')
-    upload_df_2 = upload_df_to_s3(data,"df_full", f'model/full29_processed/df_full_{today}.csv')
+            print(f"오류 발생: {e}")
+            return "실패"
+        
+    S3_ETL_and_upload_S3 = preprocess_data()
     
-    wait_for_task >> data >> [upload_df_1, upload_df_2]
+    wait_for_task >> S3_ETL_and_upload_S3
