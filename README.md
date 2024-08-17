@@ -4,7 +4,7 @@
 날씨정보에 맞는 트렌디한 옷 추천 서비스
 
 <a href="https://www.canva.com/design/DAGNoDAbJ6s/kgkS6XE6SS-hVaPZ1hflaA/view?utm_content=DAGNoDAbJ6s&utm_campaign=designshare&utm_medium=link&utm_source=editor">
-프로젝트 보고서 </a>
+프로젝트 보고서 및 시연영상 </a>
 
 ## 프로젝트 개요
 ### 1. 내용
