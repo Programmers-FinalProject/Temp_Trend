@@ -61,4 +61,4 @@
 ![WomenRecommend](img/women_recommend.png)
 
 - 시연영상
-![video](img/뉴스페이지.gif)
+![60초풀영상](https://github.com/user-attachments/assets/4874d5b7-13f2-4007-8fa7-091a674dd508)
