@@ -10,14 +10,14 @@ from airflow.sensors.external_task_sensor import ExternalTaskSensor
 
 def get_execution_date_to_check(dt):
     # dt = 현재 DAG의 실행 날짜/시간.(airflow가 전달하는 값.)
-    #이전 날의 14:00:00 실행을 확인하려고 함.
-    target_dt = (dt - timedelta(days=1)).replace(hour=14, minute=0, second=0, microsecond=0)
+    #동일한 날의 14:00:00 실행을 확인하려고 함.
+    target_dt = (dt - timedelta(days=0)).replace(hour=14, minute=0, second=0, microsecond=0)
     print(f"Checking for execution date: {target_dt}")
     return target_dt
 
 default_args = {
     'owner': 'airflow',
-    'start_date': datetime(2024, 8, 15, 00, 00, 0),  # UTC 기준 15:00
+    'start_date': datetime(2024, 8, 15, 00, 00, 0),  
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
 }
