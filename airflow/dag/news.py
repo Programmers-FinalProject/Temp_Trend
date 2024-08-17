@@ -91,9 +91,32 @@ with DAG(
                 plus_data.append(context)
         
             df = pd.DataFrame(plus_data)
-            return df
+            
+            if df is not None and not df.empty:
+                csv_buffer = StringIO()
+                df.to_csv(csv_buffer, index=False)
+
+                aws_hook = S3Hook(aws_conn_id='my_amazon_conn')
+                bucket_name = "team-hori-1-bucket"
+                
+                korea_timezone = pytz.timezone("Asia/Seoul")
+                current_time = datetime.now(korea_timezone)
+                formatted_time = current_time.strftime("%Y%m%d_%H")
+                
+                s3_key = f'news/news_{formatted_time}.csv'
+                
+                aws_hook.load_string(
+                    string_data=csv_buffer.getvalue(),
+                    key=s3_key,
+                    bucket_name=bucket_name,
+                    replace=True
+                )
+
+                print(f"Dataframe uploaded to S3 successfully: {s3_key}")
+                return s3_key
         else:
-            raise ValueError("Failed to fetch news data from API")
+            raise ValueError("Dataframe is empty or None")
+
     @task(queue='queue1')
     def create_redshift_table():
         redshift_hook = RedshiftSQLHook(redshift_conn_id='my_redshift_conn')
@@ -112,36 +135,10 @@ with DAG(
         redshift_hook.run(create_table_query)
         print("Redshift table created successfully.")
 
-    @task(queue='queue1')
-    def s3_upload(df):
-        if df is not None and not df.empty:
-            csv_buffer = StringIO()
-            df.to_csv(csv_buffer, index=False)
 
-            aws_hook = S3Hook(aws_conn_id='my_amazon_conn')
-            bucket_name = "team-hori-1-bucket"
-            
-            korea_timezone = pytz.timezone("Asia/Seoul")
-            current_time = datetime.now(korea_timezone)
-            formatted_time = current_time.strftime("%Y%m%d")
-            
-            s3_key = f'news/news_{formatted_time}.csv'
-            
-            aws_hook.load_string(
-                string_data=csv_buffer.getvalue(),
-                key=s3_key,
-                bucket_name=bucket_name,
-                replace=True
-            )
-
-            print(f"Dataframe uploaded to S3 successfully: {s3_key}")
-            return s3_key
-        else:
-            raise ValueError("Dataframe is empty or None")
-
+        
     create_table = create_redshift_table()
-    news_df = fetch_and_store_news()
-    s3_key = s3_upload(news_df)
+    s3_key = fetch_and_store_news()
     
     s3_to_redshift = S3ToRedshiftOperator(
         task_id="s3_to_redshift",
@@ -156,4 +153,4 @@ with DAG(
         dag = dag
     )
     
-    create_table >> news_df >> s3_key >> s3_to_redshift
+    create_table >> s3_key >> s3_to_redshift

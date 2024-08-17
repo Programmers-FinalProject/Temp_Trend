@@ -55,20 +55,23 @@ def classify_weather(nx, ny, fcstdate):
     weather_data = WeatherData.objects.filter(
         basedate=latest_basedate,
         fcstdate=fcstdate,
-        fcsttime=current_hour_str,
+        fcstime=current_hour_str,
         nx=nx,
         ny=ny
     ).order_by('nx','ny','basedate', 'weather_code').values()
     
     if not weather_data:
         print("No weather data found for the given parameters.")
+        print(current_hour_str)
+        print(nx)
+        print(ny)
         return None
     
     df = pd.DataFrame(weather_data)
     print(df.head())  # 데이터 확인
 
     # 'fcsttime'이 현재 시각의 '시'와 일치하는 데이터 필터링
-    # current_hour_str = f"{current_hour:02}00"
+    #current_hour_str = f"{current_hour:02}00"
     current_data = df[df['fcsttime'] == current_hour_str]
     tmp = None
     for _, row in current_data.iterrows():
@@ -80,18 +83,16 @@ def classify_weather(nx, ny, fcstdate):
     # 우선순위 기반으로 가장 중요한 상태 결정
     
     priority_order = [ 'PTY','SKY']
-    
+    # 상태 번호와 설명을 저장할 리스트
+    condition = []
+
     for code in priority_order:
         # 각 코드에 대한 우선순위로 상태 평가
         for _, row in current_data.iterrows():
             if row['weather_code'] == code :
                 value,night = setting(row)
             else : continue
-            
-
-            # 상태 번호와 설명을 저장할 리스트
-            condition = None
-
+            condition = []
             # 하늘 상태(SKY)
             if code == 'SKY':
                 if value == 1:  
@@ -128,6 +129,7 @@ def classify_weather(nx, ny, fcstdate):
                 condition.append(tmp)
                 break
         if condition:
+            condition.append(tmp)
             break
     condition.append(tmp)
     print(condition)
