@@ -51,7 +51,7 @@ def classify_weather(nx, ny, fcstdate):
     print(latest_basedate)
 
     # 최신 basedate로 데이터 필터링
-    current_hour_str = f"{current_hour}00".lstrip('0')
+    current_hour_str = f"{current_hour:02}00" #현재 시간이 자꾸,,,어떤건 0700 어떤건 700,,
     weather_data = WeatherData.objects.filter(
         basedate=latest_basedate,
         fcstdate=fcstdate,
@@ -63,6 +63,7 @@ def classify_weather(nx, ny, fcstdate):
     if not weather_data:
         print("No weather data found for the given parameters.")
         print(current_hour_str)
+        print(fcstdate)
         print(nx)
         print(ny)
         return None
