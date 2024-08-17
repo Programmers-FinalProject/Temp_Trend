@@ -59,3 +59,6 @@
 - 날씨와 성별에 따른 추천 아이템 목록
 ![ManRecommend](img/man_recommend.png)
 ![WomenRecommend](img/women_recommend.png)
+
+- 시연영상
+![video](img/)
