@@ -61,4 +61,4 @@
 ![WomenRecommend](img/women_recommend.png)
 
 - 시연영상
-![video](img/)
+![video](img/뉴스페이지.gif)
