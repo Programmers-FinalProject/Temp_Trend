@@ -278,7 +278,7 @@ def index(request):
                         matched_data_list.clear()
                         return JsonResponse({
                         'message': '선호도 입력이 완료되었습니다. 학습 데이터가 S3에 저장되었습니다.',
-                    })
+                        })
                 else:
                     # 다음 데이터로 이동
                     return JsonResponse({
